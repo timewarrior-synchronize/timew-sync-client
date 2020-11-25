@@ -12,7 +12,7 @@ pip install virtualenv
 
 Create a new virtual environment (first time only):
 ```bash
-virtualenv venv
+virtualenv -p python3 venv
 ```
 
 To activate your virtual environment run:
