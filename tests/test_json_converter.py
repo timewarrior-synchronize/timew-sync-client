@@ -29,7 +29,14 @@ from timewsync.json_converter import to_json_request
 
 
 def test_to_json_request():
-    json_request_expected = '{\n  "user_id": 1,\n  "client_id": 1,\n  "interval_data": [\n    "2020-11-string",\n    "2020-12-string"\n  ]\n}'
+    json_request_expected = """{
+  "user_id": 1,
+  "client_id": 1,
+  "interval_data": [
+    "2020-11-string",
+    "2020-12-string"
+  ]
+}"""
     json_request_generated = to_json_request(['2020-11-string', '2020-12-string'])
     print(json_request_generated)
     assert json_request_generated == json_request_expected
