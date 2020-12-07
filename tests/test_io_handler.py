@@ -31,7 +31,8 @@ import timewsync.io_handler
 
 def test_read_data():
     # write a testfile
-    testfile = open((os.path.expanduser('~') + "/.timewarrior/data/0000-00.data"), 'w')
+    os.makedirs(os.path.expanduser('~') + "/.timewarrior/data", exist_ok=True)
+    testfile = open(os.path.expanduser('~') + "/.timewarrior/data/0000-00.data", 'w')
     testfile.write("This is a test.\nAnd this is its second line.")
     testfile.close()
 
