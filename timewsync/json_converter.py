@@ -30,6 +30,7 @@ import json
 
 
 def to_json_request(interval_data: List[str]) -> str:
+    """Return a JSON request including the given list of monthly interval filestrings."""
     json_dict = {
         'user_id': 1,
         'client_id': 1,
