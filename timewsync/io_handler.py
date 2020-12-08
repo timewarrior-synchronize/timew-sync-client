@@ -39,6 +39,7 @@ def write_data(interval_list: List[str]):
         interval_list: A list of strings each of which contains all entries for one specific month.
     """
     data_folder = os.path.expanduser('~') + '/.timewarrior/data/'
+    os.makedirs(data_folder, exist_ok=True)
 
     for month_data in interval_list:
 
