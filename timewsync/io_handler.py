@@ -28,13 +28,25 @@
 import os
 import re
 from pathlib import Path
+from typing import List
 
 
-def read_data():
-    """Return a list of strings each of which containing all lines from a single monthly file in .timewarrior/data."""
-    # Navigate to .home/.timewarrior/data
-    data_folder = Path(os.path.expanduser('~') + "/.timewarrior/data")
-    # Make a list from all .data files you shall read
-    file_list = [f for f in os.listdir(data_folder) if (re.search('\d\d\d\d-\d\d.data', f))]
-    # Iterate over the list and read each file (= month). Write the content of each file into a list of strings: one string for each file.
-    return [(open(os.path.expanduser('~') + "/.timewarrior/data/" + file).read()) for file in file_list]
+def read_data() -> List[str]:
+    """Reads the monthly separated time intervals from .timewarrior/data into one string list.
+
+    Reads from all files matching 'YYYY-MM.data' and creates a separate list entry per month.
+
+    Returns:
+        A list of strings each of which contains all entries for one specific month.
+    """
+    # Filter and list all data sources
+    data_folder = os.path.expanduser('~') + '/.timewarrior/data/'
+    file_list = [f for f in os.listdir(Path(data_folder)) if (re.search(r'^\d\d\d\d-\d\d\.data$', f))]
+
+    # Read file contents into interval list
+    interval_list = []
+    for file_name in file_list:
+        with open(data_folder + file_name, 'r') as file:
+            interval_list.append(file.read())
+
+    return interval_list
