@@ -38,9 +38,8 @@ def write_data(interval_list: List[str]):
         if len(month_data) == 0:
             return
 
-        file = open(data_folder + extract_file_name(month_data), 'w')
-        file.write(month_data)
-        file.close()
+        with open(data_folder + extract_file_name(month_data), 'w') as file:
+            file.write(month_data)
 
 
 def extract_file_name(month_data: str) -> str:
