@@ -30,7 +30,14 @@ from typing import List
 
 
 def write_data(interval_list: List[str]):
-    """Write the given data to files, separated by month and named accordingly."""
+    """Writes the given interval list to files, separated by month and named accordingly.
+
+    Writes each string to a separate file, named in accordance to its content,
+    as specified by extract_file_name.
+
+    Args:
+        interval_list: A list of strings each of which contains all entries for one specific month.
+    """
     data_folder = os.path.expanduser('~') + '/.timewarrior/data/'
 
     for month_data in interval_list:
@@ -43,7 +50,20 @@ def write_data(interval_list: List[str]):
 
 
 def extract_file_name(month_data: str) -> str:
-    """Return the new filename in which the new data should be stored, based on the first line of the content provided."""
+    """Returns the appropriate file name for the input provided.
+
+    Analyses the provided input until the first line break is reached.
+    Retrieves the month and year the entry has been recorded
+    or is currently still being tracked.
+    Further time intervals are expected to be in the same month
+    and get transferred unchecked.
+
+    Args:
+        month_data: A string with time intervals in timewarrior format.
+
+    Returns:
+        A string containing the file name for the input provided.
+    """
     assert len(month_data) >= 20
     if len(month_data) < 39:
         return month_data[4:8] + '-' + month_data[8:10] + '.data'
