@@ -23,10 +23,16 @@
 # https://www.opensource.org/licenses/mit-license.php
 #
 ###############################################################################
+from timewsync.dispatch import dispatch
+from timewsync.io_handler import read_data, write_data
+
+BASE_URL = 'http://localhost:8080'
 
 
 def main():
-    pass
+    request_intervals = read_data()
+    response_intervals = dispatch(BASE_URL, request_intervals)
+    write_data(response_intervals)
 
 
 if __name__ == '__main__':
