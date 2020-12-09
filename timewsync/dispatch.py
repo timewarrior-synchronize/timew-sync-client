@@ -46,7 +46,7 @@ def dispatch(base_url: str, intervals: List[str]) -> List[str]:
     """
     request_body = json_converter.to_json_request(intervals)
 
-    server_response = requests.put(base_url + SYNC_ENDPOINT, json=request_body)
+    server_response = requests.put(base_url + SYNC_ENDPOINT, request_body)
 
     if server_response.status_code != 200:
         raise RuntimeError(f'Problem while syncing with server. Server responded with {server_response.status_code}.')
