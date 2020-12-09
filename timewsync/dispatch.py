@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Copyright 2020, <COPYRIGHT HOLDERS>
+# Copyright 2020 - Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,32 @@
 ###############################################################################
 
 
-from _pytest.capture import CaptureFixture
+from typing import List
 
-from timewsync.main import print_hi
+import requests
+
+from timewsync import json_converter
+
+SYNC_ENDPOINT = '/api/sync'
 
 
-def test_print_hi(capsys: CaptureFixture):
-    print_hi('test')
+def dispatch(base_url: str, intervals: List[str]) -> List[str]:
+    """Sends a sync request to the server.
 
-    console_output = capsys.readouterr()
+    Args:
+        base_url: The base URL of the API. E.g.: "http://localhost:8080".
+        intervals: A list of all client intervals.
 
-    assert console_output.out == 'Hi, test\n'
+    Returns:
+        A list of the intervals resulting from the sync.
+    """
+    request_body = json_converter.to_json_request(intervals)
+
+    server_response = requests.put(base_url + SYNC_ENDPOINT, json=request_body)
+
+    if server_response.status_code != 200:
+        raise RuntimeError(f'Problem while syncing with server. Server responded with {server_response.status_code}.')
+
+    parsed_response = json_converter.to_interval_list(server_response.text)
+
+    return parsed_response

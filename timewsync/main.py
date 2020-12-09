@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Copyright 2020, <COPYRIGHT HOLDERS>
+# Copyright 2020 - Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +25,9 @@
 ###############################################################################
 
 
-def print_hi(name):
-    print(f'Hi, {name}')
+def main():
+    pass
 
 
 if __name__ == '__main__':
-    print_hi('Timewarrior')
+    main()
