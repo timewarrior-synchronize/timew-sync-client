@@ -26,7 +26,30 @@
 
 
 import os
+import re
+from pathlib import Path
 from typing import List
+
+
+def read_data() -> List[str]:
+    """Reads the monthly separated time intervals from .timewarrior/data into one string list.
+
+    Reads from all files matching 'YYYY-MM.data' and creates a separate list entry per month.
+
+    Returns:
+        A list of strings each of which contains all entries for one specific month.
+    """
+    # Filter and list all data sources
+    data_folder = os.path.expanduser('~') + '/.timewarrior/data/'
+    file_list = [f for f in os.listdir(Path(data_folder)) if (re.search(r'^\d\d\d\d-\d\d\.data$', f))]
+
+    # Read file contents into interval list
+    interval_list = []
+    for file_name in file_list:
+        with open(data_folder + file_name, 'r') as file:
+            interval_list.append(file.read())
+
+    return interval_list
 
 
 def write_data(interval_list: List[str]):
