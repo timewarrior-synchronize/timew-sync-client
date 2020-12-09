@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Copyright 2020, <COPYRIGHT HOLDERS>
+# Copyright 2020 - Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,31 @@
 ###############################################################################
 
 
-from _pytest.capture import CaptureFixture
-
-from timewsync.main import print_hi
+from timewsync.json_converter import to_json_request, to_interval_list
 
 
-def test_print_hi(capsys: CaptureFixture):
-    print_hi('test')
+def test_to_json_request():
+    input_interval_list = ['2020-11-string', '2020-12-string']
+    json_request_expected = """{
+  "userId": 1,
+  "clientId": 1,
+  "intervalData": [
+    "2020-11-string",
+    "2020-12-string"
+  ]
+}"""
+    json_request_generated = to_json_request(input_interval_list)
+    assert json_request_generated == json_request_expected
 
-    console_output = capsys.readouterr()
 
-    assert console_output.out == 'Hi, test\n'
+def test_to_interval_list():
+    input_json_response = """{
+    "intervalData": [
+        "2020-11-string",
+        "2020-12-string",
+        "2021-01-string"
+    ]
+}"""
+    interval_list_expected = ['2020-11-string', '2020-12-string', '2021-01-string']
+    interval_list_generated = to_interval_list(input_json_response)
+    assert interval_list_generated == interval_list_expected

@@ -25,9 +25,32 @@
 ###############################################################################
 
 
-def main():
-    pass
+from typing import List
+
+import requests
+
+from timewsync import json_converter
+
+SYNC_ENDPOINT = '/api/sync'
 
 
-if __name__ == '__main__':
-    main()
+def dispatch(base_url: str, intervals: List[str]) -> List[str]:
+    """Sends a sync request to the server.
+
+    Args:
+        base_url: The base URL of the API. E.g.: "http://localhost:8080".
+        intervals: A list of all client intervals.
+
+    Returns:
+        A list of the intervals resulting from the sync.
+    """
+    request_body = json_converter.to_json_request(intervals)
+
+    server_response = requests.put(base_url + SYNC_ENDPOINT, json=request_body)
+
+    if server_response.status_code != 200:
+        raise RuntimeError(f'Problem while syncing with server. Server responded with {server_response.status_code}.')
+
+    parsed_response = json_converter.to_interval_list(server_response.text)
+
+    return parsed_response
