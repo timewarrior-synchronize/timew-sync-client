@@ -24,6 +24,12 @@ source venv/bin/activate
 source venv/bin/activate.fish
 ```
 
+On NixOS, all of the above steps boil down to:
+
+```bash
+nix-shell
+```
+
 ### Installing the projects dependencies
 To install the projects dependencies run:
 ```bash
@@ -31,3 +37,11 @@ pip install -r requirements.txt
 ```
 
 Now you should be good to go :)
+
+## Running the client
+
+Once you have all dependencies installed, the client can be started:
+
+```bash
+python -m timewsync
+```
