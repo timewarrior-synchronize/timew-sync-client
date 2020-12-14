@@ -29,17 +29,17 @@ from typing import List
 import json
 
 
-def to_json_request(interval_data: List[str]) -> str:
-    """Return a JSON request including the given list of monthly interval filestrings."""
+def to_json_request(intervals: List[str]) -> str:
+    """Returns a JSON request including the intervals provided."""
     json_dict = {
         'userId': 1,
         'clientId': 1,
-        'intervalData': interval_data
+        'intervalData': intervals
     }
     return json.dumps(json_dict, indent=2)
 
 
 def to_interval_list(json_response: json) -> List[str]:
-    """Extract and return a list of monthly interval filestrings from the given JSON response."""
+    """Extract and return time intervals from the given JSON response."""
     json_dict = json.loads(json_response)
     return json_dict['intervalData']
