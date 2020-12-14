@@ -26,21 +26,22 @@
 
 
 import unittest
-from timewsync import io_handler
+
+from timewsync.io_handler import extract_file_name
 
 
 class TestExtractFileName(unittest.TestCase):
-    def test_1_no_entry(self):
-        self.assertRaises(AssertionError, io_handler.extract_file_name, '')
+    def test_no_entry(self):
+        self.assertRaises(AssertionError, extract_file_name, '')
 
-    def test_2_short_entry(self):
-        self.assertEqual(io_handler.extract_file_name('inc 20200931T235500Z'), '2020-09.data')
+    def test_short_entry(self):
+        self.assertEqual(extract_file_name('inc 20200931T235500Z'), '2020-09.data')
 
-    def test_3_long_entry(self):
-        self.assertEqual(io_handler.extract_file_name('inc 20200931T235500Z - 20201001T000500Z'), '2020-10.data')
+    def test_long_entry(self):
+        self.assertEqual(extract_file_name('inc 20200931T235500Z - 20201001T000500Z'), '2020-10.data')
 
-    def test_4_multiple_entries(self):
-        self.assertEqual(io_handler.extract_file_name(
+    def test_multiple_entries(self):
+        self.assertEqual(extract_file_name(
             """inc 20201208T133105Z - 20201208T133134Z # 10
             inc 20201208T134704Z - 20201208T134712Z
             inc 20201208T135322Z # 10
