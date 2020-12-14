@@ -25,36 +25,16 @@
 ###############################################################################
 
 
-import argparse
-
-from timewsync.dispatch import dispatch
-from timewsync.io_handler import read_data, write_data
+import unittest
+import timewsync
 
 
-BASE_URL = 'http://localhost:8080'
+def test_no_args():
+    parser = timewsync.make_parser()
+    args = parser.parse_args([])
+    assert args.config_file == None
 
-
-def make_parser():
-    """Creates an instance of argpars.ArgumentParser which contains the
-    command-line arguments and their types.
-
-    Returns:
-        The complete ArgumentParser object
-    """
-
-    parser = argparse.ArgumentParser(prog="timewsync", description="timewarrior synchronization client")
-
-    parser.add_argument("--version", action="version", version="%(prog)s unreleased", help="Print version information")
-    parser.add_argument("--config-file", dest="config_file", help="The path to the configuration file")
-
-    return parser
-
-
-def main():
-    """This function is the main entry point to the timewarrior
-    synchronization client."""
-    args = make_parser().parse_args()
-
-    request_intervals = read_data()
-    response_intervals = dispatch(BASE_URL, request_intervals)
-    write_data(response_intervals)
+def test_config_file():
+    parser = timewsync.make_parser()
+    args = parser.parse_args(["--config-file", "/path/to/file"])
+    assert args.config_file == "/path/to/file"
