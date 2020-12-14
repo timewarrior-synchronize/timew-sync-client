@@ -28,6 +28,7 @@
 import argparse
 
 from timewsync.dispatch import dispatch
+from timewsync.file_parser import to_interval_list, to_monthly_data
 from timewsync.io_handler import read_data, write_data
 
 
@@ -55,6 +56,8 @@ def main():
     synchronization client."""
     args = make_parser().parse_args()
 
-    request_intervals = read_data()
+    client_data = read_data()
+    request_intervals = to_interval_list(client_data)
     response_intervals = dispatch(BASE_URL, request_intervals)
-    write_data(response_intervals)
+    server_data = to_monthly_data(response_intervals)
+    write_data(server_data)
