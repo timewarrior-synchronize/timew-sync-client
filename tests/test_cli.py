@@ -24,8 +24,10 @@
 #
 ###############################################################################
 
+
 import unittest
 import timewsync
+
 
 def test_no_args():
     parser = timewsync.make_parser()

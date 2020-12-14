@@ -24,10 +24,12 @@
 #
 ###############################################################################
 
+
 import argparse
 
 from timewsync.dispatch import dispatch
 from timewsync.io_handler import read_data, write_data
+
 
 BASE_URL = 'http://localhost:8080'
 
@@ -49,7 +51,6 @@ def make_parser():
 def main():
     """This function is the main entry point to the timewarrior
     synchronization client.
-
     """
     args = make_parser().parse_args()
 
