@@ -95,3 +95,8 @@ def extract_file_name(interval: str) -> str:
         return interval[4:8] + '-' + interval[8:10] + '.data'
     else:
         return interval[23:27] + '-' + interval[27:29] + '.data'
+
+
+print(to_monthly_data(["inc 20201213T153500Z - 20201213T161247Z # \"QS1\"",
+                 "inc 20201213T153500Z - 20201213T161247Z # QS2",
+                 "inc 20210113T153500Z - 20210113T161247Z # QS3"]))
