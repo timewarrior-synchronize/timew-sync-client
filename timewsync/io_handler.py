@@ -32,45 +32,42 @@ from typing import List
 
 
 def read_data() -> List[str]:
-    """Reads the monthly separated time intervals from .timewarrior/data into one string list.
+    """Reads the monthly separated time intervals from .timewarrior/data into a single list.
 
     Reads from all files matching 'YYYY-MM.data' and creates a separate list entry per month.
 
     Returns:
-        A list of strings each of which contains all entries for one specific month.
+        A list of strings, each of which containing the data for one specific month.
     """
     # Filter and list all data sources
     data_folder = os.path.expanduser('~') + '/.timewarrior/data/'
     file_list = [f for f in os.listdir(Path(data_folder)) if (re.search(r'^\d\d\d\d-\d\d\.data$', f))]
 
-    # Read file contents into interval list
-    interval_list = []
+    # Read all file contents
+    monthly_data = []
     for file_name in file_list:
         with open(data_folder + file_name, 'r') as file:
-            interval_list.append(file.read())
+            monthly_data.append(file.read())
 
-    return interval_list
+    return monthly_data
 
 
-def write_data(interval_list: List[str]):
-    """Writes the given interval list to files, separated by month and named accordingly.
-
-    Writes each string to a separate file, named in accordance to its content,
-    as specified by extract_file_name.
+def write_data(monthly_data: List[str]):
+    """Writes the monthly separated data to files, which are named accordingly.
 
     Args:
-        interval_list: A list of strings each of which contains all entries for one specific month.
+        monthly_data: A list of strings, each of which containing the data for one specific month.
     """
     data_folder = os.path.expanduser('~') + '/.timewarrior/data/'
     os.makedirs(data_folder, exist_ok=True)
 
-    for month_data in interval_list:
+    for entry in monthly_data:
 
-        if len(month_data) == 0:
+        if len(entry) == 0:
             return
 
-        with open(data_folder + extract_file_name(month_data), 'w') as file:
-            file.write(month_data)
+        with open(data_folder + extract_file_name(entry), 'w') as file:
+            file.write(entry)
 
 
 def extract_file_name(month_data: str) -> str:

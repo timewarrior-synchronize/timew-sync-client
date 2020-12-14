@@ -35,14 +35,14 @@ SYNC_ENDPOINT = '/api/sync'
 
 
 def dispatch(base_url: str, intervals: List[str]) -> List[str]:
-    """Sends a sync request to the server.
+    """Sends a sync request with the server.
 
     Args:
         base_url: The base URL of the API. E.g.: "http://localhost:8080".
         intervals: A list of all client intervals.
 
     Returns:
-        A list of the intervals resulting from the sync.
+        A list of intervals resulting from the sync.
     """
     request_body = json_converter.to_json_request(intervals)
 
