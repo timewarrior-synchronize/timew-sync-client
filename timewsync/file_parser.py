@@ -31,7 +31,7 @@ from typing import List
 def to_interval_list(monthly_data: List[str]) -> List[str]:
     """Converts a list of monthly data into a list of intervals.
 
-    Groups all intervals by month and concatenates them using line breaks.
+    Splits the monthly interval strings into separate intervals at line breaks.
 
     Args:
         monthly_data: A list of strings, each of which containing the data for one specific month.
