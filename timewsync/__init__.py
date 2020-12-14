@@ -33,6 +33,7 @@ from timewsync.io_handler import read_data, write_data
 
 BASE_URL = 'http://localhost:8080'
 
+
 def make_parser():
     """Creates an instance of argpars.ArgumentParser which contains the
     command-line arguments and their types.
@@ -48,10 +49,10 @@ def make_parser():
 
     return parser
 
+
 def main():
     """This function is the main entry point to the timewarrior
-    synchronization client.
-    """
+    synchronization client."""
     args = make_parser().parse_args()
 
     request_intervals = read_data()
