@@ -33,6 +33,7 @@ def test_no_args():
     args = parser.parse_args([])
     assert args.config_file == "~/.timewarrior/sync.conf"
 
+
 def test_config_file():
     parser = timewsync.make_parser()
     args = parser.parse_args(["--config-file", "/path/to/file"])
