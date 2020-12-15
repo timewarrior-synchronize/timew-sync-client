@@ -26,12 +26,10 @@
 
 
 import argparse
+import configparser
 
 from timewsync.dispatch import dispatch
 from timewsync.io_handler import read_data, write_data
-
-
-BASE_URL = 'http://localhost:8080'
 
 
 def make_parser():
@@ -45,7 +43,7 @@ def make_parser():
     parser = argparse.ArgumentParser(prog="timewsync", description="timewarrior synchronization client")
 
     parser.add_argument("--version", action="version", version="%(prog)s unreleased", help="Print version information")
-    parser.add_argument("--config-file", dest="config_file", help="The path to the configuration file")
+    parser.add_argument("--config-file", dest="config_file", default="~/.timewarrior/sync.conf", help="The path to the configuration file")
 
     return parser
 
@@ -55,6 +53,10 @@ def main():
     synchronization client."""
     args = make_parser().parse_args()
 
+    config = configparser.ConfigParser()
+    config.read(args.config_file)
+    base_url = config.get("Server", "BaseURL", fallback="http://localhost:8080")
+
     request_intervals = read_data()
-    response_intervals = dispatch(BASE_URL, request_intervals)
+    response_intervals = dispatch(base_url, request_intervals)
     write_data(response_intervals)
