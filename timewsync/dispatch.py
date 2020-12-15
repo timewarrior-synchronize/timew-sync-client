@@ -42,7 +42,7 @@ def dispatch(base_url: str, intervals: List[str]) -> List[str]:
         intervals: A list of all client intervals.
 
     Returns:
-        A list of the intervals resulting from the sync.
+        A list of intervals resulting from the sync.
     """
     request_body = json_converter.to_json_request(intervals)
 
