@@ -27,6 +27,7 @@
 
 import argparse
 import configparser
+import os
 
 from timewsync.dispatch import dispatch
 from timewsync.file_parser import to_interval_list, to_monthly_data
