@@ -32,7 +32,7 @@ import timewsync
 def test_no_args():
     parser = timewsync.make_parser()
     args = parser.parse_args([])
-    assert args.config_file == None
+    assert args.config_file == "~/.timewarrior/sync.conf"
 
 def test_config_file():
     parser = timewsync.make_parser()

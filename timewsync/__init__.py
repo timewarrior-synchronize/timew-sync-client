@@ -54,7 +54,7 @@ def main():
     args = make_parser().parse_args()
 
     config = configparser.ConfigParser()
-    config.read(args.config_file)
+    config.read(os.path.expanduser(args.config_file))
     base_url = config.get("Server", "BaseURL", fallback="http://localhost:8080")
 
     request_intervals = read_data()
