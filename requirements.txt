@@ -4,3 +4,4 @@ attrs~=20.3.0
 pluggy~=0.13.1
 iniconfig~=1.1.1
 requests~=2.25.0
+dateparser~=1.0.0
