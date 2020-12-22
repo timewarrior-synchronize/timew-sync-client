@@ -39,7 +39,7 @@ def to_json_request(intervals: List[str]) -> str:
     return json.dumps(json_dict, indent=2)
 
 
-def to_interval_list(json_response: json) -> List[str]:
+def to_interval_list(json_response: str) -> List[str]:
     """Extract and return time intervals from the given JSON response."""
     json_dict = json.loads(json_response)
     return json_dict['intervalData']
