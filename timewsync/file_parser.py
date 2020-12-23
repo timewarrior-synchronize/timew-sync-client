@@ -26,6 +26,8 @@
 
 
 from typing import List
+from collections import defaultdict
+from timewsync import Interval
 
 
 def to_interval_list(monthly_data: List[str]) -> List[str]:
@@ -95,3 +97,28 @@ def extract_file_name(interval: str) -> str:
         return interval[4:8] + '-' + interval[8:10] + '.data'
     else:
         return interval[23:27] + '-' + interval[27:29] + '.data'
+
+# 1. FILE_PARSER -> MAIN -> IO: Liste mit allen tags, die ab jetzt gelten sollen
+
+
+def extract_tags(lst_of_intervalobjects: List[Interval]) -> str:
+    """
+    Gets a List of Intervalobjects and extracts all tags from all of these.
+    Returns one String containing every tag with how often it occurs.
+    :param
+        lst_of_intervalobjects: A list of time intervals in timewarrior format.
+    :return:
+        A string of all tags and the number of their occurences written in the correct tags.data-format.
+    """
+
+    all_tags = defaultdict(int)
+    for interval in lst_of_intervalobjects:
+        for tag in interval.tags:
+            all_tags[tag] += 1
+
+    result = '{'
+    for tag in all_tags:
+        result += '"' + tag + '":{"count":' + str(all_tags[tag]) + '},'
+    result += result[:-1] + '}'     # now, discard the last ',' (which is too much) and add a closing '}'
+
+    return result
