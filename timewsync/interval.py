@@ -28,8 +28,6 @@
 from datetime import datetime
 from typing import List
 
-from dateparser import parse
-
 
 class Interval:
 
@@ -78,12 +76,12 @@ def as_interval(line: str) -> Interval:
 
     # Optional <iso>
     if len(tokens) > 1 and len(tokens[1]) == 16:
-        interval.start = parse(tokens[1], date_formats=['%Y%m%dT%H%M%SZ'])
+        interval.start = datetime.strptime(tokens[1], '%Y%m%dT%H%M%SZ')
         offset = 1
 
         # Optional '-' <iso>
         if len(tokens) > 3 and tokens[2] == '-' and len(tokens[3]) == 16:
-            interval.end = parse(tokens[3], date_formats=['%Y%m%dT%H%M%SZ'])
+            interval.end = datetime.strptime(tokens[3], '%Y%m%dT%H%M%SZ')
             offset = 3
 
     # Optional '#'
