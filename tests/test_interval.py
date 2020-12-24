@@ -31,77 +31,169 @@ from timewsync.interval import Interval, as_interval
 
 
 class TestIntervalToString:
-    def test_empty(self):
-        empty_interval = Interval()
-        assert str(empty_interval) == 'inc'
+    def test_syntax_tree(self):
+        """Tests the interval syntax tree, which covers all possible combinations to assemble an interval string.
 
-    def test_partial(self):
+        Syntax (tokens separated by whitespace):
+            'inc' [ <iso> [ '-' <iso> ]] [ '#' [ <tag> [ <tag> ... ]] [ '#' <annotation> ]]
+        Covers all 18 paths of the syntax tree, sorted by number of arguments.
+        """
         test_date1 = datetime.fromisoformat('2021-01-23 13:46:59')
         test_date2 = datetime.fromisoformat('2021-01-24 02:00:43')
         test_tags = ['shortTag', '"tag - with quotes"', '"\\\nt3$T \"edg€ case! \" \\\""']
         test_annotation = 'this interval is for testing purposes only'
 
+        expt_date1 = '20210123T134659Z'
+        expt_date2 = '20210124T020043Z'
+        expt_tags = 'shortTag "tag - with quotes" "\\\nt3$T \"edg€ case! \" \\\""'
+        expt_annotation = 'this interval is for testing purposes only'
+
+        partial_interval = Interval()
+        assert str(partial_interval) == 'inc'
+
         partial_interval = Interval(start=test_date1)
-        assert str(partial_interval) == 'inc 20210123T134659Z'
+        assert str(partial_interval) == 'inc ' + expt_date1
 
         partial_interval = Interval(tags=['foo'])
         assert str(partial_interval) == 'inc # foo'
 
         partial_interval = Interval(tags=test_tags)
-        assert str(partial_interval) == 'inc # shortTag "tag - with quotes" "\\\nt3$T \"edg€ case! \" \\\""'
+        assert str(partial_interval) == 'inc # ' + expt_tags
 
         partial_interval = Interval(annotation=test_annotation)
-        assert str(partial_interval) == 'inc # # this interval is for testing purposes only'
+        assert str(partial_interval) == 'inc # # ' + expt_annotation
 
         partial_interval = Interval(start=test_date1, end=test_date2)
-        assert str(partial_interval) == 'inc 20210123T134659Z - 20210124T020043Z'
+        assert str(partial_interval) == 'inc ' + expt_date1 + ' - ' + expt_date2
+
+        partial_interval = Interval(start=test_date1, tags=['foo'])
+        assert str(partial_interval) == 'inc ' + expt_date1 + ' # ' + 'foo'
 
         partial_interval = Interval(start=test_date1, tags=test_tags)
-        assert str(partial_interval) == 'inc 20210123T134659Z # shortTag "tag - with quotes" "\\\nt3$T \"edg€ case! \" \\\""'
+        assert str(partial_interval) == 'inc ' + expt_date1 + ' # ' + expt_tags
 
         partial_interval = Interval(start=test_date1, annotation=test_annotation)
-        assert str(partial_interval) == 'inc 20210123T134659Z # # this interval is for testing purposes only'
+        assert str(partial_interval) == 'inc ' + expt_date1 + ' # # ' + expt_annotation
 
-        partial_interval = Interval(tags=['foo', 'bar'], annotation=test_annotation)
-        assert str(partial_interval) == 'inc # foo bar # this interval is for testing purposes only'
+        partial_interval = Interval(tags=['foo'], annotation=test_annotation)
+        assert str(partial_interval) == 'inc # ' + 'foo' + ' # ' + expt_annotation
 
-        partial_interval = Interval(start=test_date1, end=test_date2, tags=['foo', 'bar'])
-        assert str(partial_interval) == 'inc 20210123T134659Z - 20210124T020043Z # foo bar'
+        partial_interval = Interval(tags=test_tags, annotation=test_annotation)
+        assert str(partial_interval) == 'inc # ' + expt_tags + ' # ' + expt_annotation
+
+        partial_interval = Interval(start=test_date1, end=test_date2, tags=['foo'])
+        assert str(partial_interval) == 'inc ' + expt_date1 + ' - ' + expt_date2 + ' # ' + 'foo'
+
+        partial_interval = Interval(start=test_date1, end=test_date2, tags=test_tags)
+        assert str(partial_interval) == 'inc ' + expt_date1 + ' - ' + expt_date2 + ' # ' + expt_tags
 
         partial_interval = Interval(start=test_date1, end=test_date2, annotation=test_annotation)
-        assert str(partial_interval) == 'inc 20210123T134659Z - 20210124T020043Z # # this interval is for testing purposes only'
+        assert str(partial_interval) == 'inc ' + expt_date1 + ' - ' + expt_date2 + ' # # ' + expt_annotation
 
-        partial_interval = Interval(start=test_date1, tags=['foo', 'bar'], annotation=test_annotation)
-        assert str(partial_interval) == 'inc 20210123T134659Z # foo bar # this interval is for testing purposes only'
+        partial_interval = Interval(start=test_date1, tags=['foo'], annotation=test_annotation)
+        assert str(partial_interval) == 'inc ' + expt_date1 + ' # ' + 'foo' + ' # ' + expt_annotation
 
-    def test_full(self):
-        test_date1 = datetime.fromisoformat('2021-01-23 13:46:59')
-        expt_date1 = '20210123T134659Z'
+        partial_interval = Interval(start=test_date1, tags=test_tags, annotation=test_annotation)
+        assert str(partial_interval) == 'inc ' + expt_date1 + ' # ' + expt_tags + ' # ' + expt_annotation
+
+        partial_interval = Interval(start=test_date1, end=test_date2, tags=['foo'], annotation=test_annotation)
+        assert str(partial_interval) == 'inc ' + expt_date1 + ' - ' + expt_date2 + ' # ' + 'foo' + ' # ' + expt_annotation
+
+        partial_interval = Interval(start=test_date1, end=test_date2, tags=test_tags, annotation=test_annotation)
+        assert str(partial_interval) == 'inc ' + expt_date1 + ' - ' + expt_date2 + ' # ' + expt_tags + ' # ' + expt_annotation
+
+    def test_wrong_interval(self):
+        """Tests an interval without start but with end time, which is ignored at the conversion."""
         test_date2 = datetime.fromisoformat('2021-01-24 02:00:43')
-        expt_date2 = '20210124T020043Z'
-        test_tags = ['shortTag', '"tag - with quotes"', '"\\\nt3$T \"edg€ case! \" \\\""']
-        expt_tags = 'shortTag "tag - with quotes" "\\\nt3$T \"edg€ case! \" \\\""'
-        test_annotation = 'this interval is for testing purposes only'
-        expt_annotation = 'this interval is for testing purposes only'
-
-        expected = 'inc'
-        expected += ' ' + expt_date1
-        expected += ' - ' + expt_date2
-        expected += ' # ' + expt_tags
-        expected += ' # ' + expt_annotation
-
-        full_interval = Interval(test_date1, test_date2, test_tags, test_annotation)
-        assert str(full_interval) == expected
+        wrong_interval = Interval(end=test_date2)
+        assert str(wrong_interval) == 'inc'
 
 
 class TestAsInterval:
-    def test_nothing(self):
-        # as_interval('inc 20201214T134735Z # \"16-update json-format\" "thisIsATest"')
-        pass
+    def test_syntax_tree(self):
+        """Tests the interval syntax tree, which covers all possible combinations to assemble an Interval.
 
-    def test_raise(self):
+        Syntax (tokens separated by whitespace):
+            'inc' [ <iso> [ '-' <iso> ]] [ '#' [ <tag> [ <tag> ... ]] [ '#' <annotation> ]]
+        Covers all 18 paths of the syntax tree, sorted by number of arguments.
+        """
+        test_date1 = '20210123T134659Z'
+        test_date2 = '20210124T020043Z'
+        test_tags = 'shortTag "tag - with quotes" "\\\nt3$T \"edg€ case! \" \\\""'
+        test_annotation = 'this interval is for testing purposes only'
+
+        expt_date1 = datetime.fromisoformat('2021-01-23 13:46:59')
+        expt_date2 = datetime.fromisoformat('2021-01-24 02:00:43')
+        expt_tags = ['shortTag', '"tag - with quotes"', '"\\\nt3$T \"edg€ case! \" \\\""']
+        expt_annotation = 'this interval is for testing purposes only'
+
+        interval_str = 'inc'
+        assert as_interval(interval_str) == Interval()
+
+        interval_str = 'inc ' + test_date1
+        assert as_interval(interval_str) == Interval(start=expt_date1)
+
+        interval_str = 'inc # foo'
+        assert as_interval(interval_str) == Interval(tags=['foo'])
+
+        interval_str = 'inc # ' + test_tags
+        assert as_interval(interval_str) == Interval(tags=expt_tags)
+
+        interval_str = 'inc # # ' + test_annotation
+        assert as_interval(interval_str) == Interval(annotation=expt_annotation)
+
+        interval_str = 'inc ' + test_date1 + ' - ' + test_date2
+        assert as_interval(interval_str) == Interval(start=expt_date1, end=expt_date2)
+
+        interval_str = 'inc ' + test_date1 + ' # ' + 'foo'
+        assert as_interval(interval_str) == Interval(start=expt_date1, tags=['foo'])
+
+        interval_str = 'inc ' + test_date1 + ' # ' + test_tags
+        assert as_interval(interval_str) == Interval(start=expt_date1, tags=expt_tags)
+
+        interval_str = 'inc ' + test_date1 + ' # # ' + test_annotation
+        assert as_interval(interval_str) == Interval(start=expt_date1, annotation=expt_annotation)
+
+        interval_str = 'inc # ' + 'foo' + ' # ' + test_annotation
+        assert as_interval(interval_str) == Interval(tags=['foo'], annotation=expt_annotation)
+
+        interval_str = 'inc # ' + test_tags + ' # ' + test_annotation
+        assert as_interval(interval_str) == Interval(tags=expt_tags, annotation=expt_annotation)
+
+        interval_str = 'inc ' + test_date1 + ' - ' + test_date2 + ' # ' + 'foo'
+        assert as_interval(interval_str) == Interval(start=expt_date1, end=expt_date2, tags=['foo'])
+
+        interval_str = 'inc ' + test_date1 + ' - ' + test_date2 + ' # ' + test_tags
+        assert as_interval(interval_str) == Interval(start=expt_date1, end=expt_date2, tags=expt_tags)
+
+        interval_str = 'inc ' + test_date1 + ' - ' + test_date2 + ' # # ' + test_annotation
+        assert as_interval(interval_str) == Interval(start=expt_date1, end=expt_date2, annotation=expt_annotation)
+
+        interval_str = 'inc ' + test_date1 + ' # ' + 'foo' + ' # ' + test_annotation
+        assert as_interval(interval_str) == Interval(start=expt_date1, tags=['foo'], annotation=expt_annotation)
+
+        interval_str = 'inc ' + test_date1 + ' # ' + test_tags + ' # ' + test_annotation
+        assert as_interval(interval_str) == Interval(start=expt_date1, tags=expt_tags, annotation=expt_annotation)
+
+        interval_str = 'inc ' + test_date1 + ' - ' + test_date2 + ' # ' + 'foo' + ' # ' + test_annotation
+        assert as_interval(interval_str) == Interval(start=expt_date1, end=expt_date2, tags=['foo'], annotation=expt_annotation)
+
+        interval_str = 'inc ' + test_date1 + ' - ' + test_date2 + ' # ' + test_tags + ' # ' + test_annotation
+        assert as_interval(interval_str) == Interval(start=expt_date1, end=expt_date2, tags=expt_tags, annotation=expt_annotation)
+
+    def test_wrong_string(self):
+        """Tests interval strings without the required 'inc' keyword."""
         with pytest.raises(AssertionError):
-            as_interval('')
+            assert as_interval('') == Interval()
+
+        with pytest.raises(AssertionError):
+            as_interval('dec # thisIsNoValidInterval')
+
+        with pytest.raises(AssertionError):
+            as_interval('inc#thisIsNoValidInterval')
+
+        with pytest.raises(AssertionError):
+            as_interval('inc\\\n#\\\nthisIsNoValidInterval')
 
 
 class TestTokenize:

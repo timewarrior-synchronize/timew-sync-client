@@ -42,8 +42,14 @@ class Interval:
         self.tags: List[str] = tags
         self.annotation: str = annotation
 
+    def __eq__(self, other):
+        """Checks whether this object is equal to another one, by attributes."""
+        if not isinstance(other, Interval):
+            raise TypeError('can\'t compare %s with Interval' % type(other).__name__)
+        return self.start == other.start and self.end == other.end and self.tags == other.tags and self.annotation == other.annotation
+
     def __str__(self) -> str:
-        """Returns the interval as a string."""
+        """Returns the interval as a string in timewarrior format."""
         out = 'inc'
         if self.start:
             out += ' ' + format_datetime(self.start)
@@ -128,14 +134,14 @@ def tokenize(line: str) -> List[str]:
 
     while start < eos:
         mid = line.find(' "', start)
-        end = line.find('" ', mid+2)
+        end = line.find('" ', mid + 2)
 
         if mid == -1 or end == -1:
             tokens += line[start:].split()
             start = eos
         else:
             tokens += line[start:mid].split()
-            tokens += [line[mid+1:end+1]]
+            tokens += [line[mid + 1:end + 1]]
             start = end + 2
 
     return tokens
