@@ -133,6 +133,6 @@ def tokenize(line: str) -> List[str]:
         else:
             tokens += line[start:mid].split()
             tokens += [line[mid+1:end+1]]
-            start = end + 2
+            start = end + 1
 
     return tokens
