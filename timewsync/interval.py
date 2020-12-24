@@ -28,10 +28,7 @@
 from datetime import datetime
 from typing import List
 
-
-def format_datetime(dt: datetime) -> str:
-    """Returns the string representation of the datetime object in timewarrior format."""
-    return str(dt.year) + str(dt.month) + str(dt.day) + 'T' + str(dt.hour) + str(dt.minute) + str(dt.second) + 'Z'
+DATETIME_FORMAT = '%Y%m%dT%H%M%SZ'
 
 
 class Interval:
@@ -46,9 +43,9 @@ class Interval:
         """Returns the interval as a string."""
         out = 'inc'
         if self.start:
-            out += ' ' + format_datetime(self.start)
+            out += ' ' + self.start.strftime(DATETIME_FORMAT)
             if self.end:
-                out += ' - ' + format_datetime(self.end)
+                out += ' - ' + self.end.strftime(DATETIME_FORMAT)
         if self.tags:
             out += ' #'
             for tag in self.tags:
@@ -81,12 +78,12 @@ def as_interval(line: str) -> Interval:
 
     # Optional <iso>
     if len(tokens) > 1 and len(tokens[1]) == 16:
-        interval.start = datetime.strptime(tokens[1], '%Y%m%dT%H%M%SZ')
+        interval.start = datetime.strptime(tokens[1], DATETIME_FORMAT)
         offset = 1
 
         # Optional '-' <iso>
         if len(tokens) > 3 and tokens[2] == '-' and len(tokens[3]) == 16:
-            interval.end = datetime.strptime(tokens[3], '%Y%m%dT%H%M%SZ')
+            interval.end = datetime.strptime(tokens[3], DATETIME_FORMAT)
             offset = 3
 
     # Optional '#'
