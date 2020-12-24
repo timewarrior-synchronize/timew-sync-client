@@ -72,7 +72,8 @@ def as_interval(line: str) -> Interval:
     tokens = tokenize(line)
 
     # Required 'inc'
-    assert line.startswith('inc')
+    if not tokens or tokens[0] != 'inc':
+        raise RuntimeError('unrecognizable line \'%s\'' % line)
     interval = Interval()
     offset = 0
 
