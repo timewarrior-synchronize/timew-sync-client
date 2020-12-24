@@ -40,12 +40,12 @@ class TestIntervalToString:
         """
         test_date1 = datetime.fromisoformat('2021-01-23 13:46:59')
         test_date2 = datetime.fromisoformat('2021-01-24 02:00:43')
-        test_tags = ['shortTag', '"tag - with quotes"', '"\\\nt3$T \"edg€ case! \" \\\""']
+        test_tags = ['shortTag', '"tag - with quotes"', '"\\nt3$T \"edg€ case! \" \\\""']
         test_annotation = 'this interval is for testing purposes only'
 
         expt_date1 = '20210123T134659Z'
         expt_date2 = '20210124T020043Z'
-        expt_tags = 'shortTag "tag - with quotes" "\\\nt3$T \"edg€ case! \" \\\""'
+        expt_tags = 'shortTag "tag - with quotes" "\\nt3$T \"edg€ case! \" \\\""'
         expt_annotation = 'this interval is for testing purposes only'
 
         partial_interval = Interval()
@@ -119,12 +119,12 @@ class TestAsInterval:
         """
         test_date1 = '20210123T134659Z'
         test_date2 = '20210124T020043Z'
-        test_tags = 'shortTag "tag - with quotes" "\\\nt3$T \"edg€ case! \" \\\""'
+        test_tags = 'shortTag "tag - with quotes" "\\nt3$T \"edg€ case! \" \\\""'
         test_annotation = 'this interval is for testing purposes only'
 
         expt_date1 = datetime.fromisoformat('2021-01-23 13:46:59')
         expt_date2 = datetime.fromisoformat('2021-01-24 02:00:43')
-        expt_tags = ['shortTag', '"tag - with quotes"', '"\\\nt3$T \"edg€ case! \" \\\""']
+        expt_tags = ['shortTag', '"tag - with quotes"', '"\\nt3$T \"edg€ case! \" \\\""']
         expt_annotation = 'this interval is for testing purposes only'
 
         interval_str = 'inc'
@@ -193,7 +193,7 @@ class TestAsInterval:
             as_interval('inc#thisIsNoValidInterval')
 
         with pytest.raises(AssertionError):
-            as_interval('inc\\\n#\\\nthisIsNoValidInterval')
+            as_interval('inc\\n#\\nthisIsNoValidInterval')
 
 
 class TestTokenize:
