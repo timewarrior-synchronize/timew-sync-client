@@ -131,14 +131,14 @@ def tokenize(line: str) -> List[str]:
 
     while start < eos:
         mid = line.find(' "', start)
-        end = line.find('" ', mid + 2)
+        end = line.find('" ', mid+2)
 
         if mid == -1 or end == -1:
             tokens += line[start:].split()
             start = eos
         else:
             tokens += line[start:mid].split()
-            tokens += [line[mid + 1:end + 1]]
-            start = end + 2
+            tokens += [line[mid+1:end+1]]
+            start = end + 1
 
     return tokens
