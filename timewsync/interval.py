@@ -34,6 +34,8 @@ DATETIME_FORMAT = '%Y%m%dT%H%M%SZ'
 class Interval:
 
     def __init__(self, start: datetime = None, end: datetime = None, tags: List[str] = None, annotation: str = None):
+        if tags is None:
+            tags = []
         self.start: datetime = start
         self.end: datetime = end
         self.tags: List[str] = tags
