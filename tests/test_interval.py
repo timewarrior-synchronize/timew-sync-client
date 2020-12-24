@@ -183,17 +183,19 @@ class TestAsInterval:
 
     def test_wrong_string(self):
         """Tests interval strings without the required 'inc' keyword."""
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             assert as_interval('') == Interval()
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             as_interval('dec # thisIsNoValidInterval')
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             as_interval('inc#thisIsNoValidInterval')
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             as_interval('inc\\n#\\nthisIsNoValidInterval')
+
+        # TODO line 'inc 2' should not work, maybe? resolve before merging (assignee: Arne)
 
 
 class TestTokenize:
