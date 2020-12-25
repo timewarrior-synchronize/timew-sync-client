@@ -83,34 +83,40 @@ def as_interval(line: str) -> Interval:
     if not tokens or tokens[0] != 'inc':
         raise RuntimeError('unrecognizable line \'%s\'' % line)
     interval = Interval()
-    offset = 0
+    cursor = 1
 
     # Optional <iso>
     if len(tokens) > 1 and len(tokens[1]) == 16:
         interval.start = datetime.strptime(tokens[1], DATETIME_FORMAT)
-        offset = 1
+        cursor = 2
 
         # Optional '-' <iso>
         if len(tokens) > 3 and tokens[2] == '-' and len(tokens[3]) == 16:
             interval.end = datetime.strptime(tokens[3], DATETIME_FORMAT)
-            offset = 3
+            cursor = 4
 
     # Optional '#'
-    if len(tokens) > 2 + offset and tokens[1 + offset] == '#':
+    if len(tokens) > (cursor + 1) and tokens[cursor] == '#':
 
         # Optional <tag> ...
         interval.tags = []
-        index = 2 + offset
-        while index < len(tokens) and tokens[index] != '#':
-            interval.tags.append(tokens[index])
-            index += 1
+        cursor += 1
+        while cursor < len(tokens) and tokens[cursor] != '#':
+            interval.tags.append(tokens[cursor])
+            cursor += 1
 
         # Optional '#' <annotation>
-        if index < len(tokens) and tokens[index] == '#':
+        if cursor < len(tokens) and tokens[cursor] == '#':
             annotation = ''
-            for i in range(index + 1, len(tokens)):
-                annotation += ' ' + tokens[i]
+            cursor += 1
+            while cursor < len(tokens):
+                annotation += ' ' + tokens[cursor]
+                cursor += 1
             interval.annotation = annotation.lstrip()
+
+    # Unparsed tokens
+    if cursor < len(tokens):
+        raise RuntimeError('unrecognizable line \'%s\'' % line)
 
     return interval
 
