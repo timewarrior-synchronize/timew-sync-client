@@ -224,8 +224,8 @@ class TestTokenize:
         assert tokenize("'foo bar'") == ["'foo", "bar'"]
         assert tokenize('"foo"') == ['"foo"']
         assert tokenize('"foo bar baz"') == ['"foo bar baz"']
-        assert tokenize('"foo bar" "baz"') == ['"foo bar"', "baz"]
-        assert tokenize('"foo" "bar baz"') == ['"foo", "bar baz"']
+        assert tokenize('"foo bar" "baz"') == ['"foo bar"', '"baz"']
+        assert tokenize('"foo" "bar baz"') == ['"foo"', '"bar baz"']
 
     def test_quotes_advanced(self):
         assert tokenize('""') == ['""']
