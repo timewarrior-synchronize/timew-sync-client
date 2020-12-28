@@ -41,8 +41,14 @@ class Interval:
         self.tags: List[str] = tags
         self.annotation: str = annotation
 
+    def __eq__(self, other):
+        """Checks whether this object is equal to another one, by attributes."""
+        if not isinstance(other, Interval):
+            raise TypeError('can\'t compare %s with Interval' % type(other).__name__)
+        return self.start == other.start and self.end == other.end and self.tags == other.tags and self.annotation == other.annotation
+
     def __str__(self) -> str:
-        """Returns the interval as a string."""
+        """Returns the interval as a string in timewarrior format."""
         out = 'inc'
         if self.start:
             out += ' ' + self.start.strftime(DATETIME_FORMAT)
