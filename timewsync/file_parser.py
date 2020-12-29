@@ -34,6 +34,7 @@ def to_interval_list(monthly_data: List[str]) -> List[str]:
     """Converts a list of monthly data into a list of intervals.
 
     Splits the monthly interval strings into separate intervals at line breaks.
+    Empty intervals are filtered out.
 
     Args:
         monthly_data: A list of strings, each of which containing the data for one specific month.
@@ -72,7 +73,7 @@ def to_monthly_data(intervals: List[str]) -> List[str]:
 
     # Concatenate per month and fill monthly_data
     for entry in monthly_data_dict.values():
-        # TODO sort lists
+        # TODO sort lists after new interval structure is established (assignee: Arne)
         month = '\n'.join(entry)
         monthly_data.append(month)
 
@@ -91,7 +92,8 @@ def extract_file_name(interval: str) -> str:
     Returns:
         A string of the file name.
     """
-    # TODO 'inc 20201214T134735Z # \"16-update-json-format\" \"thisIsATest\"' not working
+    # TODO 'inc 20201214T134735Z # \"16-update-json-format\" \"thisIsATest\"' not working,
+    #      fix after new interval structure (assignee: Arne)
     assert len(interval) >= 20
     if len(interval) < 39:
         return interval[4:8] + '-' + interval[8:10] + '.data'
