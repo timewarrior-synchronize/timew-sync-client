@@ -108,7 +108,7 @@ def extract_tags(lst_of_intervalobjects: List[Interval]) -> str:
     :param
         lst_of_intervalobjects: A list of time intervals in timewarrior format.
     :return:
-        A string of all tags and the number of their occurences written in the correct tags.data-format.
+        A string of all tags and the number of their occurence written in the correct format for tags.data .
     """
 
     all_tags = defaultdict(int)

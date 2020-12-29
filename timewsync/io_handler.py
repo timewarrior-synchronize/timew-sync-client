@@ -90,3 +90,18 @@ def extract_file_name(month_data: str) -> str:
         return month_data[4:8] + '-' + month_data[8:10] + '.data'
     else:
         return month_data[23:27] + '-' + month_data[27:29] + '.data'
+
+
+def write_tags(tags: str) -> None:
+    """
+        Gets one String in the correct format for tags.data and writes it to tags.data .
+
+    :param tags: A string of tags and how often they have occured, in the final format.
+    :return: Does not return; just writes into file.
+    """
+
+    data_folder = os.path.expanduser('~') + '/.timewarrior/data/'
+    os.makedirs(data_folder, exist_ok=True)
+
+    with open(data_folder + 'tags.data', 'w') as file:
+        file.write(tags)
