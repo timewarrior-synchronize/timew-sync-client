@@ -101,8 +101,6 @@ def extract_file_name(interval: str) -> str:
     else:
         return interval[23:27] + '-' + interval[27:29] + '.data'
 
-# 1. FILE_PARSER -> MAIN -> IO: Liste mit allen tags, die ab jetzt gelten sollen
-
 
 def extract_tags(lst_of_intervalobjects: List[Interval]) -> str:
     """
@@ -119,9 +117,12 @@ def extract_tags(lst_of_intervalobjects: List[Interval]) -> str:
         for tag in interval.tags:
             all_tags[tag] += 1
 
+    if len(all_tags) == 0:
+        return ''
+
     result = '{'
-    for tag in all_tags:
+    for tag in all_tags.keys():
         result += '"' + tag + '":{"count":' + str(all_tags[tag]) + '},'
-    result += result[:-1] + '}'     # now, discard the last ',' (which is too much) and add a closing '}'
+    result = result[:-1] + '}'     # now, discard the last ',' (which is too much) and add a closing '}'
 
     return result
