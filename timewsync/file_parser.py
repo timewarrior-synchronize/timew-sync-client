@@ -25,9 +25,10 @@
 ###############################################################################
 
 
-from typing import List
 from collections import defaultdict
-from timewsync import Interval
+from typing import List
+
+from timewsync.interval import Interval
 
 
 def to_interval_list(monthly_data: List[str]) -> List[str]:
