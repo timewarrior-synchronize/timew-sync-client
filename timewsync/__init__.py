@@ -63,7 +63,7 @@ def main():
     client_data = read_data()
     request_intervals = to_interval_list(client_data)
 
-    # TODO response_data is now yet a list of strings but will be a list of interval objects
+    # TODO response_data is not yet a list of strings but will be a list of interval objects
     #  as soon as issue 14, (branch replace_string_slicing) will be merged.
     #  This comment is to be deleted then, it is only meant for review purposes.
     response_intervals = dispatch(base_url, request_intervals)
