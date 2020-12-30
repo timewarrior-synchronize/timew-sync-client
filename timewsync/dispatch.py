@@ -30,19 +30,20 @@ from typing import List
 import requests
 
 from timewsync import json_converter
+from timewsync.interval import Interval
 
 SYNC_ENDPOINT = '/api/sync'
 
 
-def dispatch(base_url: str, intervals: List[str]) -> List[str]:
+def dispatch(base_url: str, intervals: List[Interval]) -> List[Interval]:
     """Sends a sync request to the server.
 
     Args:
         base_url: The base URL of the API. E.g.: "http://localhost:8080".
-        intervals: A list of all client intervals.
+        intervals: A list of all client Interval objects.
 
     Returns:
-        A list of intervals resulting from the sync.
+        A list of Interval objects resulting from the sync.
     """
     request_body = json_converter.to_json_request(intervals)
 

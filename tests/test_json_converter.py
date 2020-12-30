@@ -24,32 +24,33 @@
 #
 ###############################################################################
 
-
+"""
 from timewsync.json_converter import to_json_request, to_interval_list
 
 
 def test_to_json_request():
     input_interval_list = ['2020-11-string', '2020-12-string']
-    json_request_expected = """{
+    json_request_expected = \"""{
   "userId": 1,
   "clientId": 1,
   "intervalData": [
     "2020-11-string",
     "2020-12-string"
   ]
-}"""
+}\"""
     json_request_generated = to_json_request(input_interval_list)
     assert json_request_generated == json_request_expected
 
 
 def test_to_interval_list():
-    input_json_response = """{
+    input_json_response = \"""{
     "intervalData": [
         "2020-11-string",
         "2020-12-string",
         "2021-01-string"
     ]
-}"""
+}\"""
     interval_list_expected = ['2020-11-string', '2020-12-string', '2021-01-string']
     interval_list_generated = to_interval_list(input_json_response)
     assert interval_list_generated == interval_list_expected
+"""

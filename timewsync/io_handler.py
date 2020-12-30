@@ -28,7 +28,7 @@
 import os
 import re
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 
 
 def read_data() -> List[str]:
@@ -39,54 +39,32 @@ def read_data() -> List[str]:
     Returns:
         A list of strings, each of which containing the data for one specific month.
     """
-    # Filter and list all data sources
-    data_folder = os.path.expanduser('~') + '/.timewarrior/data/'
-    file_list = [f for f in os.listdir(Path(data_folder)) if (re.search(r'^\d\d\d\d-\d\d\.data$', f))]
-
-    # Read all file contents
     monthly_data = []
-    for file_name in file_list:
-        with open(data_folder + file_name, 'r') as file:
-            monthly_data.append(file.read())
+    data_folder = os.path.expanduser('~') + '/.timewarrior/data/'
+
+    # Filter and list all data sources
+    if os.path.exists(data_folder):
+        file_list = [f for f in os.listdir(Path(data_folder)) if (re.search(r'^\d\d\d\d-\d\d\.data$', f))]
+
+        # Read all file contents
+        for file_name in file_list:
+            with open(data_folder + file_name, 'r') as file:
+                monthly_data.append(file.read())
 
     return monthly_data
 
 
-def write_data(monthly_data: List[str]):
+def write_data(monthly_data: Dict[str, str]):
     """Writes the monthly separated data to files, which are named accordingly.
 
     Args:
-        monthly_data: A list of strings, each of which containing the data for one specific month.
+        monthly_data: A dictionary containing the file names and corresponding data for every month.
     """
+    # Find data directory, create if not present
     data_folder = os.path.expanduser('~') + '/.timewarrior/data/'
     os.makedirs(data_folder, exist_ok=True)
 
-    for entry in monthly_data:
-
-        if len(entry) == 0:
-            return
-
-        with open(data_folder + extract_file_name(entry), 'w') as file:
-            file.write(entry)
-
-
-def extract_file_name(month_data: str) -> str:
-    """Returns the appropriate file name for the input provided.
-
-    Analyses the provided input until the first line break is reached.
-    Retrieves the month and year the entry has been recorded
-    or is currently still being tracked.
-    Further time intervals are expected to be in the same month
-    and get transferred unchecked.
-
-    Args:
-        month_data: A string with time intervals in timewarrior format.
-
-    Returns:
-        A string containing the file name for the input provided.
-    """
-    assert len(month_data) >= 20
-    if len(month_data) < 39:
-        return month_data[4:8] + '-' + month_data[8:10] + '.data'
-    else:
-        return month_data[23:27] + '-' + month_data[27:29] + '.data'
+    # Write data to files
+    for file_name, data in monthly_data:
+        with open(data_folder + file_name, 'w') as file:
+            file.write(data)

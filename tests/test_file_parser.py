@@ -24,7 +24,7 @@
 #
 ###############################################################################
 
-
+"""
 import unittest
 
 from timewsync.file_parser import to_interval_list, to_monthly_data, extract_file_name
@@ -75,3 +75,4 @@ class TestExtractFileName(unittest.TestCase):
 
     def test_long_entry(self):
         self.assertEqual(extract_file_name('inc 20200931T235500Z - 20201001T000500Z # \"QS\"'), '2020-10.data')
+"""
