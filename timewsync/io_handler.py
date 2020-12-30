@@ -52,11 +52,16 @@ def read_data() -> List[str]:
     return monthly_data
 
 
-def write_data(monthly_data: List[str]):
-    """Writes the monthly separated data to files, which are named accordingly.
+def write_data(monthly_data: List[str], tags: str):
+    write_intervals(monthly_data)
+    write_tags(tags)
+
+
+def write_intervals(monthly_data: List[str]):
+    """Writes the monthly separated intervals to files, which are named accordingly.
 
     Args:
-        monthly_data: A list of strings, each of which containing the data for one specific month.
+        monthly_data: A list of strings, each of which containing the intervals for one specific month.
     """
     data_folder = os.path.expanduser('~') + '/.timewarrior/data/'
     os.makedirs(data_folder, exist_ok=True)
@@ -95,6 +100,8 @@ def extract_file_name(month_data: str) -> str:
 def write_tags(tags: str) -> None:
     """
         Gets one String in the correct format for tags.data and writes it to tags.data .
+        Whatever was before in tags.data will be overwritten.
+        tags.data will be created if it has not been there before.
 
     :param tags: A string of tags and how often they have occured, in the final format.
     :return: Does not return; just writes into file.

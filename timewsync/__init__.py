@@ -28,10 +28,11 @@
 import argparse
 import configparser
 import os
+from pickletools import read_stringnl_noescape_pair
 
 from timewsync.dispatch import dispatch
-from timewsync.file_parser import to_interval_list, to_monthly_data
-from timewsync.io_handler import read_data, write_data
+from timewsync.file_parser import to_interval_list, to_monthly_data, extract_tags
+from timewsync.io_handler import read_data, write_intervals, write_data
 
 
 def make_parser():
@@ -61,6 +62,11 @@ def main():
 
     client_data = read_data()
     request_intervals = to_interval_list(client_data)
+
+    # TODO response_data is now yet a list of strings but will be a list of interval objects
+    #  as soon as issue 14, (branch replace_string_slicing) will be merged.
+    #  This comment is to be deleted then, it is only meant for review purposes.
     response_intervals = dispatch(base_url, request_intervals)
     server_data = to_monthly_data(response_intervals)
-    write_data(server_data)
+    new_tags = extract_tags(response_intervals)
+    write_data(server_data, new_tags)
