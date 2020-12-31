@@ -32,7 +32,7 @@ from timewsync.json_converter import to_json_request, to_interval_list
 def test_to_json_request():
     test_date1 = datetime.fromisoformat('2021-01-23 13:46:59')
     test_date2 = datetime.fromisoformat('2021-01-24 02:00:43')
-    test_tags = ['shortTag', '"tag - with quotes"', '"\\nt3$T \"edg€ case! \"', '\\\""']
+    test_tags = ['shortTag', '\"tag - with quotes\"', '\"\\nt3$T \"edg€ case! \"', '\\\"\"']
     test_annotation = 'this interval is for testing purposes only'
 
     test_interval1 = Interval(start=test_date1, end=test_date2, tags=test_tags, annotation=test_annotation)
@@ -54,7 +54,7 @@ def test_to_json_request():
 def test_to_interval_list():
     test_date1 = datetime.fromisoformat('2021-01-23 13:46:59')
     test_date2 = datetime.fromisoformat('2021-01-24 02:00:43')
-    test_tags = ['shortTag', '"tag - with quotes"', '"\\nt3$T \"edg€ case! \"', '\\\""']
+    test_tags = ['shortTag', '\"tag - with quotes\"', '\"\\nt3$T \"edg€ case! \"', '\\\"\"']
     test_annotation = 'this interval is for testing purposes only'
 
     test_interval1 = Interval(start=test_date1, end=test_date2, tags=test_tags, annotation=test_annotation)

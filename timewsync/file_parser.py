@@ -75,9 +75,10 @@ def to_monthly_data(intervals: List[Interval]) -> Dict[str, str]:
     monthly_data_dict = {}
 
     # Sort and concatenate all intervals per month
-    for file_name, month in grouped_intervals_dict.items():
-        month.sort(key=lambda i: i.start)
-        monthly_data_dict[file_name] = '\n'.join(str(month))
+    for file_name, month_i in grouped_intervals_dict.items():
+        month_i.sort(key=lambda i: i.start)
+        month_s = [str(i) for i in month_i]
+        monthly_data_dict[file_name] = '\n'.join(month_s)
 
     return monthly_data_dict
 
