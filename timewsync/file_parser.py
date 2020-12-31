@@ -46,7 +46,11 @@ def to_interval_list(monthly_data: List[str]) -> List[Interval]:
     for month in monthly_data:
         for line in month.splitlines():
             if line:
-                intervals.append(as_interval(line))
+                i = as_interval(line)
+                if i.start and not i.end:
+                    raise RuntimeError('cannot sync with active time tracking')
+                if i.start and i.end:
+                    intervals.append(as_interval(line))
     return intervals
 
 
