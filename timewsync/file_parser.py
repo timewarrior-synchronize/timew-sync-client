@@ -84,4 +84,6 @@ def to_monthly_data(intervals: List[Interval]) -> Dict[str, str]:
 
 def get_file_name(interval: Interval) -> str:
     """Returns the file name the i should be stored in."""
+    if not interval.start:
+        raise RuntimeError('corrupt interval \'%s\'' % str(interval))
     return interval.start.strftime('%Y-%m.data')

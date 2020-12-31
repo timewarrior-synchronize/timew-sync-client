@@ -61,9 +61,7 @@ def main():
 
     client_data = read_data()
     request_intervals = to_interval_list(client_data)
-    # TODO store unrecorded interval after api design update (assignee: Arne)
     # TODO filter corrupted intervals after api design update (assignee: Arne)
     response_intervals = dispatch(base_url, request_intervals)
     server_data = to_monthly_data(response_intervals)
-    # TODO load unrecorded interval after api design update (assignee: Arne)
     write_data(server_data)

@@ -24,55 +24,124 @@
 #
 ###############################################################################
 
-"""
-import unittest
 
-from timewsync.file_parser import to_interval_list, to_monthly_data, extract_file_name
+from datetime import datetime
+
+import pytest
+
+from timewsync.file_parser import to_interval_list, to_monthly_data, get_file_name
+from timewsync.interval import Interval
 
 
-class TestToIntervalList(unittest.TestCase):
+class TestToIntervalList:
     def test_no_data(self):
-        self.assertEqual(to_interval_list([]), [])
+        """Tests with no intervals in list."""
+        assert to_interval_list([]) == []
+        assert to_interval_list(['']) == []
+        assert to_interval_list(['\n\n']) == []
 
-    def test_single_month(self):
-        input_data = ['inc 20201208T133105Z - 20201208T133134Z # 10\ninc 20201208T135322Z # 10']
-        expected_intervals = ['inc 20201208T133105Z - 20201208T133134Z # 10', 'inc 20201208T135322Z # 10']
-        self.assertEqual(to_interval_list(input_data), expected_intervals)
+    def test_with_data(self):
+        """Tests intervals starting in the same/different months."""
+        test_date1 = '20210123T134659Z'
+        test_date2 = '20210124T020043Z'
+        test_date3 = '20210201T134501Z'
+        test_date4 = '20210301T145012Z'
+        test_tags = 'shortTag "tag - with quotes" "\\nt3$T \"edg€ case! \" \\\""'
+        test_annotation = 'this interval is for testing purposes only'
 
-    def test_multiple_months(self):
-        input_data = ['inc 20201213T153500Z - 20201213T161247Z # \"QS1\"\ninc 20201213T153500Z - 20201213T161247Z # QS2',
-                      'inc 20210113T153500Z - 20210113T161247Z # QS3']
-        expected_intervals = ['inc 20201213T153500Z - 20201213T161247Z # \"QS1\"',
-                              'inc 20201213T153500Z - 20201213T161247Z # QS2',
-                              'inc 20210113T153500Z - 20210113T161247Z # QS3']
-        self.assertEqual(to_interval_list(input_data), expected_intervals)
+        test_interval_str1 = 'inc ' + test_date1 + ' - ' + test_date2 + ' # ' + test_tags + ' # ' + test_annotation
+        test_interval_str2 = 'inc ' + test_date1 + ' - ' + test_date2
+        test_interval_str3 = 'inc ' + test_date3 + ' - ' + test_date4 + ' # # ' + 'foo bar'
+
+        expt_date1 = datetime.fromisoformat('2021-01-23 13:46:59')
+        expt_date2 = datetime.fromisoformat('2021-01-24 02:00:43')
+        expt_date3 = datetime.fromisoformat('2021-02-01 13:45:01')
+        expt_date4 = datetime.fromisoformat('2021-03-01 14:50:12')
+        expt_tags = ['shortTag', '"tag - with quotes"', '"\\nt3$T \"edg€ case! \"', '\\\""']
+        expt_annotation = 'this interval is for testing purposes only'
+
+        expt_interval1 = Interval(start=expt_date1, end=expt_date2, tags=expt_tags, annotation=expt_annotation)
+        expt_interval2 = Interval(start=expt_date1, end=expt_date2)
+        expt_interval3 = Interval(start=expt_date3, end=expt_date4, annotation='foo bar')
+
+        # Test with similar intervals
+        test_intervals = to_interval_list([test_interval_str1 + '\n' + test_interval_str2])
+        expt_intervals = [expt_interval1, expt_interval2]
+        assert test_intervals == expt_intervals
+
+        # Test with multiple months
+        test_intervals = to_interval_list([test_interval_str1 + '\n' + test_interval_str2, test_interval_str3])
+        expt_intervals = [expt_interval1, expt_interval2, expt_interval3]
+        assert test_intervals == expt_intervals
 
 
-class TestToMonthlyDate(unittest.TestCase):
+class TestToMonthlyData:
     def test_no_intervals(self):
-        self.assertEqual(to_monthly_data([]), [])
+        """Tests with no intervals in list."""
+        assert to_monthly_data([]) == {}
 
-    def test_single_month(self):
-        input_intervals = ['inc 20201208T133105Z - 20201208T133134Z # 10', 'inc 20201208T135322Z # 10']
-        expected_data = ['inc 20201208T133105Z - 20201208T133134Z # 10\ninc 20201208T135322Z # 10']
-        self.assertEqual(to_monthly_data(input_intervals), expected_data)
+    def test_with_intervals(self):
+        """Tests un-/sorted intervals starting in the same/different months."""
+        test_date1 = datetime.fromisoformat('2021-01-23 13:46:59')
+        test_date2 = datetime.fromisoformat('2021-01-24 02:00:43')
+        test_date3 = datetime.fromisoformat('2021-02-01 13:45:01')
+        test_date4 = datetime.fromisoformat('2021-03-01 14:50:12')
+        test_tags = ['shortTag', '"tag - with quotes"', '"\\nt3$T \"edg€ case! \"', '\\\""']
+        test_annotation = 'this interval is for testing purposes only'
 
-    def test_multiple_months(self):
-        input_intervals = ['inc 20201213T153500Z - 20201213T161247Z # \"QS1\"',
-                           'inc 20201213T153500Z - 20201213T161247Z # QS2',
-                           'inc 20210113T153500Z - 20210113T161247Z # QS3']
-        expected_data = ['inc 20201213T153500Z - 20201213T161247Z # \"QS1\"\ninc 20201213T153500Z - 20201213T161247Z # QS2',
-                         'inc 20210113T153500Z - 20210113T161247Z # QS3']
-        self.assertEqual(to_monthly_data(input_intervals), expected_data)
+        test_interval1 = Interval(start=test_date1, end=test_date2, tags=test_tags, annotation=test_annotation)
+        test_interval2 = Interval(start=test_date1, end=test_date2)
+        test_interval3 = Interval(start=test_date3, end=test_date4, annotation='foo bar')
+        test_interval4 = Interval(start=test_date2, end=test_date3)
+
+        expt_date1 = '20210123T134659Z'
+        expt_date2 = '20210124T020043Z'
+        expt_date3 = '20210201T134501Z'
+        expt_date4 = '20210301T145012Z'
+        expt_tags = 'shortTag "tag - with quotes" "\\nt3$T \"edg€ case! \" \\\""'
+        expt_annotation = 'this interval is for testing purposes only'
+
+        expt_interval_str1 = 'inc ' + expt_date1 + ' - ' + expt_date2 + ' # ' + expt_tags + ' # ' + expt_annotation
+        expt_interval_str2 = 'inc ' + expt_date1 + ' - ' + expt_date2
+        expt_interval_str3 = 'inc ' + expt_date3 + ' - ' + expt_date4 + ' # # ' + 'foo bar'
+        expt_interval_str4 = 'inc ' + expt_date2 + ' - ' + expt_date3
+        expt_file_name1 = '2021-01.data'
+        expt_file_name2 = '2021-02.data'
+
+        # Test with similar intervals
+        test_interval_dict = to_monthly_data([test_interval1, test_interval2])
+        expt_interval_dict = {expt_file_name1: expt_interval_str1 + '\n' + expt_interval_str2}
+        assert test_interval_dict == expt_interval_dict
+
+        # Test with unsorted intervals
+        test_interval_dict = to_monthly_data([test_interval4, test_interval2])
+        expt_interval_dict = {expt_file_name1: expt_interval_str2 + '\n' + expt_interval_str4}
+        assert test_interval_dict == expt_interval_dict
+
+        # Test with multiple months
+        test_interval_dict = to_monthly_data([test_interval1, test_interval2, test_interval3])
+        expt_interval_dict = {expt_file_name1: expt_interval_str1 + '\n' + expt_interval_str2, expt_file_name2: expt_interval_str3}
+        assert test_interval_dict == expt_interval_dict
 
 
-class TestExtractFileName(unittest.TestCase):
-    def test_no_entry(self):
-        self.assertRaises(AssertionError, extract_file_name, '')
+class TestGetFileName:
+    def test_no_start_time(self):
+        """Tests invalid intervals."""
+        with pytest.raises(RuntimeError):
+            get_file_name(Interval())
+
+        with pytest.raises(RuntimeError):
+            test_date2 = datetime.fromisoformat('2021-01-24 02:00:43')
+            get_file_name(Interval(end=test_date2, tags=['foo', 'bar']))
 
     def test_short_entry(self):
-        self.assertEqual(extract_file_name('inc 20200931T235500Z'), '2020-09.data')
+        """Tests for correct name extraction from start time."""
+        test_date1 = datetime.fromisoformat('2021-01-23 13:46:59')
+        test_date2 = datetime.fromisoformat('2021-01-24 02:00:43')
+        test_date3 = datetime.fromisoformat('2021-02-01 13:45:01')
+        test_interval2 = Interval(start=test_date1, end=test_date2)
+        test_interval4 = Interval(start=test_date2, end=test_date3)
+        expt_file_name1 = '2021-01.data'
 
-    def test_long_entry(self):
-        self.assertEqual(extract_file_name('inc 20200931T235500Z - 20201001T000500Z # \"QS\"'), '2020-10.data')
-"""
+        assert get_file_name(test_interval2) == expt_file_name1
+        assert get_file_name(test_interval4) == expt_file_name1

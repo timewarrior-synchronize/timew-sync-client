@@ -23,34 +23,49 @@
 # https://www.opensource.org/licenses/mit-license.php
 #
 ###############################################################################
+from datetime import datetime
 
-"""
+from timewsync.interval import Interval
 from timewsync.json_converter import to_json_request, to_interval_list
 
 
 def test_to_json_request():
-    input_interval_list = ['2020-11-string', '2020-12-string']
-    json_request_expected = \"""{
+    test_date1 = datetime.fromisoformat('2021-01-23 13:46:59')
+    test_date2 = datetime.fromisoformat('2021-01-24 02:00:43')
+    test_tags = ['shortTag', '"tag - with quotes"', '"\\nt3$T \"edg€ case! \"', '\\\""']
+    test_annotation = 'this interval is for testing purposes only'
+
+    test_interval1 = Interval(start=test_date1, end=test_date2, tags=test_tags, annotation=test_annotation)
+    test_interval2 = Interval(start=test_date1, end=test_date2)
+    test_interval_list = [test_interval1, test_interval2]
+
+    expt_json_request = """{
   "userId": 1,
   "clientId": 1,
   "intervalData": [
-    "2020-11-string",
-    "2020-12-string"
-  ]
-}\"""
-    json_request_generated = to_json_request(input_interval_list)
-    assert json_request_generated == json_request_expected
+    \"""" + str(test_interval1) + """\",
+    \"""" + str(test_interval2) + """\"
+  ]\n}"""
+
+    test_json_request = to_json_request(test_interval_list)
+    assert test_json_request == expt_json_request
 
 
 def test_to_interval_list():
-    input_json_response = \"""{
+    test_date1 = datetime.fromisoformat('2021-01-23 13:46:59')
+    test_date2 = datetime.fromisoformat('2021-01-24 02:00:43')
+    test_tags = ['shortTag', '"tag - with quotes"', '"\\nt3$T \"edg€ case! \"', '\\\""']
+    test_annotation = 'this interval is for testing purposes only'
+
+    test_interval1 = Interval(start=test_date1, end=test_date2, tags=test_tags, annotation=test_annotation)
+    test_interval2 = Interval(start=test_date1, end=test_date2)
+    expt_interval_list = [test_interval1, test_interval2]
+
+    test_json_response = """{
     "intervalData": [
-        "2020-11-string",
-        "2020-12-string",
-        "2021-01-string"
-    ]
-}\"""
-    interval_list_expected = ['2020-11-string', '2020-12-string', '2021-01-string']
-    interval_list_generated = to_interval_list(input_json_response)
-    assert interval_list_generated == interval_list_expected
-"""
+        \"""" + str(test_interval1) + """\",
+        \"""" + str(test_interval2) + """\"
+    ]\n}"""
+
+    test_interval_list = to_interval_list(test_json_response)
+    assert test_interval_list == expt_interval_list
