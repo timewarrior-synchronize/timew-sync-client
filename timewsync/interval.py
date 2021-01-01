@@ -69,7 +69,7 @@ def as_interval(line: str) -> Interval:
     """Parses an Interval from the provided string.
 
     Syntax (tokens separated by whitespace):
-        'inc' [ <iso> [ '-' <iso> ]] [ '#' [ <tag> [ <tag> ... ]] [ '#' <annotation> ]]
+        'inc' [ <iso> [ '-' <iso> ]] [[ '#' <tag> [ <tag> ... ]] | [ '#' [ <tag> ... ] '#' <annotation> ]]
 
     Args:
         line: An interval string in correct syntax.
