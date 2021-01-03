@@ -37,7 +37,7 @@ class TestIntervalToString:
         """Tests the interval syntax tree, which covers all possible combinations to assemble an interval string.
 
         Syntax (tokens separated by whitespace):
-            'inc' [ <iso> [ '-' <iso> ]] [ '#' [ <tag> [ <tag> ... ]] [ '#' <annotation> ]]
+            'inc' [ <iso> [ '-' <iso> ]] [[ '#' <tag> [ <tag> ... ]] | [ '#' [ <tag> ... ] '#' <annotation> ]]
         Covers all 18 paths of the syntax tree, sorted by number of arguments.
         """
         test_date1 = datetime.fromisoformat('2021-01-23 13:46:59')
@@ -116,7 +116,7 @@ class TestAsInterval:
         """Tests the interval syntax tree, which covers all possible combinations to assemble an Interval.
 
         Syntax (tokens separated by whitespace):
-            'inc' [ <iso> [ '-' <iso> ]] [ '#' [ <tag> [ <tag> ... ]] [ '#' <annotation> ]]
+            'inc' [ <iso> [ '-' <iso> ]] [[ '#' <tag> [ <tag> ... ]] | [ '#' [ <tag> ... ] '#' <annotation> ]]
         Covers all 18 paths of the syntax tree, sorted by number of arguments.
         """
         test_date1 = '20210123T134659Z'
