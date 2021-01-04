@@ -26,80 +26,73 @@
 
 
 from collections import defaultdict
-from typing import List
+from typing import List, Dict
 
-from timewsync.interval import Interval
+from timewsync.interval import Interval, as_interval
 
 
-def to_interval_list(monthly_data: List[str]) -> List[str]:
-    """Converts a list of monthly data into a list of intervals.
+def to_interval_list(monthly_data: List[str]) -> List[Interval]:
+    """Converts a list of monthly data into a list of Interval objects.
 
-    Splits the monthly interval strings into separate intervals at line breaks.
+    Splits the monthly i strings into separate intervals at line breaks.
     Empty intervals are filtered out.
 
     Args:
         monthly_data: A list of strings, each of which containing the data for one specific month.
 
     Returns:
-        A list of time intervals in timewarrior format.
+        A list of Interval objects.
     """
     intervals = []
-    for string in monthly_data:
-        intervals += list(filter(None, string.splitlines()))
+    for month in monthly_data:
+        for line in month.splitlines():
+            if line:
+                i = as_interval(line)
+                if i.start and not i.end:
+                    raise RuntimeError('cannot sync with active time tracking')
+                if i.start and i.end:
+                    intervals.append(as_interval(line))
     return intervals
 
 
-def to_monthly_data(intervals: List[str]) -> List[str]:
-    """Converts a list of intervals into a list of monthly data.
+def to_monthly_data(intervals: List[Interval]) -> Dict[str, str]:
+    """Converts a list of Interval objects into a string dictionary.
 
     Groups all intervals by month and concatenates them using line breaks.
+    Keys are the file names the values' data should be stored in.
 
     Args:
-        intervals: A list of time intervals in timewarrior format.
+        intervals: A list of Interval objects.
 
     Returns:
-        A list of strings, each of which containing the data for one specific month.
+        A dictionary containing the file names and corresponding data for every month.
     """
-    monthly_data_dict = {}
+    grouped_intervals_dict = {}
 
     # Group all intervals by month
     for interval in intervals:
-        file_name = extract_file_name(interval)
-        if file_name in monthly_data_dict:
-            monthly_data_dict[file_name].append(interval)
+        file_name = get_file_name(interval)
+        if file_name in grouped_intervals_dict:
+            grouped_intervals_dict[file_name].append(interval)
         else:
-            monthly_data_dict[file_name] = [interval]
+            grouped_intervals_dict[file_name] = [interval]
 
-    monthly_data = []
+    monthly_data_dict = {}
 
-    # Concatenate per month and fill monthly_data
-    for entry in monthly_data_dict.values():
-        # TODO sort lists after new interval structure is established (assignee: Arne)
-        month = '\n'.join(entry)
-        monthly_data.append(month)
+    # Sort and concatenate all intervals per month
+    for file_name, month_i in grouped_intervals_dict.items():
+        month_i.sort(key=lambda i: i.start)
+        month_s = [str(i) for i in month_i]
+        monthly_data_dict[file_name] = '\n'.join(month_s)
 
-    return monthly_data
+    return monthly_data_dict
 
 
-def extract_file_name(interval: str) -> str:
-    """Returns the file name the interval should be stored in.
-
-    Retrieves the month and year the interval has been recorded
-    or is currently still being tracked.
-
-    Args:
-        interval: An interval string in timewarrior format.
-
-    Returns:
-        A string of the file name.
-    """
-    # TODO 'inc 20201214T134735Z # \"16-update-json-format\" \"thisIsATest\"' not working,
-    #      fix after new interval structure (assignee: Arne)
-    assert len(interval) >= 20
-    if len(interval) < 39:
-        return interval[4:8] + '-' + interval[8:10] + '.data'
-    else:
-        return interval[23:27] + '-' + interval[27:29] + '.data'
+def get_file_name(interval: Interval) -> str:
+    """Returns the file name the i should be stored in."""
+    if not interval.start:
+        raise RuntimeError('corrupt interval \'%s\'' % str(interval))
+    return interval.start.strftime('%Y-%m.data')
 
 
 def extract_tags(lst_of_intervalobjects: List[Interval]) -> str:
