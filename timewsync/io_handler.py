@@ -59,7 +59,7 @@ def write_data(monthly_data: Dict[str, str], tags: str):
     write_tags(tags)
 
 
-def write_intervals(monthly_data: List[str]):
+def write_intervals(monthly_data: Dict[str, str]):
     """Writes the monthly separated data to files, which are named accordingly.
 
     Args:
