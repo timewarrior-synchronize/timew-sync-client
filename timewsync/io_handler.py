@@ -31,7 +31,7 @@ import tarfile
 from pathlib import Path
 from typing import List, Dict
 
-TIMEW_FOLDER = os.environ.get('TIMEWARRIORDB', os.path.join(os.path.expanduser('~'), '.timewarrior'))
+TIMEW_FOLDER = os.path.expanduser(os.environ.get('TIMEWARRIORDB', os.path.join('~', '.timewarrior')))
 DATA_FOLDER = os.path.join(TIMEW_FOLDER, 'data')
 
 
@@ -83,7 +83,7 @@ def write_intervals(monthly_data: Dict[str, str]):
             file.write(data)
 
 
-def write_snapshot(monthly_data: Dict[str, str], timewsync_data_dir):
+def write_snapshot(monthly_data: Dict[str, str], timewsync_data_dir: str):
     """Creates a backup of the written files as a tar archive in gz compression.
 
     Takes the file name specified in the timewsync config, defaults to 'snapshot.tgz'.

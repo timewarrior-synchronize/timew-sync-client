@@ -33,7 +33,7 @@ from timewsync.dispatch import dispatch
 from timewsync.file_parser import to_interval_list, to_monthly_data
 from timewsync.io_handler import read_data, write_data
 
-DEFAULT_DATA_DIR = os.path.join(os.path.expanduser('~'), '.timewsync')
+DEFAULT_DATA_DIR = os.path.join('~', '.timewsync')
 
 
 def make_parser():
@@ -56,13 +56,14 @@ def main():
     """This function is the main entry point to the timewarrior
     synchronization client."""
     args = make_parser().parse_args()
+    data_dir = os.path.expanduser(args.data_dir)
 
     config = configparser.ConfigParser()
-    config.read(os.path.join(args.data_dir), 'timewsync.conf')
+    config.read(os.path.join(data_dir, 'timewsync.conf'))
     base_url = config.get('Server', 'BaseURL', fallback='http://localhost:8080')
 
     client_data = read_data()
     request_intervals = to_interval_list(client_data)
     response_intervals = dispatch(base_url, request_intervals)
     server_data = to_monthly_data(response_intervals)
-    write_data(server_data, args.data_dir)
+    write_data(server_data, data_dir)
