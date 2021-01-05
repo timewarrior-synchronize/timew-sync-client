@@ -31,7 +31,7 @@ import tarfile
 from pathlib import Path
 from typing import List, Dict
 
-DATA_FOLDER = os.path.expanduser('~') + '/.timewarrior/data/'
+DATA_FOLDER = os.path.join('~', '.timewarrior', 'data')
 
 
 def read_data() -> List[str]:
@@ -89,7 +89,7 @@ def write_snapshot(monthly_data: Dict[str, str]):
     Args:
         monthly_data: A dictionary containing the file names and corresponding data for every month.
     """
-    snapshot_path = DATA_FOLDER + 'snapshot.tgz'  # TODO get snapshot name from config
+    snapshot_path = DATA_FOLDER + 'snapshot.tgz'
 
     with tarfile.open(snapshot_path, mode='w:gz') as snapshot:
         for file_name in monthly_data.keys():

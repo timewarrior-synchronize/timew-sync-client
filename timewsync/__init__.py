@@ -58,7 +58,6 @@ def main():
     config = configparser.ConfigParser()
     config.read(os.path.expanduser(args.config_file))
     base_url = config.get('Server', 'BaseURL', fallback='http://localhost:8080')
-    snapshot_name = config.get('Client', 'Snapshot', fallback='snapshot.tgz')
 
     client_data = read_data()
     request_intervals = to_interval_list(client_data)
