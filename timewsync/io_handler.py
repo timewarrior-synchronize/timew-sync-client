@@ -61,6 +61,7 @@ def write_data(monthly_data: Dict[str, str], tags: str):
 
     Args:
         monthly_data: A dictionary containing the file names and corresponding data for every month.
+        tags: A string of tags and how often they have occurred, in the final format.
     """
     write_intervals(monthly_data)
     write_snapshot(monthly_data)
@@ -103,7 +104,7 @@ def write_tags(tags: str) -> None:
         Whatever was before in tags.data will be overwritten.
         tags.data will be created if it has not been there before.
 
-    :param tags: A string of tags and how often they have occured, in the final format.
+    :param tags: A string of tags and how often they have occurred, in the final format.
     :return: Does not return; just writes into file.
     """
 

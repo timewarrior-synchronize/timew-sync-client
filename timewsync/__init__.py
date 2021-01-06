@@ -62,10 +62,6 @@ def main():
 
     client_data = read_data()
     request_intervals = to_interval_list(client_data)
-
-    # TODO at the moment, response_data is a list of strings but it will be a list of interval objects
-    #  as soon as issue 14, (branch replace_string_slicing) will be merged.
-    #  This comment is to be deleted then, it is only meant for review purposes.
     response_intervals = dispatch(base_url, request_intervals)
     server_data = to_monthly_data(response_intervals)
     new_tags = extract_tags(response_intervals)
