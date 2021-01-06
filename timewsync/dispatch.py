@@ -25,7 +25,7 @@
 ###############################################################################
 
 
-from typing import List
+from typing import List, Tuple
 
 import requests
 
@@ -35,17 +35,18 @@ from timewsync.interval import Interval
 SYNC_ENDPOINT = '/api/sync'
 
 
-def dispatch(base_url: str, intervals: List[Interval]) -> List[Interval]:
+def dispatch(base_url: str, timew_intervals: List[Interval], snapshot_intervals: List[Interval]) -> List[Interval]:
     """Sends a sync request to the server.
 
     Args:
         base_url: The base URL of the API. E.g.: "http://localhost:8080".
-        intervals: A list of all client Interval objects.
+        timew_intervals: A list of all client Interval objects.
+        snapshot_intervals: A list of all Interval objects found in snapshot.
 
     Returns:
         A list of Interval objects resulting from the sync.
     """
-    request_body = json_converter.to_json_request(intervals)
+    request_body = json_converter.to_json_request(timew_intervals)
 
     server_response = requests.put(base_url + SYNC_ENDPOINT, request_body)
 
@@ -55,3 +56,19 @@ def dispatch(base_url: str, intervals: List[Interval]) -> List[Interval]:
     parsed_response = json_converter.to_interval_list(server_response.text)
 
     return parsed_response
+
+
+def generate_diff(timew_intervals: List[Interval], snapshot_intervals: List[Interval]) -> Tuple[List[Interval], List[Interval]]:
+    """Returns the difference of intervals to the latest sync.
+
+     Args:
+         timew_intervals: A list of all client Interval objects.
+         snapshot_intervals: A list of all Interval objects found in snapshot.
+
+     Returns:
+         A Tuple of added and removed Interval objects.
+     """
+    added = list(set(timew_intervals) - set(snapshot_intervals))
+    removed = list(set(snapshot_intervals) - set(timew_intervals))
+
+    return added, removed

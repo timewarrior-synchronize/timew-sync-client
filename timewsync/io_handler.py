@@ -29,13 +29,13 @@ import os
 import re
 import tarfile
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 TIMEW_FOLDER = os.path.expanduser(os.environ.get('TIMEWARRIORDB', os.path.join('~', '.timewarrior')))
 DATA_FOLDER = os.path.join(TIMEW_FOLDER, 'data')
 
 
-def read_data(timewsync_data_dir: str):
+def read_data(timewsync_data_dir: str) -> Tuple[List[str], List[str]]:
     """Reads the monthly separated interval data from timewarrior and the snapshot."""
     return read_intervals(), read_snapshot(timewsync_data_dir)
 
