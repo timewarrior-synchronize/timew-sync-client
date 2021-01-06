@@ -35,8 +35,13 @@ TIMEW_FOLDER = os.path.expanduser(os.environ.get('TIMEWARRIORDB', os.path.join('
 DATA_FOLDER = os.path.join(TIMEW_FOLDER, 'data')
 
 
-def read_data() -> List[str]:
-    """Reads the monthly separated time intervals from .timewarrior/data into a single list.
+def read_data(timewsync_data_dir: str):
+    """Reads the monthly separated interval data from timewarrior and the snapshot."""
+    return read_intervals(), read_snapshot(timewsync_data_dir)
+
+
+def read_intervals() -> List[str]:
+    """Reads the monthly separated interval data from timewarrior.
 
     Reads from all files matching 'YYYY-MM.data' and creates a separate list entry per month.
 
@@ -55,6 +60,29 @@ def read_data() -> List[str]:
                 monthly_data.append(file.read())
 
     return monthly_data
+
+
+def read_snapshot(timewsync_data_dir: str) -> List[str]:
+    """Reads the monthly separated interval data from the snapshot.
+
+    Args:
+        timewsync_data_dir: The timewsync data directory.
+
+    Returns:
+        A list of strings, each of which containing the data for one specific month.
+    """
+    snapshot_path = os.path.join(timewsync_data_dir, 'snapshot.tgz')
+    snapshot_data = []
+
+    # Open the snapshot and read all file contents
+    if os.path.exists(snapshot_path):
+        with tarfile.open(snapshot_path, mode='r:gz') as snapshot:
+            for member in snapshot.getmembers():
+                with snapshot.extractfile(member) as file:
+                    file_data = file.read().decode('utf-8')
+                    snapshot_data.append(file_data)
+
+    return snapshot_data
 
 
 def write_data(monthly_data: Dict[str, str], timewsync_data_dir: str):
