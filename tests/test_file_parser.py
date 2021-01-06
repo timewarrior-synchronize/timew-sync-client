@@ -29,7 +29,7 @@ from datetime import datetime
 
 import pytest
 
-from timewsync.file_parser import to_interval_list, to_monthly_data, get_file_name
+from timewsync.file_parser import to_interval_list, to_monthly_data, get_file_name, extract_tags
 from timewsync.interval import Interval
 
 
@@ -120,7 +120,8 @@ class TestToMonthlyData:
 
         # Test with multiple months
         test_interval_dict = to_monthly_data([test_interval1, test_interval2, test_interval3])
-        expt_interval_dict = {expt_file_name1: expt_interval_str1 + '\n' + expt_interval_str2, expt_file_name2: expt_interval_str3}
+        expt_interval_dict = {expt_file_name1: expt_interval_str1 + '\n' + expt_interval_str2,
+                              expt_file_name2: expt_interval_str3}
         assert test_interval_dict == expt_interval_dict
 
 
@@ -145,3 +146,30 @@ class TestGetFileName:
 
         assert get_file_name(test_interval2) == expt_file_name1
         assert get_file_name(test_interval4) == expt_file_name1
+
+
+class TestExtractTags:
+    def test_no_entry(self):
+        assert extract_tags([]) == ''
+
+    def test_no_tags(self):
+        date1 = datetime(2020, 1, 1)
+        date2 = datetime(2021, 5, 29)
+        date3 = datetime(2022, 7, 15)
+        date4 = datetime(2023, 10, 11)
+        i1 = Interval(start=date1, end=date2)
+        i2 = Interval(start=date2, end=date3)
+        i3 = Interval(start=date3, end=date4)
+        assert extract_tags([i1, i2, i3]) == ''
+
+    def test_mixed_input(self):
+        date1 = datetime(2020, 1, 1)
+        date2 = datetime(2021, 5, 29)
+        date3 = datetime(2022, 7, 15)
+        date4 = datetime(2023, 10, 11)
+        i1 = Interval(start=date1, end=date2)
+        i2 = Interval(start=date2, end=date3, tags=['tag1', 'tag2', 'tag3', 'tag4', 'tag1'])
+        i3 = Interval(start=date3, end=date4, tags=['tag2'], annotation='I am the annotation.')
+        i4 = Interval(start=date1, end=date3, tags=['tag3', 'tag2'], annotation='I am another annotation.')
+        i5 = Interval(start=date3, end=date4, annotation='I am the third annotation.')
+        assert extract_tags([i1, i2, i3, i4, i5]) == '{"tag1":{"count":2},"tag2":{"count":3},"tag3":{"count":2},"tag4":{"count":1}}'

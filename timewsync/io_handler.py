@@ -57,15 +57,17 @@ def read_data() -> List[str]:
     return monthly_data
 
 
-def write_data(monthly_data: Dict[str, str], timewsync_data_dir: str):
+def write_data(timewsync_data_dir: str, monthly_data: Dict[str, str], tags: str):
     """Writes the monthly separated data to files in .timewarrior/data.
 
     Args:
+        timewsync_data_dir: The timewsync data directory.
         monthly_data: A dictionary containing the file names and corresponding data for every month.
-        timewsync_data_dir: The timewsync data directory
+        tags: A string of tags and how often they have occurred, in the final format.
     """
     write_intervals(monthly_data)
-    write_snapshot(monthly_data, timewsync_data_dir)
+    write_snapshot(timewsync_data_dir, monthly_data)
+    write_tags(tags)
 
 
 def write_intervals(monthly_data: Dict[str, str]):
@@ -83,14 +85,14 @@ def write_intervals(monthly_data: Dict[str, str]):
             file.write(data)
 
 
-def write_snapshot(monthly_data: Dict[str, str], timewsync_data_dir: str):
+def write_snapshot(timewsync_data_dir: str, monthly_data: Dict[str, str]):
     """Creates a backup of the written files as a tar archive in gz compression.
 
     Takes the file name specified in the timewsync config, defaults to 'snapshot.tgz'.
 
     Args:
+        timewsync_data_dir: The timewsync data directory.
         monthly_data: A dictionary containing the file names and corresponding data for every month.
-        timewsync_data_dir: The timewsync data directory
     """
     # Find timewsync data directory, create if not present
     os.makedirs(timewsync_data_dir, exist_ok=True)
@@ -100,3 +102,19 @@ def write_snapshot(monthly_data: Dict[str, str], timewsync_data_dir: str):
     with tarfile.open(snapshot_path, mode='w:gz') as snapshot:
         for file_name in monthly_data.keys():
             snapshot.add(os.path.join(DATA_FOLDER, file_name), arcname=file_name)
+
+
+def write_tags(tags: str) -> None:
+    """
+        Gets one String in the correct format for tags.data and writes it to tags.data .
+        Whatever was before in tags.data will be overwritten.
+        tags.data will be created if it has not been there before.
+
+    :param tags: A string of tags and how often they have occurred, in the final format.
+    :return: Does not return; just writes into file.
+    """
+
+    os.makedirs(DATA_FOLDER, exist_ok=True)
+
+    with open(DATA_FOLDER + 'tags.data', 'w') as file:
+        file.write(tags)
