@@ -90,7 +90,7 @@ def write_snapshot(monthly_data: Dict[str, str], timewsync_data_dir: str):
 
     Args:
         monthly_data: A dictionary containing the file names and corresponding data for every month.
-        data_dir: The timewsync data directory
+        timewsync_data_dir: The timewsync data directory
     """
     # Find timewsync data directory, create if not present
     os.makedirs(timewsync_data_dir, exist_ok=True)
