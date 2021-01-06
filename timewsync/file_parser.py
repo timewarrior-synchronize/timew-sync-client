@@ -108,7 +108,7 @@ def extract_tags(lst_of_intervalobjects: List[Interval]) -> str:
     all_tags = defaultdict(int)
     for interval in lst_of_intervalobjects:
         for tag in interval.tags:
-            all_tags[uniform_quotation_usage(tag)] += 1
+            all_tags[normalize_tag(tag)] += 1
 
     if len(all_tags) == 0:
         return ''
@@ -121,7 +121,7 @@ def extract_tags(lst_of_intervalobjects: List[Interval]) -> str:
     return result
 
 
-def uniform_quotation_usage(tag: str) -> str:
+def normalize_tag(tag: str) -> str:
     """
     Recieves a tag (string) and checks if it has double quotes at start and end '"..."'.
     If not, it will attach them.

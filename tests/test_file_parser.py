@@ -30,7 +30,7 @@ from datetime import datetime
 import pytest
 
 from timewsync.file_parser import to_interval_list, to_monthly_data, get_file_name, extract_tags, \
-    uniform_quotation_usage
+    normalize_tag
 from timewsync.interval import Interval
 
 
@@ -178,35 +178,35 @@ class TestExtractTags:
                                                      '"tag4":{"count":1},"\"":{"count":2}}'
 
 
-class TestUniformQuotationUsage:
+class TestNormalizeTag:
     def test_empty_string(self):
         with pytest.raises(RuntimeError):
-            uniform_quotation_usage('')
+            normalize_tag('')
         with pytest.raises(RuntimeError):
-            uniform_quotation_usage('""')
+            normalize_tag('""')
 
     def test_one_double_quote(self):
-        assert uniform_quotation_usage('"') == '"\""'
-        assert uniform_quotation_usage('\"') == '"\""'
+        assert normalize_tag('"') == '"\""'
+        assert normalize_tag('\"') == '"\""'
 
     def test_length_2(self):
-        assert uniform_quotation_usage('ab') == '"ab"'
-        assert uniform_quotation_usage('12') == '"12"'
-        assert uniform_quotation_usage('x-') == '"x-"'
-        assert uniform_quotation_usage('x"') == '"x""'
-        assert uniform_quotation_usage('"x') == '""x"'
+        assert normalize_tag('ab') == '"ab"'
+        assert normalize_tag('12') == '"12"'
+        assert normalize_tag('x-') == '"x-"'
+        assert normalize_tag('x"') == '"x""'
+        assert normalize_tag('"x') == '""x"'
 
     def test_quotes_at_start_or_end(self):
-        assert uniform_quotation_usage('abc""') == '"abc"""'
-        assert uniform_quotation_usage('abc"') == '"abc""'
-        assert uniform_quotation_usage('""ab') == '"""ab"'
-        assert uniform_quotation_usage('"ab') == '""ab"'
+        assert normalize_tag('abc""') == '"abc"""'
+        assert normalize_tag('abc"') == '"abc""'
+        assert normalize_tag('""ab') == '"""ab"'
+        assert normalize_tag('"ab') == '""ab"'
 
 
     def test_quotes_in_middle(self):
-        assert uniform_quotation_usage('ab"c') == '"ab"c"'
+        assert normalize_tag('ab"c') == '"ab"c"'
 
     def test_no_quotes(self):
-        assert uniform_quotation_usage('abc') == '"abc"'
-        assert uniform_quotation_usage('012') == '"012"'
-        assert uniform_quotation_usage('a3b') == '"a3b"'
+        assert normalize_tag('abc') == '"abc"'
+        assert normalize_tag('012') == '"012"'
+        assert normalize_tag('a3b') == '"a3b"'
