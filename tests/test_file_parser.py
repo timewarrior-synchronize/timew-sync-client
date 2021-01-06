@@ -29,7 +29,8 @@ from datetime import datetime
 
 import pytest
 
-from timewsync.file_parser import to_interval_list, to_monthly_data, get_file_name, extract_tags
+from timewsync.file_parser import to_interval_list, to_monthly_data, get_file_name, extract_tags, \
+    uniform_quotation_usage
 from timewsync.interval import Interval
 
 
@@ -172,4 +173,40 @@ class TestExtractTags:
         i3 = Interval(start=date3, end=date4, tags=['tag2'], annotation='I am the annotation.')
         i4 = Interval(start=date1, end=date3, tags=['tag3', 'tag2'], annotation='I am another annotation.')
         i5 = Interval(start=date3, end=date4, annotation='I am the third annotation.')
-        assert extract_tags([i1, i2, i3, i4, i5]) == '{"tag1":{"count":2},"tag2":{"count":3},"tag3":{"count":2},"tag4":{"count":1}}'
+        i6 = Interval(start=date1, end=date2, tags=['"', '\"'])
+        assert extract_tags([i1, i2, i3, i4, i5, i6]) == '{"tag1":{"count":2},"tag2":{"count":3},"tag3":{"count":2},' \
+                                                     '"tag4":{"count":1},"\"":{"count":2}}'
+
+
+class TestUniformQuotationUsage:
+    def test_empty_string(self):
+        with pytest.raises(RuntimeError):
+            uniform_quotation_usage('')
+        with pytest.raises(RuntimeError):
+            uniform_quotation_usage('""')
+
+    def test_one_double_quote(self):
+        assert uniform_quotation_usage('"') == '"\""'
+        assert uniform_quotation_usage('\"') == '"\""'
+
+    def test_length_2(self):
+        assert uniform_quotation_usage('ab') == '"ab"'
+        assert uniform_quotation_usage('12') == '"12"'
+        assert uniform_quotation_usage('x-') == '"x-"'
+        assert uniform_quotation_usage('x"') == '"x""'
+        assert uniform_quotation_usage('"x') == '""x"'
+
+    def test_quotes_at_start_or_end(self):
+        assert uniform_quotation_usage('abc""') == '"abc"""'
+        assert uniform_quotation_usage('abc"') == '"abc""'
+        assert uniform_quotation_usage('""ab') == '"""ab"'
+        assert uniform_quotation_usage('"ab') == '""ab"'
+
+
+    def test_quotes_in_middle(self):
+        assert uniform_quotation_usage('ab"c') == '"ab"c"'
+
+    def test_no_quotes(self):
+        assert uniform_quotation_usage('abc') == '"abc"'
+        assert uniform_quotation_usage('012') == '"012"'
+        assert uniform_quotation_usage('a3b') == '"a3b"'
