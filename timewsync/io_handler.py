@@ -62,7 +62,7 @@ def write_data(monthly_data: Dict[str, str], timewsync_data_dir: str):
 
     Args:
         monthly_data: A dictionary containing the file names and corresponding data for every month.
-        data_dir: The timewsync data directory
+        timewsync_data_dir: The timewsync data directory
     """
     write_intervals(monthly_data)
     write_snapshot(monthly_data, timewsync_data_dir)
