@@ -36,17 +36,17 @@ from timewsync.io_handler import read_data, write_intervals, write_data
 
 
 def make_parser():
-    """Creates an instance of argpars.ArgumentParser which contains the
+    """Creates an instance of argparse.ArgumentParser which contains the
     command-line arguments and their types.
 
     Returns:
         The complete ArgumentParser object
     """
 
-    parser = argparse.ArgumentParser(prog="timewsync", description="timewarrior synchronization client")
+    parser = argparse.ArgumentParser(prog='timewsync', description='timewarrior synchronization client')
 
-    parser.add_argument("--version", action="version", version="%(prog)s unreleased", help="Print version information")
-    parser.add_argument("--config-file", dest="config_file", default="~/.timewarrior/sync.conf", help="The path to the configuration file")
+    parser.add_argument('--version', action='version', version='%(prog)s unreleased', help='Print version information')
+    parser.add_argument('--config-file', dest='config_file', default='~/.timewarrior/sync.conf', help='The path to the configuration file')
 
     return parser
 
@@ -58,7 +58,7 @@ def main():
 
     config = configparser.ConfigParser()
     config.read(os.path.expanduser(args.config_file))
-    base_url = config.get("Server", "BaseURL", fallback="http://localhost:8080")
+    base_url = config.get('Server', 'BaseURL', fallback='http://localhost:8080')
 
     client_data = read_data()
     request_intervals = to_interval_list(client_data)
