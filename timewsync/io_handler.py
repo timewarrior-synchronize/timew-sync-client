@@ -114,8 +114,7 @@ def write_tags(tags: str) -> None:
     :return: Does not return; just writes into file.
     """
 
-    data_folder = os.path.expanduser('~') + '/.timewarrior/data/'
-    os.makedirs(data_folder, exist_ok=True)
+    os.makedirs(DATA_FOLDER, exist_ok=True)
 
-    with open(data_folder + 'tags.data', 'w') as file:
+    with open(DATA_FOLDER + 'tags.data', 'w') as file:
         file.write(tags)
