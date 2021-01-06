@@ -31,7 +31,8 @@ import tarfile
 from pathlib import Path
 from typing import List, Dict
 
-DATA_FOLDER = os.path.join('~', '.timewarrior', 'data')
+TIMEW_FOLDER = os.path.expanduser(os.environ.get('TIMEWARRIORDB', os.path.join('~', '.timewarrior')))
+DATA_FOLDER = os.path.join(TIMEW_FOLDER, 'data')
 
 
 def read_data() -> List[str]:
@@ -50,21 +51,22 @@ def read_data() -> List[str]:
 
         # Read all file contents
         for file_name in file_list:
-            with open(DATA_FOLDER + file_name, 'r') as file:
+            with open(os.path.join(DATA_FOLDER, file_name), 'r') as file:
                 monthly_data.append(file.read())
 
     return monthly_data
 
 
-def write_data(monthly_data: Dict[str, str], tags: str):
+def write_data(monthly_data: Dict[str, str], tags: str, timewsync_data_dir: str):
     """Writes the monthly separated data to files in .timewarrior/data.
 
     Args:
         monthly_data: A dictionary containing the file names and corresponding data for every month.
         tags: A string of tags and how often they have occurred, in the final format.
+        timewsync_data_dir: The timewsync data directory
     """
     write_intervals(monthly_data)
-    write_snapshot(monthly_data)
+    write_snapshot(monthly_data, timewsync_data_dir)
     write_tags(tags)
 
 
@@ -79,23 +81,27 @@ def write_intervals(monthly_data: Dict[str, str]):
 
     # Write data to files
     for file_name, data in monthly_data.items():
-        with open(DATA_FOLDER + file_name, 'w') as file:
+        with open(os.path.join(DATA_FOLDER, file_name), 'w') as file:
             file.write(data)
 
 
-def write_snapshot(monthly_data: Dict[str, str]):
+def write_snapshot(monthly_data: Dict[str, str], timewsync_data_dir: str):
     """Creates a backup of the written files as a tar archive in gz compression.
 
     Takes the file name specified in the timewsync config, defaults to 'snapshot.tgz'.
 
     Args:
         monthly_data: A dictionary containing the file names and corresponding data for every month.
+        timewsync_data_dir: The timewsync data directory
     """
-    snapshot_path = DATA_FOLDER + 'snapshot.tgz'
+    # Find timewsync data directory, create if not present
+    os.makedirs(timewsync_data_dir, exist_ok=True)
+
+    snapshot_path = os.path.join(timewsync_data_dir, 'snapshot.tgz')
 
     with tarfile.open(snapshot_path, mode='w:gz') as snapshot:
         for file_name in monthly_data.keys():
-            snapshot.add(DATA_FOLDER + file_name, arcname=file_name)
+            snapshot.add(os.path.join(DATA_FOLDER, file_name), arcname=file_name)
 
 
 def write_tags(tags: str) -> None:

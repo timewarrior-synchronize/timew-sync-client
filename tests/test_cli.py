@@ -24,6 +24,7 @@
 #
 ###############################################################################
 
+import os
 
 import timewsync
 
@@ -31,10 +32,10 @@ import timewsync
 def test_no_args():
     parser = timewsync.make_parser()
     args = parser.parse_args([])
-    assert args.config_file == "~/.timewarrior/sync.conf"
+    assert args.data_dir == os.path.join('~', '.timewsync')
 
 
 def test_config_file():
     parser = timewsync.make_parser()
-    args = parser.parse_args(["--config-file", "/path/to/file"])
-    assert args.config_file == "/path/to/file"
+    args = parser.parse_args(["--data-dir", "~/.customdir"])
+    assert args.data_dir == "~/.customdir"

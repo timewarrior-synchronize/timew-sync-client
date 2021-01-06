@@ -28,11 +28,12 @@
 import argparse
 import configparser
 import os
-from pickletools import read_stringnl_noescape_pair
 
 from timewsync.dispatch import dispatch
 from timewsync.file_parser import to_interval_list, to_monthly_data, extract_tags
-from timewsync.io_handler import read_data, write_intervals, write_data
+from timewsync.io_handler import read_data, write_data
+
+DEFAULT_DATA_DIR = os.path.join('~', '.timewsync')
 
 
 def make_parser():
@@ -46,7 +47,7 @@ def make_parser():
     parser = argparse.ArgumentParser(prog='timewsync', description='timewarrior synchronization client')
 
     parser.add_argument('--version', action='version', version='%(prog)s unreleased', help='Print version information')
-    parser.add_argument('--config-file', dest='config_file', default='~/.timewarrior/sync.conf', help='The path to the configuration file')
+    parser.add_argument('--data-dir', dest='data_dir', default=DEFAULT_DATA_DIR, help='The path to the data directory')
 
     return parser
 
@@ -55,9 +56,10 @@ def main():
     """This function is the main entry point to the timewarrior
     synchronization client."""
     args = make_parser().parse_args()
+    data_dir = os.path.expanduser(args.data_dir)
 
     config = configparser.ConfigParser()
-    config.read(os.path.expanduser(args.config_file))
+    config.read(os.path.join(data_dir, 'timewsync.conf'))
     base_url = config.get('Server', 'BaseURL', fallback='http://localhost:8080')
 
     client_data = read_data()
@@ -65,4 +67,4 @@ def main():
     response_intervals = dispatch(base_url, request_intervals)
     server_data = to_monthly_data(response_intervals)
     new_tags = extract_tags(response_intervals)
-    write_data(server_data, new_tags)
+    write_data(server_data, new_tags, data_dir)
