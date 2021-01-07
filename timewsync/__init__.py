@@ -30,7 +30,7 @@ import configparser
 import os
 
 from timewsync.dispatch import dispatch
-from timewsync.file_parser import to_interval_list, to_monthly_data
+from timewsync.file_parser import to_interval_list, to_monthly_data, extract_tags
 from timewsync.io_handler import read_data, write_data
 
 DEFAULT_DATA_DIR = os.path.join('~', '.timewsync')
@@ -69,4 +69,5 @@ def main():
     response_intervals = dispatch(base_url, timew_intervals, snapshot_intervals)
 
     server_data = to_monthly_data(response_intervals)
-    write_data(server_data, data_dir)
+    new_tags = extract_tags(response_intervals)
+    write_data(data_dir, server_data, new_tags)

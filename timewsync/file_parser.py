@@ -25,6 +25,7 @@
 ###############################################################################
 
 
+from collections import defaultdict
 from typing import List, Dict
 
 from timewsync.interval import Interval, as_interval
@@ -92,3 +93,29 @@ def get_file_name(interval: Interval) -> str:
     if not interval.start:
         raise RuntimeError('corrupt interval \'%s\'' % str(interval))
     return interval.start.strftime('%Y-%m.data')
+
+
+def extract_tags(lst_of_intervalobjects: List[Interval]) -> str:
+    """
+    Gets a List of Intervalobjects and extracts all tags from all of these.
+    Returns one String containing every tag with how often it occurs.
+    :param
+        lst_of_intervalobjects: A list of time intervals in timewarrior format.
+    :return:
+        A string of all tags and the number of their occurence written in the correct format for tags.data .
+    """
+
+    all_tags = defaultdict(int)
+    for interval in lst_of_intervalobjects:
+        for tag in interval.tags:
+            all_tags[tag] += 1
+
+    if len(all_tags) == 0:
+        return ''
+
+    result = '{'
+    for tag in all_tags.keys():
+        result += '"' + tag + '":{"count":' + str(all_tags[tag]) + '},'
+    result = result[:-1] + '}'     # now, discard the last ',' (which is too much) and add a closing '}'
+
+    return result
