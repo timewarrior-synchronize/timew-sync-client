@@ -127,6 +127,7 @@ def write_snapshot(timewsync_data_dir: str, monthly_data: Dict[str, str]):
 
     snapshot_path = os.path.join(timewsync_data_dir, 'snapshot.tgz')
 
+    # Write data to files in snapshot
     with tarfile.open(snapshot_path, mode='w:gz') as snapshot:
         for file_name in monthly_data.keys():
             snapshot.add(os.path.join(DATA_FOLDER, file_name), arcname=file_name)
