@@ -68,7 +68,7 @@ def generate_diff(timew_intervals: List[Interval], snapshot_intervals: List[Inte
      Returns:
          A Tuple of added and removed Interval objects.
      """
-    added = list(set(timew_intervals) - set(snapshot_intervals))
-    removed = list(set(snapshot_intervals) - set(timew_intervals))
+    added = [i for i in timew_intervals if i not in snapshot_intervals]
+    removed = [i for i in snapshot_intervals if i not in timew_intervals]
 
     return added, removed
