@@ -116,5 +116,5 @@ def write_tags(tags: str) -> None:
 
     os.makedirs(DATA_FOLDER, exist_ok=True)
 
-    with open(DATA_FOLDER + 'tags.data', 'w') as file:
+    with open(os.path.join(DATA_FOLDER, 'tags.data'), 'w') as file:
         file.write(tags)
