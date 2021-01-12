@@ -202,7 +202,6 @@ class TestNormalizeTag:
         assert normalize_tag('""ab') == '"""ab"'
         assert normalize_tag('"ab') == '""ab"'
 
-
     def test_quotes_in_middle(self):
         assert normalize_tag('ab"c') == '"ab"c"'
 
