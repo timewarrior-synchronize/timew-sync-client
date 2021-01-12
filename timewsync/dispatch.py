@@ -25,6 +25,7 @@
 ###############################################################################
 
 
+import os
 from typing import List, Tuple
 
 import requests
@@ -32,7 +33,7 @@ import requests
 from timewsync import json_converter
 from timewsync.interval import Interval
 
-SYNC_ENDPOINT = '/api/sync'
+SYNC_ENDPOINT = os.path.join('api', 'sync')
 
 
 def dispatch(base_url: str, timew_intervals: List[Interval], snapshot_intervals: List[Interval]) -> List[Interval]:
@@ -46,9 +47,10 @@ def dispatch(base_url: str, timew_intervals: List[Interval], snapshot_intervals:
     Returns:
         A list of Interval objects resulting from the sync.
     """
+    request_url = os.path.join(base_url, SYNC_ENDPOINT)
     request_body = json_converter.to_json_request(timew_intervals)
 
-    server_response = requests.put(base_url + SYNC_ENDPOINT, request_body)
+    server_response = requests.put(request_url, request_body)
 
     if server_response.status_code != 200:
         raise RuntimeError(f'Problem while syncing with server. Server responded with {server_response.status_code}.')
