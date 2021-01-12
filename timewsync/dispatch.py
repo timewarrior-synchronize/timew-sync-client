@@ -32,7 +32,7 @@ import requests
 from timewsync import json_converter
 from timewsync.interval import Interval
 
-SYNC_ENDPOINT = '/api/sync'
+SYNC_ENDPOINT = "/api/sync"
 
 
 def dispatch(base_url: str, intervals: List[Interval]) -> List[Interval]:
@@ -50,7 +50,9 @@ def dispatch(base_url: str, intervals: List[Interval]) -> List[Interval]:
     server_response = requests.put(base_url + SYNC_ENDPOINT, request_body)
 
     if server_response.status_code != 200:
-        raise RuntimeError(f'Problem while syncing with server. Server responded with {server_response.status_code}.')
+        raise RuntimeError(
+            f"Problem while syncing with server. Server responded with {server_response.status_code}."
+        )
 
     parsed_response = json_converter.to_interval_list(server_response.text)
 

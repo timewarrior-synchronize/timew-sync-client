@@ -31,8 +31,10 @@ import tarfile
 from pathlib import Path
 from typing import List, Dict
 
-TIMEW_FOLDER = os.path.expanduser(os.environ.get('TIMEWARRIORDB', os.path.join('~', '.timewarrior')))
-DATA_FOLDER = os.path.join(TIMEW_FOLDER, 'data')
+TIMEW_FOLDER = os.path.expanduser(
+    os.environ.get("TIMEWARRIORDB", os.path.join("~", ".timewarrior"))
+)
+DATA_FOLDER = os.path.join(TIMEW_FOLDER, "data")
 
 
 def read_data() -> List[str]:
@@ -47,11 +49,15 @@ def read_data() -> List[str]:
 
     # Filter and list all data sources
     if os.path.exists(DATA_FOLDER):
-        file_list = [f for f in os.listdir(Path(DATA_FOLDER)) if (re.search(r'^\d\d\d\d-\d\d\.data$', f))]
+        file_list = [
+            f
+            for f in os.listdir(Path(DATA_FOLDER))
+            if (re.search(r"^\d\d\d\d-\d\d\.data$", f))
+        ]
 
         # Read all file contents
         for file_name in file_list:
-            with open(os.path.join(DATA_FOLDER, file_name), 'r') as file:
+            with open(os.path.join(DATA_FOLDER, file_name), "r") as file:
                 monthly_data.append(file.read())
 
     return monthly_data
@@ -81,7 +87,7 @@ def write_intervals(monthly_data: Dict[str, str]):
 
     # Write data to files
     for file_name, data in monthly_data.items():
-        with open(os.path.join(DATA_FOLDER, file_name), 'w') as file:
+        with open(os.path.join(DATA_FOLDER, file_name), "w") as file:
             file.write(data)
 
 
@@ -97,9 +103,9 @@ def write_snapshot(timewsync_data_dir: str, monthly_data: Dict[str, str]):
     # Find timewsync data directory, create if not present
     os.makedirs(timewsync_data_dir, exist_ok=True)
 
-    snapshot_path = os.path.join(timewsync_data_dir, 'snapshot.tgz')
+    snapshot_path = os.path.join(timewsync_data_dir, "snapshot.tgz")
 
-    with tarfile.open(snapshot_path, mode='w:gz') as snapshot:
+    with tarfile.open(snapshot_path, mode="w:gz") as snapshot:
         for file_name in monthly_data.keys():
             snapshot.add(os.path.join(DATA_FOLDER, file_name), arcname=file_name)
 
@@ -116,5 +122,5 @@ def write_tags(tags: str) -> None:
 
     os.makedirs(DATA_FOLDER, exist_ok=True)
 
-    with open(os.path.join(DATA_FOLDER, 'tags.data'), 'w') as file:
+    with open(os.path.join(DATA_FOLDER, "tags.data"), "w") as file:
         file.write(tags)

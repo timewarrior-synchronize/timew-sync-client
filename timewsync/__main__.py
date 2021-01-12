@@ -28,5 +28,5 @@
 import timewsync
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     timewsync.main()
