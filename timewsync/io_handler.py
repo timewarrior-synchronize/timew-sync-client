@@ -46,7 +46,7 @@ def read_intervals() -> List[str]:
     Reads from all files matching 'YYYY-MM.data' and creates a separate list entry per month.
 
     Returns:
-        A list of strings, each of which containing the data for one specific month.
+        A list of strings, each of which containing the data for one month.
     """
     monthly_data = []
 
