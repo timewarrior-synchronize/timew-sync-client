@@ -28,12 +28,17 @@
 from datetime import datetime
 from typing import List
 
-DATETIME_FORMAT = '%Y%m%dT%H%M%SZ'
+DATETIME_FORMAT = "%Y%m%dT%H%M%SZ"
 
 
 class Interval:
-
-    def __init__(self, start: datetime = None, end: datetime = None, tags: List[str] = None, annotation: str = None):
+    def __init__(
+        self,
+        start: datetime = None,
+        end: datetime = None,
+        tags: List[str] = None,
+        annotation: str = None,
+    ):
         if tags is None:
             tags = []
         self.start: datetime = start
@@ -44,24 +49,29 @@ class Interval:
     def __eq__(self, other):
         """Checks whether this object is equal to another one, by attributes."""
         if not isinstance(other, Interval):
-            raise TypeError('can\'t compare %s with Interval' % type(other).__name__)
-        return self.start == other.start and self.end == other.end and self.tags == other.tags and self.annotation == other.annotation
+            raise TypeError("can't compare %s with Interval" % type(other).__name__)
+        return (
+            self.start == other.start
+            and self.end == other.end
+            and self.tags == other.tags
+            and self.annotation == other.annotation
+        )
 
     def __str__(self) -> str:
         """Returns the interval as a string in timewarrior format."""
-        out = 'inc'
+        out = "inc"
         if self.start:
-            out += ' ' + self.start.strftime(DATETIME_FORMAT)
+            out += " " + self.start.strftime(DATETIME_FORMAT)
             if self.end:
-                out += ' - ' + self.end.strftime(DATETIME_FORMAT)
+                out += " - " + self.end.strftime(DATETIME_FORMAT)
         if self.tags:
-            out += ' #'
+            out += " #"
             for tag in self.tags:
-                out += ' ' + tag
+                out += " " + tag
         if self.annotation:
             if not self.tags:
-                out += ' #'
-            out += ' # ' + self.annotation
+                out += " #"
+            out += " # " + self.annotation
         return out
 
 
@@ -80,8 +90,8 @@ def as_interval(line: str) -> Interval:
     tokens = tokenize(line)
 
     # Required 'inc'
-    if not tokens or tokens[0] != 'inc':
-        raise RuntimeError('unrecognizable line \'%s\'' % line)
+    if not tokens or tokens[0] != "inc":
+        raise RuntimeError("unrecognizable line '%s'" % line)
     interval = Interval()
     cursor = 1
 
@@ -91,32 +101,32 @@ def as_interval(line: str) -> Interval:
         cursor = 2
 
         # Optional '-' <iso>
-        if len(tokens) > 3 and tokens[2] == '-' and len(tokens[3]) == 16:
+        if len(tokens) > 3 and tokens[2] == "-" and len(tokens[3]) == 16:
             interval.end = datetime.strptime(tokens[3], DATETIME_FORMAT)
             cursor = 4
 
     # Optional '#'
-    if len(tokens) > (cursor + 1) and tokens[cursor] == '#':
+    if len(tokens) > (cursor + 1) and tokens[cursor] == "#":
 
         # Optional <tag> ...
         interval.tags = []
         cursor += 1
-        while cursor < len(tokens) and tokens[cursor] != '#':
+        while cursor < len(tokens) and tokens[cursor] != "#":
             interval.tags.append(tokens[cursor])
             cursor += 1
 
         # Optional '#' <annotation>
-        if cursor < len(tokens) and tokens[cursor] == '#':
-            annotation = ''
+        if cursor < len(tokens) and tokens[cursor] == "#":
+            annotation = ""
             cursor += 1
             while cursor < len(tokens):
-                annotation += ' ' + tokens[cursor]
+                annotation += " " + tokens[cursor]
                 cursor += 1
             interval.annotation = annotation.lstrip()
 
     # Unparsed tokens
     if cursor < len(tokens):
-        raise RuntimeError('unrecognizable line \'%s\'' % line)
+        raise RuntimeError("unrecognizable line '%s'" % line)
 
     return interval
 
@@ -133,21 +143,21 @@ def tokenize(line: str) -> List[str]:
     Returns:
         A list of tokens based on the string.
     """
-    line = ' ' + line + ' '
+    line = " " + line + " "
     eos = len(line)
     tokens = []
     start = 0
 
     while start < eos:
         mid = line.find(' "', start)
-        end = line.find('" ', mid+2)
+        end = line.find('" ', mid + 2)
 
         if mid == -1 or end == -1:
             tokens += line[start:].split()
             start = eos
         else:
             tokens += line[start:mid].split()
-            tokens += [line[mid+1:end+1]]
+            tokens += [line[mid + 1 : end + 1]]
             start = end + 1
 
     return tokens
