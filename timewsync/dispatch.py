@@ -42,7 +42,7 @@ def dispatch(base_url: str, timew_intervals: List[Interval], snapshot_intervals:
     Args:
         base_url: The base URL of the API. E.g.: "http://localhost:8080".
         timew_intervals: A list of all client Interval objects.
-        snapshot_intervals: A list of all Interval objects found in snapshot.
+        snapshot_intervals: A list of all Interval objects found in the snapshot of the latest sync.
 
     Returns:
         A list of Interval objects resulting from the sync.
