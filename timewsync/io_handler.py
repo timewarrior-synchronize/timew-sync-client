@@ -36,7 +36,15 @@ DATA_FOLDER = os.path.join(TIMEW_FOLDER, 'data')
 
 
 def read_data(timewsync_data_dir: str) -> Tuple[List[str], List[str]]:
-    """Reads the monthly separated interval data from timewarrior and the snapshot."""
+    """Reads the monthly separated interval data from timewarrior and the snapshot.
+
+    Args:
+        timewsync_data_dir: The timewsync data directory.
+
+    Returns:
+        A Tuple containing two lists of strings, holding the data for current and snapshot time intervals
+        respectively, with each string containing the data for one month.
+    """
     return read_intervals(), read_snapshot(timewsync_data_dir)
 
 
