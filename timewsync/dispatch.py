@@ -65,7 +65,7 @@ def generate_diff(timew_intervals: List[Interval], snapshot_intervals: List[Inte
 
      Args:
          timew_intervals: A list of all client Interval objects.
-         snapshot_intervals: A list of all Interval objects found in snapshot.
+         snapshot_intervals: A list of all Interval objects found in the snapshot of the latest sync.
 
      Returns:
          A Tuple of added and removed Interval objects.
