@@ -74,9 +74,12 @@ def main():
     config.read(os.path.join(data_dir, "timewsync.conf"))
     base_url = config.get("Server", "BaseURL", fallback="http://localhost:8080")
 
-    client_data = read_data()
-    request_intervals = to_interval_list(client_data)
-    response_intervals = dispatch(base_url, request_intervals)
+    timew_data, snapshot_data = read_data(data_dir)
+    timew_intervals = to_interval_list(timew_data)
+    snapshot_intervals = to_interval_list(snapshot_data)
+
+    response_intervals = dispatch(base_url, timew_intervals, snapshot_intervals)
+
     server_data = to_monthly_data(response_intervals)
     new_tags = extract_tags(response_intervals)
     write_data(data_dir, server_data, new_tags)
