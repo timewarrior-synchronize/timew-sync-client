@@ -33,7 +33,7 @@ from timewsync.dispatch import dispatch
 from timewsync.file_parser import to_interval_list, to_monthly_data, extract_tags
 from timewsync.io_handler import read_data, write_data
 
-DEFAULT_DATA_DIR = os.path.join('~', '.timewsync')
+DEFAULT_DATA_DIR = os.path.join("~", ".timewsync")
 
 
 def make_parser():
@@ -44,10 +44,22 @@ def make_parser():
         The complete ArgumentParser object
     """
 
-    parser = argparse.ArgumentParser(prog='timewsync', description='timewarrior synchronization client')
+    parser = argparse.ArgumentParser(
+        prog="timewsync", description="timewarrior synchronization client"
+    )
 
-    parser.add_argument('--version', action='version', version='%(prog)s unreleased', help='Print version information')
-    parser.add_argument('--data-dir', dest='data_dir', default=DEFAULT_DATA_DIR, help='The path to the data directory')
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="%(prog)s unreleased",
+        help="Print version information",
+    )
+    parser.add_argument(
+        "--data-dir",
+        dest="data_dir",
+        default=DEFAULT_DATA_DIR,
+        help="The path to the data directory",
+    )
 
     return parser
 
@@ -59,12 +71,15 @@ def main():
     data_dir = os.path.expanduser(args.data_dir)
 
     config = configparser.ConfigParser()
-    config.read(os.path.join(data_dir, 'timewsync.conf'))
-    base_url = config.get('Server', 'BaseURL', fallback='http://localhost:8080')
+    config.read(os.path.join(data_dir, "timewsync.conf"))
+    base_url = config.get("Server", "BaseURL", fallback="http://localhost:8080")
 
-    client_data = read_data()
-    request_intervals = to_interval_list(client_data)
-    response_intervals = dispatch(base_url, request_intervals)
+    timew_data, snapshot_data = read_data(data_dir)
+    timew_intervals = to_interval_list(timew_data)
+    snapshot_intervals = to_interval_list(snapshot_data)
+
+    response_intervals = dispatch(base_url, timew_intervals, snapshot_intervals)
+
     server_data = to_monthly_data(response_intervals)
     new_tags = extract_tags(response_intervals)
     write_data(data_dir, server_data, new_tags)

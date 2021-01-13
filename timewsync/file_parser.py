@@ -49,7 +49,7 @@ def to_interval_list(monthly_data: List[str]) -> List[Interval]:
             if line:
                 i = as_interval(line)
                 if i.start and not i.end:
-                    raise RuntimeError('cannot sync with active time tracking')
+                    raise RuntimeError("cannot sync with active time tracking")
                 if i.start and i.end:
                     intervals.append(as_interval(line))
     return intervals
@@ -83,7 +83,7 @@ def to_monthly_data(intervals: List[Interval]) -> Dict[str, str]:
     for file_name, month_i in grouped_intervals_dict.items():
         month_i.sort(key=lambda i: i.start)
         month_s = [str(i) for i in month_i]
-        monthly_data_dict[file_name] = '\n'.join(month_s)
+        monthly_data_dict[file_name] = "\n".join(month_s)
 
     return monthly_data_dict
 
@@ -91,8 +91,8 @@ def to_monthly_data(intervals: List[Interval]) -> Dict[str, str]:
 def get_file_name(interval: Interval) -> str:
     """Returns the file name the i should be stored in."""
     if not interval.start:
-        raise RuntimeError('corrupt interval \'%s\'' % str(interval))
-    return interval.start.strftime('%Y-%m.data')
+        raise RuntimeError("corrupt interval '%s'" % str(interval))
+    return interval.start.strftime("%Y-%m.data")
 
 
 def extract_tags(lst_of_intervalobjects: List[Interval]) -> str:
@@ -111,19 +111,21 @@ def extract_tags(lst_of_intervalobjects: List[Interval]) -> str:
             all_tags[normalize_tag(tag)] += 1
 
     if len(all_tags) == 0:
-        return ''
+        return ""
 
-    result = '{'
+    result = "{"
     for tag in all_tags.keys():
-        result += tag + ':{"count":' + str(all_tags[tag]) + '},'
-    result = result[:-1] + '}'     # now, discard the last ',' (which is too much) and add a closing '}'
+        result += tag + ':{"count":' + str(all_tags[tag]) + "},"
+    result = (
+        result[:-1] + "}"
+    )  # now, discard the last ',' (which is too much) and add a closing '}'
 
     return result
 
 
 def normalize_tag(tag: str) -> str:
     """
-    Recieves a tag (string) and checks if it has double quotes at start and end '"..."'.
+    Receives a tag (string) and checks if it has double quotes at start and end '"..."'.
     If not, it will attach them.
     Note:
         - Empty strings and '""' will raise an error because timewarrior cannot work with empty tags.

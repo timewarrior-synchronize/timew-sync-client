@@ -32,7 +32,7 @@ import timewsync
 def test_no_args():
     parser = timewsync.make_parser()
     args = parser.parse_args([])
-    assert args.data_dir == os.path.join('~', '.timewsync')
+    assert args.data_dir == os.path.join("~", ".timewsync")
 
 
 def test_config_file():

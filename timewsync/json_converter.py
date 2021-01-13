@@ -34,16 +34,12 @@ from timewsync.interval import Interval, as_interval
 def to_json_request(intervals: List[Interval]) -> str:
     """Returns a JSON request including the Interval objects provided."""
     interval_data = [str(i) for i in intervals]
-    json_dict = {
-        'userId': 1,
-        'clientId': 1,
-        'intervalData': interval_data
-    }
+    json_dict = {"userId": 1, "clientId": 1, "intervalData": interval_data}
     return json.dumps(json_dict, indent=2)
 
 
 def to_interval_list(json_response: str) -> List[Interval]:
     """Extracts and returns Interval objects from the given JSON response."""
     json_dict = json.loads(json_response)
-    intervals = [as_interval(i) for i in json_dict['intervalData']]
+    intervals = [as_interval(i) for i in json_dict["intervalData"]]
     return intervals
