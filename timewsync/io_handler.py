@@ -60,7 +60,7 @@ def read_intervals() -> List[str]:
     """
     monthly_data = []
 
-    # Filter and list all data sources
+    # Identify all data sources
     if os.path.exists(DATA_FOLDER):
         file_list = [
             f
