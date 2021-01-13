@@ -242,8 +242,8 @@ class TestExtractTags:
         i6 = Interval(start=date1, end=date2, tags=['"', '\"'])
         assert (
             extract_tags([i1, i2, i3, i4, i5, i6])
-            == '{"tag1":{"count":2},"tag2":{"count":3},"tag3":{"count":2},' \
-                                                     '"tag4":{"count":1},"\"":{"count":2}}'
+            == '{"tag1":{"count":2},"tag2":{"count":3},"tag3":{"count":2},'
+               '"tag4":{"count":1},"\"":{"count":2}}'
         )
 
 
