@@ -27,6 +27,7 @@
 
 from datetime import datetime
 from typing import List
+import enum
 
 DATETIME_FORMAT = '%Y%m%dT%H%M%SZ'
 
@@ -120,34 +121,77 @@ def as_interval(line: str) -> Interval:
 
     return interval
 
+class State(enum.Enum):
+    start = 0
+    whitespace = 1
+    quote = 2
+    escape = 3
 
-def tokenize(line: str) -> List[str]:
-    """Converts the input string into tokens.
 
-    Tokens are split at any whitespace and in string format.
-    Recognizes double quoted sentences as one token.
+def tokenize(string: str) -> List[str]:
+    """Converts the input string into tokens, separated at whitespaces.
+    Correctly handles quoted strings.
+    Returns an error if the string contains trailing whitespace.
 
     Args:
-        line: The string input to be tokenized.
+        string: The string input to be tokenized.
 
     Returns:
-        A list of tokens based on the string.
+        A list of tokens.
     """
-    line = ' ' + line + ' '
-    eos = len(line)
-    tokens = []
-    start = 0
 
-    while start < eos:
-        mid = line.find(' "', start)
-        end = line.find('" ', mid+2)
+    # The logic of this function is based on a DFA (definite final automat). In state, the state of the automat will be stored.
+    state = State.start
+    result = []         # will be the list of tokens
+    start_of_token = 0           # TODO: WHAT INDEX?
+    i = 0               # index within the string
 
-        if mid == -1 or end == -1:
-            tokens += line[start:].split()
-            start = eos
-        else:
-            tokens += line[start:mid].split()
-            tokens += [line[mid+1:end+1]]
-            start = end + 1
+    # Iterate through string, characterwise
+    for c in string:
 
-    return tokens
+        if state == State.start:
+            if c == ' ':
+                result.append(string[start_of_token:i])
+                state = State.whitespace
+            if c == '"':
+                state = State.quote
+            else:
+                 pass   # skip character
+
+        if state == State.whitespace:
+            if c == ' ':
+                pass    # skip character
+            if c == '"':
+                start_of_token = i
+                state = State.quote
+            else:
+                start_of_token = i
+                state = State.start
+
+        if state == State.quote:
+            if c == "\\":   # Special case only relevant in "quoteState". Check for a single \. It's written \\ due to python syntax
+                state = State.escape
+            if c == ' ':
+                pass    # whitespace in quotation marks: skip character
+            if c == '"':
+                # TODO: add str[index:i] to result?
+                state = State.start
+            else:
+                pass    # skip character
+
+        if state == State.escape:
+            state = State.quote
+
+        i += 1
+
+    if state != State.start:
+        raise Exception("Missing matching double quote.")
+        return None
+    else:
+        result.append(string[start_of_token:])
+        return result
+
+# TODO: test schreiben und diese fälle klären:
+print((tokenize("abc def \" ghi")))
+print(len((tokenize("abc def \" ghi"))[2])) # es fügt ein leerzeichen an " vorne an
+print((tokenize('123 def "\"" "ghi" ')))
