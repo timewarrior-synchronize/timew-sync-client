@@ -32,9 +32,34 @@ import pytest
 from timewsync.interval import Interval, as_interval, tokenize
 
 
+class TestIntervalFromIntervalStr:
+    def test_not_implemented(self):
+        """Test for raised error."""
+        with pytest.raises(NotImplementedError):
+            Interval.from_interval_str()
+
+
+class TestIntervalFromDict:
+    def test_valid_dict(self):
+        """Test with a valid dictionary."""
+        test_interval_dict = {
+            "start": "20210124T020043Z",
+            "end": "20210124T080130Z",
+            "tags": ["foo", "bar"],
+            "annotation": "this is an annotation",
+        }
+        expt_interval = Interval(
+            start=datetime.fromisoformat("2021-01-24 02:00:43"),
+            end=datetime.fromisoformat("2021-01-24 08:01:30"),
+            tags=["foo", "bar"],
+            annotation="this is an annotation"
+        )
+        assert Interval.from_dict(test_interval_dict) == expt_interval
+
+
 class TestIntervalToString:
     def test_syntax_tree(self):
-        """Tests the interval syntax tree, which covers all possible combinations to assemble an interval string.
+        """Test the interval syntax tree, which covers all possible combinations to assemble an interval string.
 
         Syntax (tokens separated by whitespace):
             'inc' [ <iso> [ '-' <iso> ]] [[ '#' <tag> [ <tag> ... ]] | [ '#' [ <tag> ... ] '#' <annotation> ]]
@@ -154,8 +179,8 @@ class TestIntervalToString:
             + expt_annotation
         )
 
-    def test_wrong_interval(self):
-        """Tests an interval without start but with end time, which is ignored at the conversion."""
+    def test_ambiguous_interval(self):
+        """Test an interval without start but with end time, which is ignored at the conversion."""
         test_date2 = datetime.fromisoformat("2021-01-24 02:00:43")
         wrong_interval = Interval(end=test_date2)
         assert str(wrong_interval) == "inc"
@@ -163,7 +188,7 @@ class TestIntervalToString:
 
 class TestAsInterval:
     def test_syntax_tree(self):
-        """Tests the interval syntax tree, which covers all possible combinations to assemble an Interval.
+        """Test the interval syntax tree, which covers all possible combinations to assemble an Interval.
 
         Syntax (tokens separated by whitespace):
             'inc' [ <iso> [ '-' <iso> ]] [[ '#' <tag> [ <tag> ... ]] | [ '#' [ <tag> ... ] '#' <annotation> ]]
@@ -279,7 +304,7 @@ class TestAsInterval:
         )
 
     def test_invalid_strings(self):
-        """Tests invalid interval strings."""
+        """Test invalid interval strings."""
         with pytest.raises(RuntimeError):
             as_interval("")
 

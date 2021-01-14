@@ -46,8 +46,23 @@ class Interval:
         self.tags: List[str] = tags
         self.annotation: str = annotation
 
+    @classmethod
+    def from_interval_str(cls):
+        """Initialize object from interval string."""
+        raise NotImplementedError
+
+    @classmethod
+    def from_dict(cls, interval_dict: dict):
+        """Initialize object from dictionary."""
+        return cls(
+            start=datetime.strptime(interval_dict["start"], DATETIME_FORMAT),
+            end=datetime.strptime(interval_dict["end"], DATETIME_FORMAT),
+            tags=interval_dict["tags"],
+            annotation=interval_dict["annotation"],
+        )
+
     def __eq__(self, other):
-        """Checks whether this object is equal to another one, by attributes."""
+        """Check whether this object is equal to another one, by attributes."""
         if not isinstance(other, Interval):
             raise TypeError("can't compare %s with Interval" % type(other).__name__)
         return (
@@ -58,7 +73,7 @@ class Interval:
         )
 
     def __str__(self) -> str:
-        """Returns the interval as a string in timewarrior format."""
+        """Return the object as a string in timewarrior format."""
         out = "inc"
         if self.start:
             out += " " + self.start.strftime(DATETIME_FORMAT)
@@ -74,9 +89,18 @@ class Interval:
             out += " # " + self.annotation
         return out
 
+    def asdict(self) -> dict:
+        """Return the object as a dictionary."""
+        return {
+            "start": self.start.strftime(DATETIME_FORMAT),
+            "end": self.end.strftime(DATETIME_FORMAT),
+            "tags": self.tags,
+            "annotation": self.annotation,
+        }
+
 
 def as_interval(line: str) -> Interval:
-    """Parses an Interval from the provided string.
+    """Parse an Interval from the provided string.
 
     Syntax (tokens separated by whitespace):
         'inc' [ <iso> [ '-' <iso> ]] [[ '#' <tag> [ <tag> ... ]] | [ '#' [ <tag> ... ] '#' <annotation> ]]
