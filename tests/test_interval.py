@@ -58,7 +58,7 @@ class TestIntervalFromDict:
             start=datetime.fromisoformat("2021-01-24 02:00:43"),
             end=datetime.fromisoformat("2021-01-24 08:01:30"),
             tags=["foo", "bar"],
-            annotation="this is an annotation"
+            annotation="this is an annotation",
         )
         assert Interval.from_dict(test_interval_dict) == expt_interval
 
@@ -196,12 +196,7 @@ class TestIntervalToDict:
     def test_empty_interval(self):
         """Test with an empty Interval object."""
         test_interval = Interval()
-        expt_interval_dict = {
-            "start": "",
-            "end": "",
-            "tags": [],
-            "annotation": ""
-        }
+        expt_interval_dict = {"start": "", "end": "", "tags": [], "annotation": ""}
         assert Interval.asdict(test_interval) == expt_interval_dict
 
     def test_valid_interval(self):
@@ -210,7 +205,7 @@ class TestIntervalToDict:
             start=datetime.fromisoformat("2021-01-24 02:00:43"),
             end=datetime.fromisoformat("2021-01-24 08:01:30"),
             tags=["foo", "bar"],
-            annotation="this is an annotation"
+            annotation="this is an annotation",
         )
         expt_interval_dict = {
             "start": "20210124T020043Z",

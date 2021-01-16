@@ -63,7 +63,6 @@ def to_interval_list(json_str: str) -> List[Interval]:
     """
     json_dict = json.loads(json_str)
     intervals = [
-        Interval.from_dict(interval_dict)
-        for interval_dict in json_dict["intervals"]
+        Interval.from_dict(interval_dict) for interval_dict in json_dict["intervals"]
     ]
     return intervals

@@ -36,7 +36,9 @@ from timewsync.interval import Interval
 SYNC_ENDPOINT = os.path.join("api", "sync")
 
 
-def dispatch(base_url: str, timew_intervals: List[Interval], snapshot_intervals: List[Interval]) -> List[Interval]:
+def dispatch(
+    base_url: str, timew_intervals: List[Interval], snapshot_intervals: List[Interval]
+) -> List[Interval]:
     """Send a sync request to the server.
 
     Args:
@@ -64,16 +66,18 @@ def dispatch(base_url: str, timew_intervals: List[Interval], snapshot_intervals:
     return parsed_response
 
 
-def generate_diff(timew_intervals: List[Interval], snapshot_intervals: List[Interval]) -> Tuple[List[Interval], List[Interval]]:
+def generate_diff(
+    timew_intervals: List[Interval], snapshot_intervals: List[Interval]
+) -> Tuple[List[Interval], List[Interval]]:
     """Return the difference of intervals to the latest sync.
 
-     Args:
-         timew_intervals: A list of all client Interval objects.
-         snapshot_intervals: A list of all Interval objects found in the snapshot of the latest sync.
+    Args:
+        timew_intervals: A list of all client Interval objects.
+        snapshot_intervals: A list of all Interval objects found in the snapshot of the latest sync.
 
-     Returns:
-         A Tuple of added and removed Interval objects.
-     """
+    Returns:
+        A Tuple of added and removed Interval objects.
+    """
     added = [i for i in timew_intervals if i not in snapshot_intervals]
     removed = [i for i in snapshot_intervals if i not in timew_intervals]
 
