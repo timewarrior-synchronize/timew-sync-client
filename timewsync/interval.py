@@ -55,10 +55,17 @@ class Interval:
     def from_dict(cls, interval_dict: dict):
         """Initialize object from dictionary."""
         return cls(
-            start=datetime.strptime(interval_dict["start"], DATETIME_FORMAT),
-            end=datetime.strptime(interval_dict["end"], DATETIME_FORMAT),
-            tags=interval_dict["tags"],
-            annotation=interval_dict["annotation"],
+            start=datetime.strptime(interval_dict["start"], DATETIME_FORMAT)
+            if "start" in interval_dict else None,
+
+            end=datetime.strptime(interval_dict["end"], DATETIME_FORMAT)
+            if "end" in interval_dict else None,
+
+            tags=interval_dict["tags"]
+            if "tags" in interval_dict else [],
+
+            annotation=interval_dict["annotation"]
+            if "annotation" in interval_dict else None,
         )
 
     def __eq__(self, other):
@@ -92,10 +99,10 @@ class Interval:
     def asdict(self) -> dict:
         """Return the object as a dictionary."""
         return {
-            "start": self.start.strftime(DATETIME_FORMAT),
-            "end": self.end.strftime(DATETIME_FORMAT),
+            "start": self.start.strftime(DATETIME_FORMAT) if self.start else "",
+            "end": self.end.strftime(DATETIME_FORMAT) if self.end else "",
             "tags": self.tags,
-            "annotation": self.annotation,
+            "annotation": self.annotation if self.annotation else "",
         }
 
 
