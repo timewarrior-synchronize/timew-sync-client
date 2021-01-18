@@ -25,21 +25,44 @@
 ###############################################################################
 
 
-from typing import List
+from typing import List, Tuple
 import json
 
-from timewsync.interval import Interval, as_interval
+from timewsync.interval import Interval
 
 
-def to_json_request(intervals: List[Interval]) -> str:
-    """Returns a JSON request including the Interval objects provided."""
-    interval_data = [str(i) for i in intervals]
-    json_dict = {"userId": 1, "clientId": 1, "intervalData": interval_data}
-    return json.dumps(json_dict, indent=2)
+def to_json_request(diff: Tuple[List[Interval], List[Interval]]) -> str:
+    """Build and return a JSON string using the diff provided.
+
+    The diff must contain a list of added and a list of removed Interval objects.
+
+    Args:
+        diff: A Tuple of added and removed Interval objects.
+
+    Returns:
+        A JSON string containing the user id and lists of added and removed Interval objects.
+    """
+    added_dict = [interval.asdict() for interval in diff[0]]
+    removed_dict = [interval.asdict() for interval in diff[1]]
+    json_dict = {
+        "userID": 1,
+        "added": added_dict,
+        "removed": removed_dict,
+    }
+    return json.dumps(json_dict)
 
 
-def to_interval_list(json_response: str) -> List[Interval]:
-    """Extracts and returns Interval objects from the given JSON response."""
-    json_dict = json.loads(json_response)
-    intervals = [as_interval(i) for i in json_dict["intervalData"]]
+def to_interval_list(json_str: str) -> List[Interval]:
+    """Extract and return a list of Interval objects from the given JSON response.
+
+    Args:
+        json_str: A JSON string containing a list of Interval objects.
+
+    Returns:
+        A list of Interval objects.
+    """
+    json_dict = json.loads(json_str)
+    intervals = [
+        Interval.from_dict(interval_dict) for interval_dict in json_dict["intervals"]
+    ]
     return intervals
