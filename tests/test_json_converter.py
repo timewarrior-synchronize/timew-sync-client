@@ -58,7 +58,7 @@ def test_to_json_request():
   ]\n}"""
     )
 
-    test_json_request = to_json_request(test_interval_list)
+    test_json_request = to_json_request(1, test_interval_list)
     assert test_json_request == expt_json_request
 
 

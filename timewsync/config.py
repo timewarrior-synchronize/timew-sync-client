@@ -25,21 +25,33 @@
 ###############################################################################
 
 
-from typing import List
-import json
+import configparser
 
-from timewsync.interval import Interval, as_interval
+class Configuration:
+    def __init__(self, server_base_url: str, user_id: int, merge_conflict_hook: str):
+        self.server_base_url: str = server_base_url
+        self.user_id: int = user_id
+        self.merge_conflict_hook: str = merge_conflict_hook
 
+    def read(path: str):
+        config = configparser.ConfigParser()
+        config.read(path)
 
-def to_json_request(user_id: int, intervals: List[Interval]) -> str:
-    """Returns a JSON request including the Interval objects provided."""
-    interval_data = [str(i) for i in intervals]
-    json_dict = {"userId": user_id, "clientId": 1, "intervalData": interval_data}
-    return json.dumps(json_dict, indent=2)
+        if "Server" in config:
+            if "BaseURL" in config["Server"]:
+                server_base_url = config.get("Server", "BaseURL")
+            else:
+                raise RuntimeError("The configuration file needs to define Server.BaseURL")
+        else:
+            raise RuntimeError("The configuration file needs to have a \"Server\" section")
 
+        if "Client" in config:
+            if "UserID" in config["Client"]:
+                user_id = config.getint("Client", "UserID")
+            else:
+                raise RuntimeError("The configuration file needs to define Client.UserID")
+            merge_conflict_hook = config.get("Client", "OnMergeConflictHook", fallback="")
+        else:
+            raise RuntimeError("The configuration file needs to have a \"Client\" section")
 
-def to_interval_list(json_response: str) -> List[Interval]:
-    """Extracts and returns Interval objects from the given JSON response."""
-    json_dict = json.loads(json_response)
-    intervals = [as_interval(i) for i in json_dict["intervalData"]]
-    return intervals
+        return Configuration(server_base_url, user_id, merge_conflict_hook)

@@ -32,11 +32,16 @@ import requests
 
 from timewsync import json_converter
 from timewsync.interval import Interval
+from timewsync.config import Configuration
 
 SYNC_ENDPOINT = os.path.join("api", "sync")
 
 
-def dispatch(base_url: str, timew_intervals: List[Interval], snapshot_intervals: List[Interval]) -> List[Interval]:
+def dispatch(
+    config: Configuration,
+    timew_intervals: List[Interval],
+    snapshot_intervals: List[Interval],
+) -> List[Interval]:
     """Sends a sync request to the server.
 
     Args:
@@ -47,8 +52,8 @@ def dispatch(base_url: str, timew_intervals: List[Interval], snapshot_intervals:
     Returns:
         A list of Interval objects resulting from the sync.
     """
-    request_url = os.path.join(base_url, SYNC_ENDPOINT)
-    request_body = json_converter.to_json_request(timew_intervals)
+    request_url = os.path.join(config.base_url, SYNC_ENDPOINT)
+    request_body = json_converter.to_json_request(config.user_id, timew_intervals)
 
     server_response = requests.put(request_url, request_body)
 
@@ -62,16 +67,18 @@ def dispatch(base_url: str, timew_intervals: List[Interval], snapshot_intervals:
     return parsed_response
 
 
-def generate_diff(timew_intervals: List[Interval], snapshot_intervals: List[Interval]) -> Tuple[List[Interval], List[Interval]]:
+def generate_diff(
+    timew_intervals: List[Interval], snapshot_intervals: List[Interval]
+) -> Tuple[List[Interval], List[Interval]]:
     """Returns the difference of intervals to the latest sync.
 
-     Args:
-         timew_intervals: A list of all client Interval objects.
-         snapshot_intervals: A list of all Interval objects found in the snapshot of the latest sync.
+    Args:
+        timew_intervals: A list of all client Interval objects.
+        snapshot_intervals: A list of all Interval objects found in the snapshot of the latest sync.
 
-     Returns:
-         A Tuple of added and removed Interval objects.
-     """
+    Returns:
+        A Tuple of added and removed Interval objects.
+    """
     added = [i for i in timew_intervals if i not in snapshot_intervals]
     removed = [i for i in snapshot_intervals if i not in timew_intervals]
 
