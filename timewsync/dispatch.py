@@ -42,7 +42,7 @@ def dispatch(
     timew_intervals: List[Interval],
     snapshot_intervals: List[Interval],
 ) -> List[Interval]:
-    """Sends a sync request to the server.
+    """Send a sync request to the server.
 
     Args:
         base_url: The base URL of the API. E.g.: "http://localhost:8080".
@@ -52,8 +52,10 @@ def dispatch(
     Returns:
         A list of Interval objects resulting from the sync.
     """
+    diff = generate_diff(timew_intervals, snapshot_intervals)
+
     request_url = os.path.join(config.base_url, SYNC_ENDPOINT)
-    request_body = json_converter.to_json_request(config.user_id, timew_intervals)
+    request_body = json_converter.to_json_request(config.user_id, diff)
 
     server_response = requests.put(request_url, request_body)
 
@@ -70,7 +72,7 @@ def dispatch(
 def generate_diff(
     timew_intervals: List[Interval], snapshot_intervals: List[Interval]
 ) -> Tuple[List[Interval], List[Interval]]:
-    """Returns the difference of intervals to the latest sync.
+    """Return the difference of intervals to the latest sync.
 
     Args:
         timew_intervals: A list of all client Interval objects.

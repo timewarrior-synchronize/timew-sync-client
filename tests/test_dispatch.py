@@ -31,30 +31,29 @@ from timewsync.interval import Interval
 
 class TestGenerateDiff:
     def test_empty_list(self):
-        """Tests with lists having no data."""
-        assert generate_diff([], []) \
-               == ([], [])
+        """Test with both lists having no data."""
+        assert generate_diff([], []) == ([], [])
 
     def test_added_list(self):
-        """Tests the 'added' list."""
-        assert generate_diff([Interval()], []) \
-               == ([Interval()], [])
-        assert generate_diff([Interval(tags=['foo']), Interval(tags=['bar'])], [Interval(tags=['foo'])]) \
-               == ([Interval(tags=['bar'])], [])
+        """Test with only the 'added' list having data."""
+        assert generate_diff([Interval()], []) == ([Interval()], [])
+        assert generate_diff(
+            [Interval(tags=["foo"]), Interval(tags=["bar"])], [Interval(tags=["foo"])]
+        ) == ([Interval(tags=["bar"])], [])
 
     def test_removed_list(self):
-        """Tests the 'removed' list."""
-        assert generate_diff([], [Interval()]) \
-               == ([], [Interval()])
-        assert generate_diff([Interval(tags=['foo'])], [Interval(tags=['foo']), Interval(tags=['bar'])]) \
-               == ([], [Interval(tags=['bar'])])
+        """Test with only the 'removed' list having data."""
+        assert generate_diff([], [Interval()]) == ([], [Interval()])
+        assert generate_diff(
+            [Interval(tags=["foo"])], [Interval(tags=["foo"]), Interval(tags=["bar"])]
+        ) == ([], [Interval(tags=["bar"])])
 
     def test_both_lists(self):
-        """Tests with both lists having data."""
-        unchanged_interval = Interval(tags=['foo'], annotation='this is unchanged')
-        added_interval = Interval(tags=['bar'], annotation='this has been added')
-        removed_interval = Interval(tags=['bar'], annotation='this has been removed')
-        assert generate_diff([unchanged_interval], [unchanged_interval]) \
-               == ([], [])
-        assert generate_diff([unchanged_interval, added_interval], [removed_interval, unchanged_interval]) \
-               == ([added_interval], [removed_interval])
+        """Test with both lists having data."""
+        unchanged_interval = Interval(tags=["foo"], annotation="this is unchanged")
+        added_interval = Interval(tags=["bar"], annotation="this has been added")
+        removed_interval = Interval(tags=["bar"], annotation="this has been removed")
+        assert generate_diff([unchanged_interval], [unchanged_interval]) == ([], [])
+        assert generate_diff(
+            [unchanged_interval, added_interval], [removed_interval, unchanged_interval]
+        ) == ([added_interval], [removed_interval])
