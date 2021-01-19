@@ -54,7 +54,7 @@ def dispatch(
     """
     diff = generate_diff(timew_intervals, snapshot_intervals)
 
-    request_url = os.path.join(config.base_url, SYNC_ENDPOINT)
+    request_url = os.path.join(config.server_base_url, SYNC_ENDPOINT)
     request_body = json_converter.to_json_request(config.user_id, diff)
 
     server_response = requests.put(request_url, request_body)
