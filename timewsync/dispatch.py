@@ -45,7 +45,7 @@ def dispatch(
     """Send a sync request to the server.
 
     Args:
-        base_url: The base URL of the API. E.g.: "http://localhost:8080".
+        config: The timewsync configuration file.
         timew_intervals: A list of all client Interval objects.
         snapshot_intervals: A list of all Interval objects found in the snapshot of the latest sync.
 
