@@ -31,12 +31,13 @@ import json
 from timewsync.interval import Interval
 
 
-def to_json_request(diff: Tuple[List[Interval], List[Interval]]) -> str:
+def to_json_request(user_id: int, diff: Tuple[List[Interval], List[Interval]]) -> str:
     """Build and return a JSON string using the diff provided.
 
     The diff must contain a list of added and a list of removed Interval objects.
 
     Args:
+        user_id: The identification number of the current user.
         diff: A Tuple of added and removed Interval objects.
 
     Returns:
@@ -45,7 +46,7 @@ def to_json_request(diff: Tuple[List[Interval], List[Interval]]) -> str:
     added_dict = [interval.asdict() for interval in diff[0]]
     removed_dict = [interval.asdict() for interval in diff[1]]
     json_dict = {
-        "userID": 1,
+        "userID": user_id,
         "added": added_dict,
         "removed": removed_dict,
     }

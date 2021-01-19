@@ -32,17 +32,20 @@ import requests
 
 from timewsync import json_converter
 from timewsync.interval import Interval
+from timewsync.config import Configuration
 
 SYNC_ENDPOINT = os.path.join("api", "sync")
 
 
 def dispatch(
-    base_url: str, timew_intervals: List[Interval], snapshot_intervals: List[Interval]
+    config: Configuration,
+    timew_intervals: List[Interval],
+    snapshot_intervals: List[Interval],
 ) -> List[Interval]:
     """Send a sync request to the server.
 
     Args:
-        base_url: The base URL of the API. E.g.: "http://localhost:8080".
+        config: The timewsync configuration file.
         timew_intervals: A list of all client Interval objects.
         snapshot_intervals: A list of all Interval objects found in the snapshot of the latest sync.
 
@@ -51,8 +54,8 @@ def dispatch(
     """
     diff = generate_diff(timew_intervals, snapshot_intervals)
 
-    request_url = os.path.join(base_url, SYNC_ENDPOINT)
-    request_body = json_converter.to_json_request(diff)
+    request_url = os.path.join(config.server_base_url, SYNC_ENDPOINT)
+    request_body = json_converter.to_json_request(config.user_id, diff)
 
     server_response = requests.put(request_url, request_body)
 
