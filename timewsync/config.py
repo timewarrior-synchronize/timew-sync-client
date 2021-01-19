@@ -34,6 +34,7 @@ class Configuration:
         self.user_id: int = user_id
         self.merge_conflict_hook: str = merge_conflict_hook
 
+    @classmethod
     def read(cls, path: str):
         config = configparser.ConfigParser()
         config.read(path)
