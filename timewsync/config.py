@@ -34,7 +34,7 @@ class Configuration:
         self.user_id: int = user_id
         self.merge_conflict_hook: str = merge_conflict_hook
 
-    def read(path: str):
+    def read(cls, path: str):
         config = configparser.ConfigParser()
         config.read(path)
 
@@ -65,4 +65,4 @@ class Configuration:
                 'The configuration file needs to have a "Client" section'
             )
 
-        return Configuration(server_base_url, user_id, merge_conflict_hook)
+        return cls(server_base_url, user_id, merge_conflict_hook)
