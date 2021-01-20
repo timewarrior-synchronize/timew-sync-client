@@ -102,22 +102,48 @@ def extract_tags(lst_of_intervalobjects: List[Interval]) -> str:
     :param
         lst_of_intervalobjects: A list of time intervals in timewarrior format.
     :return:
-        A string of all tags and the number of their occurence written in the correct format for tags.data .
+        A string of all tags and the number of their occurrence written in the correct format for tags.data .
     """
 
     all_tags = defaultdict(int)
     for interval in lst_of_intervalobjects:
         for tag in interval.tags:
-            all_tags[tag] += 1
+            all_tags[normalize_tag(tag)] += 1
 
     if len(all_tags) == 0:
         return ""
 
     result = "{"
     for tag in all_tags.keys():
-        result += '"' + tag + '":{"count":' + str(all_tags[tag]) + "},"
+        result += "\n    " + tag + ':{"count":' + str(all_tags[tag]) + "},"
     result = (
-        result[:-1] + "}"
+        result[:-1] + "\n}"
     )  # now, discard the last ',' (which is too much) and add a closing '}'
 
     return result
+
+
+def normalize_tag(tag: str) -> str:
+    """
+    Receives a tag (string) and checks if it has double quotes at start and end '"..."'.
+    If not, it will attach them.
+    Note:
+        - Empty strings and '""' will raise an error because timewarrior cannot work with empty tags.
+        - The two Strings '"' and '\"' will both be returned as '"\""' (but we expect '"' never to be rendered).
+    Args:
+        tag: The tag which shall be normalized.
+
+    Returns: The normalized tag.
+
+    """
+    if len(tag) == 0 or tag == '""':
+        raise RuntimeError("invalid tag '%s'" % tag)
+
+    if tag == '"' or tag == '"':
+        return '"\\""'
+
+    if len(tag) < 2 or tag[0] != '"' or tag[-1] != '"':
+        return '"' + tag + '"'
+
+    else:
+        return tag
