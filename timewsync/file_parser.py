@@ -131,9 +131,9 @@ def normalize_tag(tag: str) -> str:
         - Empty strings and '""' will raise an error because timewarrior cannot work with empty tags.
         - The two Strings '"' and '\"' will both be returned as '"\""' (but we expect '"' never to be rendered).
     Args:
-        tag: The tag which shall be uniformed.
+        tag: The tag which shall be normalized.
 
-    Returns: The uniformed tag.
+    Returns: The normalized tag.
 
     """
     if len(tag) == 0 or tag == '""':
