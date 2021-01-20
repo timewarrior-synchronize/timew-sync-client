@@ -131,7 +131,7 @@ class State(enum.Enum):
 def tokenize(string: str) -> List[str]:
     """Converts the input string into tokens, separated at whitespaces.
     Correctly handles quoted strings.
-    Returns an error if the string contains trailing whitespace.
+    Returns an error if the string contains trailing whitespace or quotationmarks without leading whitespace.
 
     Args:
         string: The string input to be tokenized.
@@ -143,14 +143,14 @@ def tokenize(string: str) -> List[str]:
     # The logic of this function is based on a DFA (definite final automat). In state, the state of the automat will be stored.
     state = State.start
     result = []         # will be the list of tokens
-    start_of_token = 0           # TODO: WHAT INDEX?
+    start_of_token = 0  # TODO: WHAT INDEX?
     i = 0               # index within the string
 
     # Iterate through string, characterwise
     for c in string:
 
         if state == State.start:
-            if c == ' ':
+            if c == ' ':        # whitespace
                 result.append(string[start_of_token:i])
                 state = State.whitespace
             if c == '"':
@@ -158,7 +158,7 @@ def tokenize(string: str) -> List[str]:
             else:
                  pass   # skip character
 
-        if state == State.whitespace:
+        elif state == State.whitespace:
             if c == ' ':
                 pass    # skip character
             if c == '"':
@@ -168,7 +168,7 @@ def tokenize(string: str) -> List[str]:
                 start_of_token = i
                 state = State.start
 
-        if state == State.quote:
+        elif state == State.quote:
             if c == "\\":   # Special case only relevant in "quoteState". Check for a single \. It's written \\ due to python syntax
                 state = State.escape
             if c == ' ':
@@ -183,6 +183,7 @@ def tokenize(string: str) -> List[str]:
             state = State.quote
 
         i += 1
+        print(c, state)
 
     if state != State.start:
         raise Exception("Missing matching double quote.")
@@ -192,6 +193,7 @@ def tokenize(string: str) -> List[str]:
         return result
 
 # TODO: test schreiben und diese fälle klären:
-print((tokenize("abc def \" ghi")))
-print(len((tokenize("abc def \" ghi"))[2])) # es fügt ein leerzeichen an " vorne an
-print((tokenize('123 def "\"" "ghi" ')))
+#print((tokenize("abc def \" ghi")))
+#print(len((tokenize("abc def \" ghi"))[2])) # es fügt ein leerzeichen an " vorne an
+#print((tokenize('123 def "\"" "ghi" ')))
+print((tokenize('abc"d"ef')))
