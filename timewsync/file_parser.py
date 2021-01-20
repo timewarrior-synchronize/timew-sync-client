@@ -137,9 +137,9 @@ def normalize_tag(tag: str) -> str:
 
     """
     if len(tag) == 0 or tag == '""':
-        raise RuntimeError('invalid tag \'%s\'' % tag)
+        raise RuntimeError("invalid tag '%s'" % tag)
 
-    if tag == '"' or tag == '\"':
+    if tag == '"' or tag == '"':
         return '"\\""'
 
     if len(tag) < 2 or tag[0] != '"' or tag[-1] != '"':
