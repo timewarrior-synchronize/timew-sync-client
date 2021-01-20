@@ -227,7 +227,7 @@ class TestExtractTags:
         date4 = datetime(2023, 10, 11)
         i1 = Interval(start=date1, end=date2)
         i2 = Interval(
-            start=date2, end=date3, tags=["this is tag 1", 'this is "not" tag 1' "tag2", "tag3", "tag4", "this is tag 1", "tag1"]
+            start=date2, end=date3, tags=["this is tag 1", 'this is "not" tag 1', "tag2", "tag3", "tag4", "this is tag 1", "tag1"]
         )
         i3 = Interval(
             start=date3, end=date4, tags=["tag2"], annotation="I am the annotation."
@@ -242,8 +242,15 @@ class TestExtractTags:
         i6 = Interval(start=date1, end=date2, tags=['"', '\"'])
         assert (
             extract_tags([i1, i2, i3, i4, i5, i6])
-            == '{"this is tag 1":{"count":2},"this is "not" tag 1":{"count":1},"tag2":{"count":3},"tag3":{"count":2},'
-               '"tag4":{"count":1},"tag1":{"count":1},"\"":{"count":2}}'
+            == ('{'
+                '\n    "this is tag 1":{"count":2},'
+                '\n    "this is "not" tag 1":{"count":1},'
+                '\n    "tag2":{"count":3},'
+                '\n    "tag3":{"count":2},'
+                '\n    "tag4":{"count":1},'
+                '\n    "tag1":{"count":1},'
+                '\n    "\\"":{"count":2}'
+                '\n}')
         )
 
 
@@ -255,8 +262,12 @@ class TestNormalizeTag:
             normalize_tag('""')
 
     def test_one_double_quote(self):
-        assert normalize_tag('"') == '"\""'
-        assert normalize_tag('\"') == '"\""'
+        assert normalize_tag('"') == '"\\""'
+        assert normalize_tag('\"') == '"\\""'
+
+    def test_standard_case(self):
+        assert normalize_tag('two or more words') == '"two or more words"'
+        assert normalize_tag('"oneword"') == '"oneword"'
 
     def test_length_2(self):
         assert normalize_tag('ab') == '"ab"'
