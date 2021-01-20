@@ -26,12 +26,12 @@
 
 
 import argparse
-import configparser
 import os
 
 from timewsync.dispatch import dispatch
 from timewsync.file_parser import to_interval_list, to_monthly_data, extract_tags
 from timewsync.io_handler import read_data, write_data
+from timewsync.config import Configuration
 
 DEFAULT_DATA_DIR = os.path.join("~", ".timewsync")
 
@@ -70,15 +70,13 @@ def main():
     args = make_parser().parse_args()
     data_dir = os.path.expanduser(args.data_dir)
 
-    config = configparser.ConfigParser()
-    config.read(os.path.join(data_dir, "timewsync.conf"))
-    base_url = config.get("Server", "BaseURL", fallback="http://localhost:8080")
+    config = Configuration.read(os.path.join(data_dir, "timewsync.conf"))
 
     timew_data, snapshot_data = read_data(data_dir)
     timew_intervals = to_interval_list(timew_data)
     snapshot_intervals = to_interval_list(snapshot_data)
 
-    response_intervals = dispatch(base_url, timew_intervals, snapshot_intervals)
+    response_intervals = dispatch(config, timew_intervals, snapshot_intervals)
 
     server_data = to_monthly_data(response_intervals)
     new_tags = extract_tags(response_intervals)
