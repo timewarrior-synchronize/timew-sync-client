@@ -66,7 +66,7 @@ def make_parser():
 
 
 def run_conflict_hook(data_dir: str):
-    """Run 'conflict-occurred.py' file if present.
+    """Run 'conflict-occurred' file if present.
 
     Expected in '.timewsync/hooks' directory.
 
@@ -76,7 +76,7 @@ def run_conflict_hook(data_dir: str):
     Raises:
         CalledProcessError: Is raised if the hook exits with a non-zero exit code. Holds details about the process.
     """
-    conflict_hook = os.path.join(data_dir, "hooks", "conflict-occurred.py")
+    conflict_hook = os.path.join(data_dir, "hooks", "conflict-occurred")
 
     if os.path.exists(conflict_hook):
         subprocess.run(conflict_hook, check=True)
