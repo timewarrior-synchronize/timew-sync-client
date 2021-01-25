@@ -29,7 +29,7 @@ import json
 from datetime import datetime
 
 from timewsync.interval import Interval
-from timewsync.json_converter import to_json_request, to_interval_list
+from timewsync.json_converter import to_json_request, from_json_response
 
 
 class TestToJSONRequest:
@@ -175,21 +175,23 @@ class TestToJSONRequest:
         )
 
 
-class TestToIntervalList:
-    def test_empty_list(self):
+class TestFromJSONResponse:
+    def test_conflict_flag(self):
         """Test with empty list in json."""
-        test_json = '{"intervals": []}'
-        assert to_interval_list(test_json) == []
+        test_json = '{"conflictsOccurred": false, "intervals": []}'
+        assert from_json_response(test_json) == ([], False)
+        test_json = '{"conflictsOccurred": true, "intervals": []}'
+        assert from_json_response(test_json) == ([], True)
 
-    def test_full_list(self):
+    def test_interval_list(self):
         """Test with list in json having data."""
 
         # Test with empty interval
         test_interval_dict = {}
         test_interval_json = json.dumps(test_interval_dict)
-        test_json = '{"intervals": [' + test_interval_json + "]}"
+        test_json = '{"conflictsOccurred": false, "intervals": [' + test_interval_json + "]}"
         expt_interval_list = [Interval()]
-        result = to_interval_list(test_json)
+        result, c_flag = from_json_response(test_json)
         assert len(result) == 1
         assert result[0] == expt_interval_list[0]
 
@@ -201,20 +203,20 @@ class TestToIntervalList:
             "annotation": "this is an annotation",
         }
         test_interval_json = json.dumps(test_interval_dict)
-        test_json = '{"intervals": [' + test_interval_json + "]}"
+        test_json = '{"conflictsOccurred": false, "intervals": [' + test_interval_json + "]}"
         expt_interval_list = [Interval.from_dict(test_interval_dict)]
-        result = to_interval_list(test_json)
+        result, c_flag = from_json_response(test_json)
         assert len(result) == 1
         assert result[0] == expt_interval_list[0]
 
         # Test with multiple filled intervals
         test_json = (
-            '{"intervals": [' + test_interval_json + ", " + test_interval_json + "]}"
+            '{"conflictsOccurred": false, "intervals": [' + test_interval_json + ", " + test_interval_json + "]}"
         )
         expt_interval_list = [
             Interval.from_dict(test_interval_dict),
             Interval.from_dict(test_interval_dict),
         ]
-        result = to_interval_list(test_json)
+        result, c_flag = from_json_response(test_json)
         assert len(result) == 2
         assert result[0] == expt_interval_list[0] and result[1] == expt_interval_list[1]

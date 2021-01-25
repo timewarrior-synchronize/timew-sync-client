@@ -53,7 +53,7 @@ def to_json_request(user_id: int, diff: Tuple[List[Interval], List[Interval]]) -
     return json.dumps(json_dict)
 
 
-def to_interval_list(json_str: str) -> (List[Interval], bool):
+def from_json_response(json_str: str) -> (List[Interval], bool):
     """Extract and return a list of Interval objects from the given JSON response.
 
     Args:
