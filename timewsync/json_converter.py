@@ -66,5 +66,5 @@ def to_interval_list(json_str: str) -> (List[Interval], bool):
     intervals = [
         Interval.from_dict(interval_dict) for interval_dict in json_dict["intervals"]
     ]
-    conflict_flag = json_dict["conflictOccurred"]
+    conflict_flag = json_dict["conflictsOccurred"]
     return intervals, conflict_flag
