@@ -41,7 +41,7 @@ def dispatch(
     config: Configuration,
     timew_intervals: List[Interval],
     snapshot_intervals: List[Interval],
-) -> List[Interval]:
+) -> (List[Interval], bool):
     """Send a sync request to the server.
 
     Args:
@@ -50,7 +50,8 @@ def dispatch(
         snapshot_intervals: A list of all Interval objects found in the snapshot of the latest sync.
 
     Returns:
-        A list of Interval objects resulting from the sync.
+        A list of Interval objects resulting from the sync
+        and a boolean flag indicating whether a conflict had been resolved.
     """
     diff = generate_diff(timew_intervals, snapshot_intervals)
 
@@ -64,9 +65,9 @@ def dispatch(
             f"Problem while syncing with server. Server responded with {server_response.status_code}."
         )
 
-    parsed_response = json_converter.to_interval_list(server_response.text)
+    parsed_response, conflict_flag = json_converter.to_interval_list(server_response.text)
 
-    return parsed_response
+    return parsed_response, conflict_flag
 
 
 def generate_diff(

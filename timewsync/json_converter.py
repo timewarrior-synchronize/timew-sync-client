@@ -53,17 +53,18 @@ def to_json_request(user_id: int, diff: Tuple[List[Interval], List[Interval]]) -
     return json.dumps(json_dict)
 
 
-def to_interval_list(json_str: str) -> List[Interval]:
+def to_interval_list(json_str: str) -> (List[Interval], bool):
     """Extract and return a list of Interval objects from the given JSON response.
 
     Args:
         json_str: A JSON string containing a list of Interval objects.
 
     Returns:
-        A list of Interval objects.
+        A list of Interval objects and a boolean flag indicating whether a conflict had been resolved.
     """
     json_dict = json.loads(json_str)
     intervals = [
         Interval.from_dict(interval_dict) for interval_dict in json_dict["intervals"]
     ]
-    return intervals
+    conflict_flag = json_dict["conflictOccurred"]
+    return intervals, conflict_flag

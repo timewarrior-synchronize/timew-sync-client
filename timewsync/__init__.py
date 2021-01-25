@@ -64,6 +64,11 @@ def make_parser():
     return parser
 
 
+def run_conflict_hook():
+    """TODO"""
+    pass
+
+
 def main():
     """This function is the main entry point to the timewarrior
     synchronization client."""
@@ -76,7 +81,10 @@ def main():
     timew_intervals = to_interval_list(timew_data)
     snapshot_intervals = to_interval_list(snapshot_data)
 
-    response_intervals = dispatch(config, timew_intervals, snapshot_intervals)
+    response_intervals, conflict_flag = dispatch(config, timew_intervals, snapshot_intervals)
+
+    if conflict_flag:
+        run_conflict_hook()
 
     server_data = to_monthly_data(response_intervals)
     new_tags = extract_tags(response_intervals)
