@@ -94,7 +94,9 @@ def main():
     timew_intervals = to_interval_list(timew_data)
     snapshot_intervals = to_interval_list(snapshot_data)
 
-    response_intervals, conflict_flag = dispatch(config, timew_intervals, snapshot_intervals)
+    response_intervals, conflict_flag = dispatch(
+        config, timew_intervals, snapshot_intervals
+    )
 
     if conflict_flag:
         run_conflict_hook(data_dir)

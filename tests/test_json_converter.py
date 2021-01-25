@@ -189,7 +189,9 @@ class TestFromJSONResponse:
         # Test with empty interval
         test_interval_dict = {}
         test_interval_json = json.dumps(test_interval_dict)
-        test_json = '{"conflictsOccurred": false, "intervals": [' + test_interval_json + "]}"
+        test_json = (
+            '{"conflictsOccurred": false, "intervals": [' + test_interval_json + "]}"
+        )
         expt_interval_list = [Interval()]
         result, c_flag = from_json_response(test_json)
         assert len(result) == 1
@@ -203,7 +205,9 @@ class TestFromJSONResponse:
             "annotation": "this is an annotation",
         }
         test_interval_json = json.dumps(test_interval_dict)
-        test_json = '{"conflictsOccurred": false, "intervals": [' + test_interval_json + "]}"
+        test_json = (
+            '{"conflictsOccurred": false, "intervals": [' + test_interval_json + "]}"
+        )
         expt_interval_list = [Interval.from_dict(test_interval_dict)]
         result, c_flag = from_json_response(test_json)
         assert len(result) == 1
@@ -211,7 +215,11 @@ class TestFromJSONResponse:
 
         # Test with multiple filled intervals
         test_json = (
-            '{"conflictsOccurred": false, "intervals": [' + test_interval_json + ", " + test_interval_json + "]}"
+            '{"conflictsOccurred": false, "intervals": ['
+            + test_interval_json
+            + ", "
+            + test_interval_json
+            + "]}"
         )
         expt_interval_list = [
             Interval.from_dict(test_interval_dict),
