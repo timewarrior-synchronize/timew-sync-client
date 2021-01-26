@@ -179,9 +179,11 @@ class TestFromJSONResponse:
     def test_conflict_flag(self):
         """Test with empty list in json."""
         test_json = '{"conflictsOccurred": false, "intervals": []}'
-        assert from_json_response(test_json) == ([], False)
+        _, c_flag = from_json_response(test_json)
+        assert c_flag is False
         test_json = '{"conflictsOccurred": true, "intervals": []}'
-        assert from_json_response(test_json) == ([], True)
+        _, c_flag = from_json_response(test_json)
+        assert c_flag is True
 
     def test_interval_list(self):
         """Test with list in json having data."""
@@ -193,7 +195,7 @@ class TestFromJSONResponse:
             '{"conflictsOccurred": false, "intervals": [' + test_interval_json + "]}"
         )
         expt_interval_list = [Interval()]
-        result, c_flag = from_json_response(test_json)
+        result, _ = from_json_response(test_json)
         assert len(result) == 1
         assert result[0] == expt_interval_list[0]
 
@@ -209,7 +211,7 @@ class TestFromJSONResponse:
             '{"conflictsOccurred": false, "intervals": [' + test_interval_json + "]}"
         )
         expt_interval_list = [Interval.from_dict(test_interval_dict)]
-        result, c_flag = from_json_response(test_json)
+        result, _ = from_json_response(test_json)
         assert len(result) == 1
         assert result[0] == expt_interval_list[0]
 
@@ -225,6 +227,6 @@ class TestFromJSONResponse:
             Interval.from_dict(test_interval_dict),
             Interval.from_dict(test_interval_dict),
         ]
-        result, c_flag = from_json_response(test_json)
+        result, _ = from_json_response(test_json)
         assert len(result) == 2
         assert result[0] == expt_interval_list[0] and result[1] == expt_interval_list[1]
