@@ -177,7 +177,7 @@ class TestToJSONRequest:
 
 class TestFromJSONResponse:
     def test_conflict_flag(self):
-        """Test with empty list in json."""
+        """Test the flag indicating that conflicts had occurred."""
         test_json = '{"conflictsOccurred": false, "intervals": []}'
         _, c_flag = from_json_response(test_json)
         assert c_flag is False
