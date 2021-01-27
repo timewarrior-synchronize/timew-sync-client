@@ -27,6 +27,7 @@
 
 import argparse
 import os
+import subprocess
 
 from timewsync.dispatch import dispatch
 from timewsync.file_parser import to_interval_list, to_monthly_data, extract_tags
@@ -64,6 +65,23 @@ def make_parser():
     return parser
 
 
+def run_conflict_hook(data_dir: str):
+    """Run 'conflicts-occurred' file if present.
+
+    Expected in '.timewsync/hooks' directory.
+
+    Args:
+        data_dir: The timewsync data directory.
+
+    Raises:
+        CalledProcessError: Is raised if the hook exits with a non-zero exit code. Holds details about the process.
+    """
+    conflict_hook = os.path.join(data_dir, "hooks", "conflicts-occurred")
+
+    if os.path.exists(conflict_hook):
+        subprocess.run(conflict_hook, check=True)
+
+
 def main():
     """This function is the main entry point to the timewarrior
     synchronization client."""
@@ -76,7 +94,12 @@ def main():
     timew_intervals = to_interval_list(timew_data)
     snapshot_intervals = to_interval_list(snapshot_data)
 
-    response_intervals = dispatch(config, timew_intervals, snapshot_intervals)
+    response_intervals, conflict_flag = dispatch(
+        config, timew_intervals, snapshot_intervals
+    )
+
+    if conflict_flag:
+        run_conflict_hook(data_dir)
 
     server_data = to_monthly_data(response_intervals)
     new_tags = extract_tags(response_intervals)
