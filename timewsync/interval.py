@@ -151,49 +151,37 @@ def tokenize(string: str) -> List[str]:
     # Iterate through string, characterwise
     for c in string:
 
-        print("1: I am in " + str(state) + " ; and I read a " + c)
-
         if state == State.start:
             if c == '"':        # tags starts with quote
                 state = State.firstquote
-                print ("2: I get to firstquote state.")
             elif c == ' ':       # There may be as many whitespaces between tags, they shall be skipped.
                 start_of_token = i+1
-                print("2b: I set pointer anew." + "\n")
             else:               # tag does not start with quote
                 state = State.normal
-                print ("3: I get to normal state.")
 
         elif state == State.normal:
             if c == ' ':    # whitespace ends any tag which is not in quotes
                 result.append(string[start_of_token:i])
                 state = State.start
-                print ("4: I get to start state.")
                 start_of_token = i+1
-                print("5: I read " + result[-1] + " in state normal." + "\n")
             else:
                 pass        # All other characters, including \ and ", are normal characters in a non-quoted tag. They shall be read.
 
         elif state == State.firstquote:
             if c == '\\':    # \ in qouted tags are used to escape the following character. This is a check for a single \. It's written \\ only due to python syntax.
                 state = State.escape
-                print ("6: I get to escape state.")
             elif c == '"':
             # TODO firstquote mit elif: geht; mit if: geht nicht!
                 state = State.secondquote   # a second quote does end any tag which started with a quote
-                print ("7: I get to 2ndquote state.")
             else:
                 state = State.quotestate    # Any other character is a normal character. It shall be read.
-                print ("8: I get to quotestate.")
 
         elif state == State.quotestate:
             if c == "\\":   # \ in qouted tags are used to escape the following character.
                             # This is a check for a single \. It's written \\ only due to python syntax.
                 state = State.escape
-                print ("9: I get to escape state.")
             elif c == '"':
                 state = State.secondquote   # a second quote does end any tag which started with a quote
-                print ("10: I get to 2ndquote state.")
             else:
                 pass                        # Any other character is a normal character. It shall be read.
 
@@ -201,20 +189,15 @@ def tokenize(string: str) -> List[str]:
             if c == ' ':    # after a qouted tag, a whitespace or the end of the string must follow.
                 result.append(string[start_of_token:i])
                 state = State.start
-                print ("11: I get to start state.")
                 start_of_token = i+1    # TODO: could cause trouble? || Is writing implemented well and correctly?
-                print("12: I read " + result[-1] + " in state secondquote." + "\n")
             else:
                 raise Exception("13: Whitespace missing after tag surrounded by quotes.")
                 return None
 
         elif state == State.escape:
-            print("14: I'm in escape state.")
             state = State.quotestate
-            print ("I get to quotestate.")
 
         i += 1
-    print("15: Ende: " + str(state), c)
     if ((state != State.start) and (state != State.normal) and (state != State.secondquote)):
         raise Exception("Found single quotation mark.")
         return None
