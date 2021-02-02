@@ -132,8 +132,8 @@ class State(enum.Enum):
 
 def tokenize(string: str) -> List[str]:
     """Converts the input string into tokens, separated at whitespaces.
-    Correctly handles quoted strings.
-    Returns an error if the string contains trailing whitespace or quotationmarks without leading whitespace.
+    Handles every quoted substring as one token, even if it contains whitespaces
+    Returns an error if a whitespace is missing between two quoted substrings or closing quotationmark is missing.
 
     Args:
         string: The string input to be tokenized.
@@ -169,7 +169,7 @@ def tokenize(string: str) -> List[str]:
                 result.append(string[start_of_token:i])
                 state = State.start
                 print ("4: I get to start state.")
-                start_of_token = i+1    # TODO: could cause trouble? || Is writing implemented well and correctly?
+                start_of_token = i+1
                 print("5: I read " + result[-1] + " in state normal." + "\n")
             else:
                 pass        # All other characters, including \ and ", are normal characters in a non-quoted tag. They shall be read.
@@ -221,27 +221,4 @@ def tokenize(string: str) -> List[str]:
     else:
         result.append(string[start_of_token:])
         return result
-
-# \\ always has python-syntax reasons. They are to be read as \
-# print((tokenize('abc def \" ghi'))) # shall throw error because a single " is not allowed
-#print((tokenize("abc def ghi")))    # standard case with only tgas without quotes
-#print((tokenize('123 def "\\"" "ghi" '))) # to be read as \" sorrounded by "...". For syntactical reasons, \\ must be written.
-#print((tokenize('abc"d"ef')))
-# print((tokenize('abc\\'))) # geht, soll gehen
-# print((tokenize('"abc\\" efg"'))) # geht, soll gehen
-# print((tokenize('"\\""'))) # geht, soll gehen
-# print((tokenize('"\\""'))) # geht, soll gehen
-# print((tokenize('abc     def       ghi'))) # geht, soll whitespaces zwischen tags skippen
-# print((tokenize('\abc'))) # soll gehen TODO: Achtung, es gibt ['\x07bc'] zurück!
-#print(tokenize('\\')) # geht, soll gehen
-print((tokenize('abc"d')))  # geht, soll gehen
-
-
-# sollen nicht gehen
-# print((tokenize('"\\"')))
-# print((tokenize('"')))  # geht nicht, soll nicht gehen
-# print((tokenize('"q1""q2')))  # geht nicht, soll nicht gehen, missing whitespace
-print((tokenize('"abc def')))  # missing closing quotationmark
-print((tokenize('abc def"')))  # missing closing quotationmark
-
-
+print(tokenize('abc def"'))
