@@ -123,9 +123,11 @@ def as_interval(line: str) -> Interval:
 
 class State(enum.Enum):
     start = 0
-    whitespace = 1
-    quote = 2
-    escape = 3
+    normal = 1
+    firstquote = 2
+    quotestate = 3
+    escape = 4
+    secondquote = 5
 
 
 def tokenize(string: str) -> List[str]:
@@ -143,57 +145,103 @@ def tokenize(string: str) -> List[str]:
     # The logic of this function is based on a DFA (definite final automat). In state, the state of the automat will be stored.
     state = State.start
     result = []         # will be the list of tokens
-    start_of_token = 0  # TODO: WHAT INDEX?
-    i = 0               # index within the string
+    start_of_token = 0
+    i = 0               # pointer: index where the loop is operating on the string
 
     # Iterate through string, characterwise
     for c in string:
 
+        print("1: I am in " + str(state) + " ; and I read a " + c)
+
         if state == State.start:
-            if c == ' ':        # whitespace
+            if c == '"':        # tags starts with quote
+                state = State.firstquote
+                print ("2: I get to firstquote state.")
+            elif c == ' ':       # There may be as many whitespaces between tags, they shall be skipped.
+                start_of_token = i+1
+                print("2b: I set pointer anew." + "\n")
+            else:               # tag does not start with quote
+                state = State.normal
+                print ("3: I get to normal state.")
+
+        elif state == State.normal:
+            if c == ' ':    # whitespace ends any tag which is not in quotes
                 result.append(string[start_of_token:i])
-                state = State.whitespace
-            if c == '"':
-                state = State.quote
-            else:
-                 pass   # skip character
-
-        elif state == State.whitespace:
-            if c == ' ':
-                pass    # skip character
-            if c == '"':
-                start_of_token = i
-                state = State.quote
-            else:
-                start_of_token = i
                 state = State.start
+                print ("4: I get to start state.")
+                start_of_token = i+1    # TODO: could cause trouble? || Is writing implemented well and correctly?
+                print("5: I read " + result[-1] + " in state normal." + "\n")
+            else:
+                pass        # All other characters, including \ and ", are normal characters in a non-quoted tag. They shall be read.
 
-        elif state == State.quote:
-            if c == "\\":   # Special case only relevant in "quoteState". Check for a single \. It's written \\ due to python syntax
+        elif state == State.firstquote:
+            if c == '\\':    # \ in qouted tags are used to escape the following character. This is a check for a single \. It's written \\ only due to python syntax.
                 state = State.escape
-            if c == ' ':
-                pass    # whitespace in quotation marks: skip character
-            if c == '"':
-                # TODO: add str[index:i] to result?
-                state = State.start
+                print ("6: I get to escape state.")
+            elif c == '"':
+            # TODO firstquote mit elif: geht; mit if: geht nicht!
+                state = State.secondquote   # a second quote does end any tag which started with a quote
+                print ("7: I get to 2ndquote state.")
             else:
-                pass    # skip character
+                state = State.quotestate    # Any other character is a normal character. It shall be read.
+                print ("8: I get to quotestate.")
 
-        if state == State.escape:
-            state = State.quote
+        elif state == State.quotestate:
+            if c == "\\":   # \ in qouted tags are used to escape the following character.
+                            # This is a check for a single \. It's written \\ only due to python syntax.
+                state = State.escape
+                print ("9: I get to escape state.")
+            elif c == '"':
+                state = State.secondquote   # a second quote does end any tag which started with a quote
+                print ("10: I get to 2ndquote state.")
+            else:
+                pass                        # Any other character is a normal character. It shall be read.
+
+        elif state == State.secondquote:
+            if c == ' ':    # after a qouted tag, a whitespace or the end of the string must follow.
+                result.append(string[start_of_token:i])
+                state = State.start
+                print ("11: I get to start state.")
+                start_of_token = i+1    # TODO: could cause trouble? || Is writing implemented well and correctly?
+                print("12: I read " + result[-1] + " in state secondquote." + "\n")
+            else:
+                raise Exception("13: Whitespace missing after tag surrounded by quotes.")
+                return None
+
+        elif state == State.escape:
+            print("14: I'm in escape state.")
+            state = State.quotestate
+            print ("I get to quotestate.")
 
         i += 1
-        print(c, state)
-
-    if state != State.start:
-        raise Exception("Missing matching double quote.")
+    print("15: Ende: " + str(state), c)
+    if ((state != State.start) and (state != State.normal) and (state != State.secondquote)):
+        raise Exception("Found single quotation mark.")
         return None
     else:
         result.append(string[start_of_token:])
         return result
 
-# TODO: test schreiben und diese fälle klären:
-#print((tokenize("abc def \" ghi")))
-#print(len((tokenize("abc def \" ghi"))[2])) # es fügt ein leerzeichen an " vorne an
-#print((tokenize('123 def "\"" "ghi" ')))
-print((tokenize('abc"d"ef')))
+# \\ always has python-syntax reasons. They are to be read as \
+# print((tokenize('abc def \" ghi'))) # shall throw error because a single " is not allowed
+#print((tokenize("abc def ghi")))    # standard case with only tgas without quotes
+#print((tokenize('123 def "\\"" "ghi" '))) # to be read as \" sorrounded by "...". For syntactical reasons, \\ must be written.
+#print((tokenize('abc"d"ef')))
+# print((tokenize('abc\\'))) # geht, soll gehen
+# print((tokenize('"abc\\" efg"'))) # geht, soll gehen
+# print((tokenize('"\\""'))) # geht, soll gehen
+# print((tokenize('"\\""'))) # geht, soll gehen
+# print((tokenize('abc     def       ghi'))) # geht, soll whitespaces zwischen tags skippen
+# print((tokenize('\abc'))) # soll gehen TODO: Achtung, es gibt ['\x07bc'] zurück!
+#print(tokenize('\\')) # geht, soll gehen
+print((tokenize('abc"d')))  # geht, soll gehen
+
+
+# sollen nicht gehen
+# print((tokenize('"\\"')))
+# print((tokenize('"')))  # geht nicht, soll nicht gehen
+# print((tokenize('"q1""q2')))  # geht nicht, soll nicht gehen, missing whitespace
+print((tokenize('"abc def')))  # missing closing quotationmark
+print((tokenize('abc def"')))  # missing closing quotationmark
+
+
