@@ -433,3 +433,44 @@ class TestTokenize:
             + ["#"]
             + expt_annotation
         )
+
+
+class TestTokenizerNew:
+    # 1. Tests which should succeed
+    def test_standard_case(self):
+        assert tokenize('abc def ghi') == ['abc', 'def', 'ghi']
+        assert tokenize('"abc" "def" "ghi"') == ['"abc"', '"def"', '"ghi"']
+        assert tokenize('"1bc" d2f "gh3"') == ['"1bc"', 'd2f', '"gh3"']
+        assert tokenize('13* "4-5" 7/9') == ['13*', '"4-5"', '7/9']
+
+    def test_special_tokens_acceptable(self):
+        assert tokenize('"ghi" ') == ['"ghi"', '']
+
+        # special cases with \ in the token
+        # Note: \\ are to be read as \. \\ needs to be written for syntax reasons.
+        assert tokenize('123 def "\\"" "ghi"') == ['123', 'def', '"\\""', '"ghi"'] # test for the token \"
+        assert tokenize('\\ 123') == ['\\', '123'] # test for the token \
+        assert tokenize('abc\\ def') == ['abc\\', 'def'] # test for unquoted tokens ending with \
+        assert tokenize('"abc\\" efg" hij') == ['"abc\\" efg"', 'hij'] # test for quoted tokens ending in \
+        assert tokenize('\\abc') == ['\\abc'] # test for \ before normal character
+
+        # special cases with " in the token
+        assert tokenize('abc"d"ef') == ['abc"d"ef'] # test for twice " in a token
+        assert tokenize('abc"d') == ['abc"d']  # test for once " in a token
+        assert tokenize('abc"d') == ['abc"d']  # test for " in the end of a token (interpreted as part of token, not as opening quotation mark)
+
+        # other special cases
+        assert tokenize('abc     def       ghi') == ['abc', 'def', 'ghi'] # test for skipping multiple whitespaces between tokens
+
+    def test_special_tokens_inacceptable(self):
+        with pytest.raises(Exception):
+            tokenize('abc def \" ghi')     # test: a single " is not allowed as a token
+
+        with pytest.raises(Exception):
+            tokenize('"\\"')               # test: "\" is not allowed
+
+        with pytest.raises(Exception):
+            tokenize('"q1""q2"')           # test: whitespace missing between qouted tokens
+
+        with pytest.raises(Exception):
+            tokenize('"abc def')           # test: quotationmark missing

@@ -1,0 +1,116 @@
+###############################################################################
+#
+# Copyright 2020 - Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+# https://www.opensource.org/licenses/mit-license.php
+#
+###############################################################################
+
+
+import enum
+from typing import List
+
+
+class State(enum.Enum):
+    whitespace = 0  # read whitespaces between tokens
+    simple_token = 1  # read unquoted token
+    quoted_token = 2  # read quoted token
+    quote_end = 3  # second quotation mark required to end quoted token
+    escape_character = 4  # escape next character in quoted token
+    error = 5  # invalid quotation syntax
+
+
+def tokenize(line: str) -> List[str]:
+    """Convert the input string into tokens, separated at whitespaces.
+
+    Quoted substrings are considered as a single token,
+    which must be separated to other tokens using whitespaces.
+
+    An error is raised if the quotation syntax is invalid,
+    i.e. missing a whitespace to another token or missing a closing quotation mark.
+
+    Internally the input is read using a state machine.
+
+    Args:
+        line: The string input to be tokenized.
+
+    Returns:
+        A list of tokens.
+    """
+    tokens = []
+    state = State.whitespace
+    current_token = -1  # index of current token
+
+    for i, c in enumerate(line):
+
+        # Whitespace state
+        if state == State.whitespace:
+            current_token = i
+            if c == " ":
+                continue
+            elif c == '"':
+                state = State.quoted_token
+            else:
+                state = State.simple_token
+
+        # Simple Token state
+        elif state == State.simple_token:
+            if c == " ":
+                state = State.whitespace
+                tokens.append(line[current_token:i])
+            else:
+                continue
+
+        # Quoted Token state
+        elif state == State.quoted_token:
+            if c == '"':
+                state = State.quote_end
+            elif c == "\\":
+                state = State.escape_character
+            else:
+                continue
+
+        # Quote End state
+        elif state == State.quote_end:
+            if c == " ":
+                state = State.whitespace
+                tokens.append(line[current_token:i])
+            else:
+                state = State.error
+
+        # Escape Character state
+        elif state == State.escape_character:
+            continue
+
+        # Error state
+        else:
+            break
+
+    # Potential last token
+    if state in [State.simple_token, State.quote_end]:
+        tokens.append(line[current_token:])
+
+    # Accepting states
+    if state in [State.whitespace, State.simple_token, State.quote_end]:
+        return tokens
+
+    # Non-accepting states
+    raise RuntimeError("tokenization failed: '%s'" % line)

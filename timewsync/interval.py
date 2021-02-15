@@ -27,7 +27,8 @@
 
 from datetime import datetime
 from typing import List
-import enum
+
+from timewsync.tokenizer import tokenize
 
 DATETIME_FORMAT = "%Y%m%dT%H%M%SZ"
 
@@ -160,88 +161,3 @@ def as_interval(line: str) -> Interval:
         raise RuntimeError("unrecognizable line '%s'" % line)
 
     return interval
-
-class State(enum.Enum):
-    start = 0
-    normal = 1
-    firstquote = 2
-    quotestate = 3
-    escape = 4
-    secondquote = 5
-
-
-def tokenize(string: str) -> List[str]:
-    """Converts the input string into tokens, separated at whitespaces.
-    Handles every quoted substring as one token, even if it contains whitespaces
-    Returns an error if a whitespace is missing between two quoted substrings or closing quotationmark is missing.
-
-    Args:
-        string: The string input to be tokenized.
-
-    Returns:
-        A list of tokens.
-    """
-
-    # The logic of this function is based on a DFA (definite final automat). In state, the state of the automat will be stored.
-    state = State.start
-    result = []         # will be the list of tokens
-    start_of_token = 0
-    i = 0               # pointer: index where the loop is operating on the string
-
-    # Iterate through string, characterwise
-    for c in string:
-
-        if state == State.start:
-            if c == '"':        # tags starts with quote
-                state = State.firstquote
-            elif c == ' ':       # There may be as many whitespaces between tags, they shall be skipped.
-                start_of_token = i+1
-            else:               # tag does not start with quote
-                state = State.normal
-
-        elif state == State.normal:
-            if c == ' ':    # whitespace ends any tag which is not in quotes
-                result.append(string[start_of_token:i])
-                state = State.start
-                start_of_token = i+1
-            else:
-                pass        # All other characters, including \ and ", are normal characters in a non-quoted tag. They shall be read.
-
-        elif state == State.firstquote:
-            if c == '\\':    # \ in qouted tags are used to escape the following character. This is a check for a single \. It's written \\ only due to python syntax.
-                state = State.escape
-            elif c == '"':
-            # TODO firstquote mit elif: geht; mit if: geht nicht!
-                state = State.secondquote   # a second quote does end any tag which started with a quote
-            else:
-                state = State.quotestate    # Any other character is a normal character. It shall be read.
-
-        elif state == State.quotestate:
-            if c == "\\":   # \ in qouted tags are used to escape the following character.
-                            # This is a check for a single \. It's written \\ only due to python syntax.
-                state = State.escape
-            elif c == '"':
-                state = State.secondquote   # a second quote does end any tag which started with a quote
-            else:
-                pass                        # Any other character is a normal character. It shall be read.
-
-        elif state == State.secondquote:
-            if c == ' ':    # after a qouted tag, a whitespace or the end of the string must follow.
-                result.append(string[start_of_token:i])
-                state = State.start
-                start_of_token = i+1    # TODO: could cause trouble? || Is writing implemented well and correctly?
-            else:
-                raise Exception("13: Whitespace missing after tag surrounded by quotes.")
-                return None
-
-        elif state == State.escape:
-            state = State.quotestate
-
-        i += 1
-    if ((state != State.start) and (state != State.normal) and (state != State.secondquote)):
-        raise Exception("Found single quotation mark.")
-        return None
-    else:
-        result.append(string[start_of_token:])
-        return result
-
