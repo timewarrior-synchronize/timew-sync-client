@@ -29,12 +29,17 @@ from datetime import datetime
 from typing import List
 import enum
 
-DATETIME_FORMAT = '%Y%m%dT%H%M%SZ'
+DATETIME_FORMAT = "%Y%m%dT%H%M%SZ"
 
 
 class Interval:
-
-    def __init__(self, start: datetime = None, end: datetime = None, tags: List[str] = None, annotation: str = None):
+    def __init__(
+        self,
+        start: datetime = None,
+        end: datetime = None,
+        tags: List[str] = None,
+        annotation: str = None,
+    ):
         if tags is None:
             tags = []
         self.start: datetime = start
@@ -42,32 +47,67 @@ class Interval:
         self.tags: List[str] = tags
         self.annotation: str = annotation
 
+    @classmethod
+    def from_interval_str(cls):
+        """Initialize object from interval string."""
+        raise NotImplementedError
+
+    @classmethod
+    def from_dict(cls, interval_dict: dict):
+        """Initialize object from dictionary."""
+        return cls(
+            start=datetime.strptime(interval_dict["start"], DATETIME_FORMAT)
+            if "start" in interval_dict
+            else None,
+            end=datetime.strptime(interval_dict["end"], DATETIME_FORMAT)
+            if "end" in interval_dict
+            else None,
+            tags=interval_dict["tags"] if "tags" in interval_dict else [],
+            annotation=interval_dict["annotation"]
+            if "annotation" in interval_dict
+            else None,
+        )
+
     def __eq__(self, other):
-        """Checks whether this object is equal to another one, by attributes."""
+        """Check whether this object is equal to another one, by attributes."""
         if not isinstance(other, Interval):
-            raise TypeError('can\'t compare %s with Interval' % type(other).__name__)
-        return self.start == other.start and self.end == other.end and self.tags == other.tags and self.annotation == other.annotation
+            raise TypeError("can't compare %s with Interval" % type(other).__name__)
+        return (
+            self.start == other.start
+            and self.end == other.end
+            and self.tags == other.tags
+            and self.annotation == other.annotation
+        )
 
     def __str__(self) -> str:
-        """Returns the interval as a string in timewarrior format."""
-        out = 'inc'
+        """Return the object as a string in timewarrior format."""
+        out = "inc"
         if self.start:
-            out += ' ' + self.start.strftime(DATETIME_FORMAT)
+            out += " " + self.start.strftime(DATETIME_FORMAT)
             if self.end:
-                out += ' - ' + self.end.strftime(DATETIME_FORMAT)
+                out += " - " + self.end.strftime(DATETIME_FORMAT)
         if self.tags:
-            out += ' #'
+            out += " #"
             for tag in self.tags:
-                out += ' ' + tag
+                out += " " + tag
         if self.annotation:
             if not self.tags:
-                out += ' #'
-            out += ' # ' + self.annotation
+                out += " #"
+            out += " # " + self.annotation
         return out
+
+    def asdict(self) -> dict:
+        """Return the object as a dictionary."""
+        return {
+            "start": self.start.strftime(DATETIME_FORMAT) if self.start else "",
+            "end": self.end.strftime(DATETIME_FORMAT) if self.end else "",
+            "tags": self.tags,
+            "annotation": self.annotation if self.annotation else "",
+        }
 
 
 def as_interval(line: str) -> Interval:
-    """Parses an Interval from the provided string.
+    """Parse an Interval from the provided string.
 
     Syntax (tokens separated by whitespace):
         'inc' [ <iso> [ '-' <iso> ]] [[ '#' <tag> [ <tag> ... ]] | [ '#' [ <tag> ... ] '#' <annotation> ]]
@@ -81,8 +121,8 @@ def as_interval(line: str) -> Interval:
     tokens = tokenize(line)
 
     # Required 'inc'
-    if not tokens or tokens[0] != 'inc':
-        raise RuntimeError('unrecognizable line \'%s\'' % line)
+    if not tokens or tokens[0] != "inc":
+        raise RuntimeError("unrecognizable line '%s'" % line)
     interval = Interval()
     cursor = 1
 
@@ -92,32 +132,32 @@ def as_interval(line: str) -> Interval:
         cursor = 2
 
         # Optional '-' <iso>
-        if len(tokens) > 3 and tokens[2] == '-' and len(tokens[3]) == 16:
+        if len(tokens) > 3 and tokens[2] == "-" and len(tokens[3]) == 16:
             interval.end = datetime.strptime(tokens[3], DATETIME_FORMAT)
             cursor = 4
 
     # Optional '#'
-    if len(tokens) > (cursor + 1) and tokens[cursor] == '#':
+    if len(tokens) > (cursor + 1) and tokens[cursor] == "#":
 
         # Optional <tag> ...
         interval.tags = []
         cursor += 1
-        while cursor < len(tokens) and tokens[cursor] != '#':
+        while cursor < len(tokens) and tokens[cursor] != "#":
             interval.tags.append(tokens[cursor])
             cursor += 1
 
         # Optional '#' <annotation>
-        if cursor < len(tokens) and tokens[cursor] == '#':
-            annotation = ''
+        if cursor < len(tokens) and tokens[cursor] == "#":
+            annotation = ""
             cursor += 1
             while cursor < len(tokens):
-                annotation += ' ' + tokens[cursor]
+                annotation += " " + tokens[cursor]
                 cursor += 1
             interval.annotation = annotation.lstrip()
 
     # Unparsed tokens
     if cursor < len(tokens):
-        raise RuntimeError('unrecognizable line \'%s\'' % line)
+        raise RuntimeError("unrecognizable line '%s'" % line)
 
     return interval
 
