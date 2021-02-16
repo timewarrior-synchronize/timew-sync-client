@@ -41,11 +41,11 @@ class State(enum.Enum):
 def tokenize(line: str) -> List[str]:
     """Convert the input string into tokens, separated at whitespaces.
 
-    Quoted substrings are considered as a single token,
-    which must be separated to other tokens using whitespaces.
-
-    An error is raised if the quotation syntax is invalid,
-    i.e. missing a whitespace to another token or missing a closing quotation mark.
+    A whitespace (or no character), followed by a double quote character ( ")
+    is regarded as the beginning of a quoted substring.
+    Quoted substrings are parsed as single tokens,
+    which must end in another double quote character and separated to other tokens using whitespaces.
+    A violation against this quotation syntax raises an error.
 
     Internally the input is read using a state machine.
 
