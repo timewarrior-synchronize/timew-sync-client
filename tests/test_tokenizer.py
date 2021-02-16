@@ -48,30 +48,63 @@ class TestTokenize:
         assert tokenize("foo bar") == ["foo", "bar"]  # whitespace separates
         assert tokenize("foo-bar") == ["foo-bar"]  # non-whitespace doesn't separate
         assert tokenize("foo bar baz") == ["foo", "bar", "baz"]  # simple boundary check
-        assert tokenize(" foo bar   baz  ") == ["foo", "bar", "baz"]  # advanced boundary check
+        assert tokenize(" foo bar   baz  ") == [
+            "foo",
+            "bar",
+            "baz",
+        ]  # advanced boundary check
         assert tokenize("-1 0 1") == ["-1", "0", "1"]  # numbers check
-        assert tokenize("$13 4.5 7/9%") == ["$13", "4.5", "7/9%"]  # numbers with characters
-        assert tokenize("foo\\ \\bar") == ["foo\\", "\\bar"]  # unquoted escape character is not functional
+        assert tokenize("$13 4.5 7/9%") == [
+            "$13",
+            "4.5",
+            "7/9%",
+        ]  # numbers with characters
+        assert tokenize("foo\\ \\bar") == [
+            "foo\\",
+            "\\bar",
+        ]  # unquoted escape character is not functional
 
     def test_quotes_simple(self):
         """Tests with simple quoted substrings."""
         with pytest.raises(AssertionError):
-            assert tokenize("'foo bar'") == ["'foo bar'"]  # single quotes do not qualify
-        assert tokenize("'foo bar'") == ["'foo", "bar'"]  # single quotes treated as normal character
+            assert tokenize("'foo bar'") == [
+                "'foo bar'"
+            ]  # single quotes do not qualify
+        assert tokenize("'foo bar'") == [
+            "'foo",
+            "bar'",
+        ]  # single quotes treated as normal character
         assert tokenize('""') == ['""']  # double quotes without content
         assert tokenize('" "') == ['" "']  # double quoted whitespace
         assert tokenize('"foo"') == ['"foo"']  # double quoted text
-        assert tokenize('"foo bar"') == ['"foo bar"']  # double quoted text treated as single token
+        assert tokenize('"foo bar"') == [
+            '"foo bar"'
+        ]  # double quoted text treated as single token
         assert tokenize('"foo bar baz"') == ['"foo bar baz"']  # quote check 1
         assert tokenize('"foo bar" "baz"') == ['"foo bar"', '"baz"']  # quote check 2
         assert tokenize('"foo" "bar baz"') == ['"foo"', '"bar baz"']  # quote check 3
-        assert tokenize('"foo" "bar" "baz"') == ['"foo"', '"bar"', '"baz"']  # quote check 4
-        assert tokenize('"1oo" b4r "ba2"') == ['"1oo"', 'b4r', '"ba2"']  # numbers with/without quotes
+        assert tokenize('"foo" "bar" "baz"') == [
+            '"foo"',
+            '"bar"',
+            '"baz"',
+        ]  # quote check 4
+        assert tokenize('"1oo" b4r "ba2"') == [
+            '"1oo"',
+            "b4r",
+            '"ba2"',
+        ]  # numbers with/without quotes
 
     def test_quotes_advanced(self):
         """Tests with advanced quoted substrings and edge cases."""
-        assert tokenize('fo" b"r') == ['fo"', 'b"r']  # double quotes with leading non-whitespace don't qualify
-        assert tokenize('\\ "\\"" "\\\\\\""') == ['\\', '"\\""', '"\\\\\\""']  # escape characters in quotes functional
+        assert tokenize('fo" b"r') == [
+            'fo"',
+            'b"r',
+        ]  # double quotes with leading non-whitespace don't qualify
+        assert tokenize('\\ "\\"" "\\\\\\""') == [
+            "\\",
+            '"\\""',
+            '"\\\\\\""',
+        ]  # escape characters in quotes functional
 
         with pytest.raises(RuntimeError):
             tokenize('" " "')  # quotation mark missing
