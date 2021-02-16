@@ -98,7 +98,7 @@ def tokenize(line: str) -> List[str]:
 
         # Escape Character state
         elif state == State.escape_character:
-            continue
+            state = State.quoted_token
 
         # Error state
         else:
