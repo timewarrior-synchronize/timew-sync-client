@@ -52,7 +52,7 @@ class TestToIntervalList:
         test_date2 = "20210124T020043Z"
         test_date3 = "20210201T134501Z"
         test_date4 = "20210301T145012Z"
-        test_tags = 'shortTag "tag - with quotes" "\\nt3$T "edg€ case! " \\""'
+        test_tags = 'shortTag "tag - with quotes" "\\nt3$T \\"edg€ case! " \\""'
         test_annotation = "this interval is for testing purposes only"
 
         test_interval_str1 = (
@@ -77,7 +77,7 @@ class TestToIntervalList:
         expt_tags = [
             "shortTag",
             '"tag - with quotes"',
-            '"\\nt3$T "edg€ case! "',
+            '"\\nt3$T \\"edg€ case! "',
             '\\""',
         ]
         expt_annotation = "this interval is for testing purposes only"
