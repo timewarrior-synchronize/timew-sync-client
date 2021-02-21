@@ -62,7 +62,7 @@ def tokenize(line: str) -> List[str]:
     for i, c in enumerate(line):
 
         # Whitespace state
-        if state == State.whitespace:
+        if state is State.whitespace:
             current_token = i
             if c == " ":
                 continue
@@ -72,7 +72,7 @@ def tokenize(line: str) -> List[str]:
                 state = State.simple_token
 
         # Simple Token state
-        elif state == State.simple_token:
+        elif state is State.simple_token:
             if c == " ":
                 state = State.whitespace
                 tokens.append(line[current_token:i])
@@ -80,7 +80,7 @@ def tokenize(line: str) -> List[str]:
                 continue
 
         # Quoted Token state
-        elif state == State.quoted_token:
+        elif state is State.quoted_token:
             if c == '"':
                 state = State.quote_end
             elif c == "\\":
@@ -89,7 +89,7 @@ def tokenize(line: str) -> List[str]:
                 continue
 
         # Quote End state
-        elif state == State.quote_end:
+        elif state is State.quote_end:
             if c == " ":
                 state = State.whitespace
                 tokens.append(line[current_token:i])
@@ -97,7 +97,7 @@ def tokenize(line: str) -> List[str]:
                 state = State.error
 
         # Escape Character state
-        elif state == State.escape_character:
+        elif state is State.escape_character:
             state = State.quoted_token
 
         # Error state
