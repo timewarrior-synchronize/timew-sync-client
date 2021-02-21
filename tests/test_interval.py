@@ -29,7 +29,7 @@ from datetime import datetime
 
 import pytest
 
-from timewsync.interval import Interval, as_interval, tokenize
+from timewsync.interval import Interval, as_interval
 
 
 class TestIntervalFromIntervalStr:
@@ -76,14 +76,14 @@ class TestIntervalToString:
         test_tags = [
             "shortTag",
             '"tag - with quotes"',
-            '"\\nt3$T "edg€ case! "',
+            '"\\nt3$T \\"edg€ case! "',
             '\\""',
         ]
         test_annotation = "this interval is for testing purposes only"
 
         expt_date1 = "20210123T134659Z"
         expt_date2 = "20210124T020043Z"
-        expt_tags = 'shortTag "tag - with quotes" "\\nt3$T "edg€ case! " \\""'
+        expt_tags = 'shortTag "tag - with quotes" "\\nt3$T \\"edg€ case! " \\""'
         expt_annotation = "this interval is for testing purposes only"
 
         partial_interval = Interval()
@@ -226,7 +226,7 @@ class TestAsInterval:
         """
         test_date1 = "20210123T134659Z"
         test_date2 = "20210124T020043Z"
-        test_tags = 'shortTag "tag - with quotes" "\\nt3$T "edg€ case! " \\""'
+        test_tags = 'shortTag "tag - with quotes" "\\nt3$T \\"edg€ case! " \\""'
         test_annotation = "this interval is for testing purposes only"
 
         expt_date1 = datetime.fromisoformat("2021-01-23 13:46:59")
@@ -234,7 +234,7 @@ class TestAsInterval:
         expt_tags = [
             "shortTag",
             '"tag - with quotes"',
-            '"\\nt3$T "edg€ case! "',
+            '"\\nt3$T \\"edg€ case! "',
             '\\""',
         ]
         expt_annotation = "this interval is for testing purposes only"
@@ -352,84 +352,3 @@ class TestAsInterval:
 
         with pytest.raises(RuntimeError):
             as_interval("inc 1")
-
-
-class TestTokenize:
-    def test_empty(self):
-        assert tokenize("") == []
-
-    def test_single(self):
-        assert tokenize("foo") == ["foo"]
-        assert tokenize('"') == ['"']
-
-    def test_multiple(self):
-        assert tokenize("foo bar") == ["foo", "bar"]
-        assert tokenize("foo-bar") == ["foo-bar"]
-        assert tokenize("foo bar baz") == ["foo", "bar", "baz"]
-        assert tokenize(" foo\nbar  \n baz") == ["foo", "bar", "baz"]
-
-    def test_quotes_simple(self):
-        with pytest.raises(AssertionError):
-            assert tokenize("'foo bar'") == ["'foo bar'"]
-        assert tokenize("'foo bar'") == ["'foo", "bar'"]
-        assert tokenize('"foo"') == ['"foo"']
-        assert tokenize('"foo bar baz"') == ['"foo bar baz"']
-        assert tokenize('"foo bar" "baz"') == ['"foo bar"', '"baz"']
-        assert tokenize('"foo" "bar baz"') == ['"foo"', '"bar baz"']
-
-    def test_quotes_advanced(self):
-        assert tokenize('""') == ['""']
-        assert tokenize('" "') == ['" "']
-        assert tokenize('" " "') == ['" "', '"']
-        with pytest.raises(AssertionError):
-            assert tokenize('" "foo"') == ['"', '"foo"']
-        assert tokenize('" "foo"') == ['" "foo"']
-        assert tokenize('"foo" "') == ['"foo"', '"']
-        assert tokenize("\"foo' bar 'baz\"") == ["\"foo' bar 'baz\""]
-
-    def test_real_example(self):
-        test_date1 = "20210123T134659Z"
-        test_date2 = "20210124T020043Z"
-        test_tags = 'shortTag "tag - with quotes" "\\nt3$T "edg€ case! " \\""'
-        test_annotation = "this interval is for testing purposes only"
-
-        expt_date1 = [test_date1]
-        expt_date2 = [test_date2]
-        expt_tags = [
-            "shortTag",
-            '"tag - with quotes"',
-            '"\\nt3$T "edg€ case! "',
-            '\\""',
-        ]
-        expt_annotation = [
-            "this",
-            "interval",
-            "is",
-            "for",
-            "testing",
-            "purposes",
-            "only",
-        ]
-
-        interval_str = (
-            "inc "
-            + test_date1
-            + " - "
-            + test_date2
-            + " # "
-            + test_tags
-            + " # "
-            + test_annotation
-        )
-        assert len(tokenize(interval_str)) == 17
-        assert (
-            tokenize(interval_str)
-            == ["inc"]
-            + expt_date1
-            + ["-"]
-            + expt_date2
-            + ["#"]
-            + expt_tags
-            + ["#"]
-            + expt_annotation
-        )

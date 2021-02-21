@@ -28,6 +28,8 @@
 from datetime import datetime
 from typing import List
 
+from timewsync.tokenizer import tokenize
+
 DATETIME_FORMAT = "%Y%m%dT%H%M%SZ"
 
 
@@ -159,35 +161,3 @@ def as_interval(line: str) -> Interval:
         raise RuntimeError("unrecognizable line '%s'" % line)
 
     return interval
-
-
-def tokenize(line: str) -> List[str]:
-    """Converts the input string into tokens.
-
-    Tokens are split at any whitespace and in string format.
-    Recognizes double quoted sentences as one token.
-
-    Args:
-        line: The string input to be tokenized.
-
-    Returns:
-        A list of tokens based on the string.
-    """
-    line = " " + line + " "
-    eos = len(line)
-    tokens = []
-    start = 0
-
-    while start < eos:
-        mid = line.find(' "', start)
-        end = line.find('" ', mid + 2)
-
-        if mid == -1 or end == -1:
-            tokens += line[start:].split()
-            start = eos
-        else:
-            tokens += line[start:mid].split()
-            tokens += [line[mid + 1 : end + 1]]
-            start = end + 1
-
-    return tokens
