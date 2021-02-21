@@ -30,12 +30,12 @@ from typing import List
 
 
 class State(enum.Enum):
-    whitespace = 0  # read whitespaces between tokens
-    simple_token = 1  # read unquoted token
-    quoted_token = 2  # read quoted token
-    quote_end = 3  # second quotation mark required to end quoted token
-    escape_character = 4  # escape next character in quoted token
-    error = 5  # invalid quotation syntax
+    whitespace = enum.auto()  # read whitespaces between tokens
+    simple_token = enum.auto()  # read unquoted token
+    quoted_token = enum.auto()  # read quoted token
+    quote_end = enum.auto()  # second quotation mark required to end quoted token
+    escape_character = enum.auto()  # escape next character in quoted token
+    error = enum.auto()  # invalid quotation syntax
 
 
 def tokenize(line: str) -> List[str]:
