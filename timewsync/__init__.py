@@ -104,3 +104,5 @@ def main():
     server_data = to_monthly_data(response_intervals)
     new_tags = extract_tags(response_intervals)
     write_data(data_dir, server_data, new_tags)
+
+    print("Synced successfully!")
