@@ -28,6 +28,7 @@
 import argparse
 import os
 import subprocess
+import sys
 
 from timewsync.dispatch import dispatch
 from timewsync.file_parser import to_interval_list, to_monthly_data, extract_tags
@@ -104,3 +105,5 @@ def main():
     server_data = to_monthly_data(response_intervals)
     new_tags = extract_tags(response_intervals)
     write_data(data_dir, server_data, new_tags)
+
+    sys.stderr.write("Synced successfully!\n")
