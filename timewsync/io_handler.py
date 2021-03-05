@@ -29,7 +29,7 @@ import os
 import re
 import tarfile
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 
 TIMEW_FOLDER = os.path.expanduser(
     os.environ.get("TIMEWARRIORDB", os.path.join("~", ".timewarrior"))
@@ -97,6 +97,33 @@ def read_snapshot(timewsync_data_dir: str) -> List[str]:
                     snapshot_data.append(file_data)
 
     return snapshot_data
+
+
+def read_keys(timewsync_data_dir: str) -> Tuple[Optional[str], Optional[str]]:
+    """Reads the private and the public key of the user.
+
+    Args:
+        timewsync_data_dir: The timewsync data directory.
+
+    Returns:
+        Two strings containing the private and the public key of the user.
+        If the keys don't exist, return None.
+    """
+    priv_pem = None
+    pub_pem = None
+
+    priv_pem_path = os.path.join(timewsync_data_dir, "private_key.pem")
+    pub_pem_path = os.path.join(timewsync_data_dir, "public_key.pem")
+
+    if os.path.exists(priv_pem_path):
+        with open(priv_pem_path, "r") as file:
+            priv_pem = file.read()
+
+    if os.path.exists(pub_pem_path):
+        with open(pub_pem_path, "r") as file:
+            pub_pem = file.read()
+
+    return priv_pem, pub_pem
 
 
 def write_data(timewsync_data_dir: str, monthly_data: Dict[str, str], tags: str):

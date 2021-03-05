@@ -130,5 +130,11 @@ def sync(configuration: Configuration) -> None:
 
 
 def generate_key(configuration: Configuration):
+    priv_pem, pub_pem = io_handler.read_keys(configuration.data_dir)
+
+    if priv_pem or pub_pem:
+        sys.stderr.write("The timewsync folder already contains keys. Aborting.")
+        return
+
     priv_pem, pub_pem = auth.generate_keys()
     io_handler.write_keys(configuration.data_dir, priv_pem, pub_pem)
