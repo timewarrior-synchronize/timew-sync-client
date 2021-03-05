@@ -1,7 +1,8 @@
 # Timewarrior Sync Client
-This repository contains the Client of the Timewarrior Sync project.
+This repository contains the client of the Timewarrior Sync project.
 
 ## Setup (for development)
+
 ### Using a virtual environment
 To avoid conflicts between packages, you can use a virtual environment.
 Make sure you have `virtualenv` installed (first time only):
