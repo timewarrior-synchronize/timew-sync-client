@@ -29,7 +29,7 @@ import os
 import re
 import tarfile
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 
 TIMEW_FOLDER = os.path.expanduser(
     os.environ.get("TIMEWARRIORDB", os.path.join("~", ".timewarrior"))
@@ -99,6 +99,33 @@ def read_snapshot(timewsync_data_dir: str) -> List[str]:
     return snapshot_data
 
 
+def read_keys(timewsync_data_dir: str) -> Tuple[Optional[str], Optional[str]]:
+    """Reads the private and the public key of the user.
+
+    Args:
+        timewsync_data_dir: The timewsync data directory.
+
+    Returns:
+        Two strings containing the private and the public key of the user.
+        If the keys don't exist, return None.
+    """
+    priv_pem = None
+    pub_pem = None
+
+    priv_pem_path = os.path.join(timewsync_data_dir, "private_key.pem")
+    pub_pem_path = os.path.join(timewsync_data_dir, "public_key.pem")
+
+    if os.path.exists(priv_pem_path):
+        with open(priv_pem_path, "r") as file:
+            priv_pem = file.read()
+
+    if os.path.exists(pub_pem_path):
+        with open(pub_pem_path, "r") as file:
+            pub_pem = file.read()
+
+    return priv_pem, pub_pem
+
+
 def write_data(timewsync_data_dir: str, monthly_data: Dict[str, str], tags: str):
     """Writes the monthly separated data to files in .timewarrior/data.
 
@@ -148,16 +175,36 @@ def write_snapshot(timewsync_data_dir: str, monthly_data: Dict[str, str]):
 
 
 def write_tags(tags: str) -> None:
-    """
-        Gets one String in the correct format for tags.data and writes it to tags.data .
-        Whatever was before in tags.data will be overwritten.
-        tags.data will be created if it has not been there before.
+    """Overrides tags.data.
 
-    :param tags: A string of tags and how often they have occurred, in the final format.
-    :return: Does not return; just writes into file.
-    """
+    Gets one String in the correct format for tags.data and writes it to tags.data.
+    Whatever was before in tags.data will be overwritten.
+    tags.data will be created if it has not been there before.
 
+    Args:
+        tags: A string of tags and how often they have occurred, in the final format.
+
+    Returns:
+        Does not return; just writes into file.
+    """
     os.makedirs(DATA_FOLDER, exist_ok=True)
 
     with open(os.path.join(DATA_FOLDER, "tags.data"), "w") as file:
         file.write(tags)
+
+
+def write_keys(timewsync_data_dir: str, priv_pem: bytes, pub_pem: bytes) -> None:
+    """Overrides the key files.
+
+    Args:
+        timewsync_data_dir: The path to the timewsync directory.
+        priv_pem: The private key in PEM format.
+        pub_pem: The public key in PEM format.
+    """
+    os.makedirs(timewsync_data_dir, exist_ok=True)
+
+    with open(os.path.join(timewsync_data_dir, "private_key.pem"), "wb") as file:
+        file.write(priv_pem)
+
+    with open(os.path.join(timewsync_data_dir, "public_key.pem"), "wb") as file:
+        file.write(pub_pem)
