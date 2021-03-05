@@ -99,7 +99,7 @@ def read_snapshot(timewsync_data_dir: str) -> List[str]:
     return snapshot_data
 
 
-def read_keys(timewsync_data_dir: str) -> Tuple[Optional[str], Optional[str]]:
+def read_keys(timewsync_data_dir: str) -> Tuple[Optional[bytes], Optional[bytes]]:
     """Reads the private and the public key of the user.
 
     Args:
@@ -116,11 +116,11 @@ def read_keys(timewsync_data_dir: str) -> Tuple[Optional[str], Optional[str]]:
     pub_pem_path = os.path.join(timewsync_data_dir, "public_key.pem")
 
     if os.path.exists(priv_pem_path):
-        with open(priv_pem_path, "r") as file:
+        with open(priv_pem_path, "rb") as file:
             priv_pem = file.read()
 
     if os.path.exists(pub_pem_path):
-        with open(pub_pem_path, "r") as file:
+        with open(pub_pem_path, "rb") as file:
             pub_pem = file.read()
 
     return priv_pem, pub_pem
