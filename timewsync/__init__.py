@@ -63,6 +63,12 @@ def make_parser():
         help="The path to the data directory",
     )
 
+    subparsers = parser.add_subparsers(dest="subcommand")
+    subparsers.add_parser(
+        "generate-key",
+        help="Generates a new key pair."
+    )
+
     return parser
 
 
@@ -89,14 +95,22 @@ def main():
     args = make_parser().parse_args()
     data_dir = os.path.expanduser(args.data_dir)
 
-    config = Configuration.read(os.path.join(data_dir, "timewsync.conf"))
+    configuration = Configuration.read(os.path.join(data_dir, "timewsync.conf"))
 
+    if args["subcommand"] == "generate-key":
+        generate_key()
+        return
+
+    sync(configuration, data_dir)
+
+
+def sync(configuration: Configuration, data_dir: str) -> None:
     timew_data, snapshot_data = read_data(data_dir)
     timew_intervals = to_interval_list(timew_data)
     snapshot_intervals = to_interval_list(snapshot_data)
 
     response_intervals, conflict_flag = dispatch(
-        config, timew_intervals, snapshot_intervals
+        configuration, timew_intervals, snapshot_intervals
     )
 
     if conflict_flag:
@@ -107,3 +121,7 @@ def main():
     write_data(data_dir, server_data, new_tags)
 
     sys.stderr.write("Synced successfully!\n")
+
+
+def generate_key():
+    pass
