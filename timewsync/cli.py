@@ -25,21 +25,21 @@
 ###############################################################################
 
 
-from typing import Tuple
+def confirmation_reader(msg: str) -> bool:
+    """Prints a message and asks for user confirmation.
 
-import jwcrypto.jwk as jwk
+    Asks the user with a [Y/n] option for confirmation.
 
-
-def generate_keys() -> Tuple[bytes, bytes]:
-    """Generates a private / public key pair.
-
-    The keys are generated using the RSA algorithm with a size of 4096.
+    Args:
+        msg: The message to be printed before the confirmation choice.
 
     Returns:
-        A tuple containing the private key and the public key in PEM format.
+        The users answer in form of a boolean value.
     """
-    keys = jwk.JWK.generate(kty="RSA", size=4096)
-    priv_pem = keys.export_to_pem(private_key=True, password=None)
-    pub_pem = keys.export_to_pem()
+    answer = input(f"{msg} [Y/n]: ")
+    answer = answer.strip().lower()
 
-    return priv_pem, pub_pem
+    if not answer or answer == "y":
+        return True
+
+    return False

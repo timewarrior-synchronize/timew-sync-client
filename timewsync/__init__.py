@@ -30,7 +30,7 @@ import os
 import subprocess
 import sys
 
-from timewsync import auth
+from timewsync import auth, cli
 from timewsync.dispatch import dispatch
 from timewsync.file_parser import to_interval_list, to_monthly_data, extract_tags
 from timewsync.io_handler import read_data, write_data
@@ -130,11 +130,23 @@ def sync(configuration: Configuration) -> None:
 
 
 def generate_key(configuration: Configuration):
+    """Generates a new RSA key pair.
+
+    Prompts the user for confirmation if keys already exist.
+
+    Args:
+        configuration: The user's configuration.
+    """
     priv_pem, pub_pem = io_handler.read_keys(configuration.data_dir)
 
     if priv_pem or pub_pem:
-        sys.stderr.write("The timewsync folder already contains keys. Aborting.")
-        return
+        confirm = cli.confirmation_reader("The timewsync folder already contains keys. They will be overwritten. Do "
+                                          "you want to continue?")
+        if not confirm:
+            return
 
     priv_pem, pub_pem = auth.generate_keys()
     io_handler.write_keys(configuration.data_dir, priv_pem, pub_pem)
+
+    sys.stderr.write(f"A new key pair was generated. "
+                     f"You can find it in your timewsync folder ({configuration.data_dir}).")

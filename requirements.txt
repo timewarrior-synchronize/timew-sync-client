@@ -7,3 +7,4 @@ requests~=2.25.0
 black~=20.8b1
 
 jwcrypto~=0.8
+six~=1.9
