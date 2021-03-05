@@ -31,6 +31,8 @@ import tarfile
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 
+from jwcrypto.jwk import JWK
+
 TIMEW_FOLDER = os.path.expanduser(
     os.environ.get("TIMEWARRIORDB", os.path.join("~", ".timewarrior"))
 )
@@ -99,7 +101,7 @@ def read_snapshot(timewsync_data_dir: str) -> List[str]:
     return snapshot_data
 
 
-def read_keys(timewsync_data_dir: str) -> Tuple[Optional[bytes], Optional[bytes]]:
+def read_keys(timewsync_data_dir: str) -> Tuple[Optional[JWK], Optional[JWK]]:
     """Reads the private and the public key of the user.
 
     Args:
@@ -123,7 +125,10 @@ def read_keys(timewsync_data_dir: str) -> Tuple[Optional[bytes], Optional[bytes]
         with open(pub_pem_path, "rb") as file:
             pub_pem = file.read()
 
-    return priv_pem, pub_pem
+    private_key = JWK.from_pem(priv_pem) if priv_pem else None
+    public_key = JWK.from_pem(pub_pem) if pub_pem else None
+
+    return private_key, public_key
 
 
 def write_data(timewsync_data_dir: str, monthly_data: Dict[str, str], tags: str):

@@ -41,6 +41,7 @@ def dispatch(
     config: Configuration,
     timew_intervals: List[Interval],
     snapshot_intervals: List[Interval],
+    auth_token: str
 ) -> (List[Interval], bool):
     """Send a sync request to the server.
 
@@ -48,6 +49,7 @@ def dispatch(
         config: The timewsync configuration file.
         timew_intervals: A list of all client Interval objects.
         snapshot_intervals: A list of all Interval objects found in the snapshot of the latest sync.
+        auth_token: A JWT used as authentication token.
 
     Returns:
         A list of Interval objects resulting from the sync
@@ -58,7 +60,11 @@ def dispatch(
     request_url = os.path.join(config.server_base_url, SYNC_ENDPOINT)
     request_body = json_converter.to_json_request(config.user_id, diff)
 
-    server_response = requests.put(request_url, request_body)
+    header = {
+        "Authorization": f"Bearer {auth_token}"
+    }
+
+    server_response = requests.put(request_url, request_body, headers=header)
 
     if server_response.status_code != 200:
         raise RuntimeError(

@@ -115,8 +115,11 @@ def sync(configuration: Configuration) -> None:
     timew_intervals = to_interval_list(timew_data)
     snapshot_intervals = to_interval_list(snapshot_data)
 
+    private_key, _ = io_handler.read_keys(configuration.data_dir)
+    token = auth.generate_jwt(private_key, configuration.user_id)
+
     response_intervals, conflict_flag = dispatch(
-        configuration, timew_intervals, snapshot_intervals
+        configuration, timew_intervals, snapshot_intervals, token
     )
 
     if conflict_flag:
