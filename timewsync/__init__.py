@@ -30,6 +30,7 @@ import os
 import subprocess
 import sys
 
+from timewsync import auth
 from timewsync.dispatch import dispatch
 from timewsync.file_parser import to_interval_list, to_monthly_data, extract_tags
 from timewsync.io_handler import read_data, write_data
@@ -97,8 +98,8 @@ def main():
 
     configuration = Configuration.read(data_dir, "timewsync.conf")
 
-    if args["subcommand"] == "generate-key":
-        generate_key()
+    if args.subcommand == "generate-key":
+        generate_key(configuration)
         return
 
     sync(configuration)
@@ -128,5 +129,6 @@ def sync(configuration: Configuration) -> None:
     sys.stderr.write("Synced successfully!\n")
 
 
-def generate_key():
-    pass
+def generate_key(configuration: Configuration):
+    priv_pem, pub_pem = auth.generate_keys()
+    io_handler.write_keys(configuration.data_dir, priv_pem, pub_pem)
