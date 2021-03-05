@@ -26,18 +26,20 @@
 
 
 import configparser
+import os
 
 
 class Configuration:
-    def __init__(self, server_base_url: str, user_id: int, merge_conflict_hook: str):
+    def __init__(self, data_dir: str, server_base_url: str, user_id: int, merge_conflict_hook: str):
+        self.data_dir = data_dir
         self.server_base_url: str = server_base_url
         self.user_id: int = user_id
         self.merge_conflict_hook: str = merge_conflict_hook
 
     @classmethod
-    def read(cls, path: str):
+    def read(cls, data_dir: str, filename: str):
         config = configparser.ConfigParser()
-        config.read(path)
+        config.read(os.path.join(data_dir, filename))
 
         if "Server" in config:
             if "BaseURL" in config["Server"]:
@@ -66,4 +68,4 @@ class Configuration:
                 'The configuration file needs to have a "Client" section'
             )
 
-        return cls(server_base_url, user_id, merge_conflict_hook)
+        return cls(data_dir, server_base_url, user_id, merge_conflict_hook)

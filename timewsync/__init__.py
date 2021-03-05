@@ -95,17 +95,22 @@ def main():
     args = make_parser().parse_args()
     data_dir = os.path.expanduser(args.data_dir)
 
-    configuration = Configuration.read(os.path.join(data_dir, "timewsync.conf"))
+    configuration = Configuration.read(data_dir, "timewsync.conf")
 
     if args["subcommand"] == "generate-key":
         generate_key()
         return
 
-    sync(configuration, data_dir)
+    sync(configuration)
 
 
-def sync(configuration: Configuration, data_dir: str) -> None:
-    timew_data, snapshot_data = read_data(data_dir)
+def sync(configuration: Configuration) -> None:
+    """Sync's the timewarrior data with the server.
+
+    Args:
+        configuration: The user's configuration.
+    """
+    timew_data, snapshot_data = read_data(configuration.data_dir)
     timew_intervals = to_interval_list(timew_data)
     snapshot_intervals = to_interval_list(snapshot_data)
 
@@ -114,11 +119,11 @@ def sync(configuration: Configuration, data_dir: str) -> None:
     )
 
     if conflict_flag:
-        run_conflict_hook(data_dir)
+        run_conflict_hook(configuration.data_dir)
 
     server_data = to_monthly_data(response_intervals)
     new_tags = extract_tags(response_intervals)
-    write_data(data_dir, server_data, new_tags)
+    write_data(configuration.data_dir, server_data, new_tags)
 
     sys.stderr.write("Synced successfully!\n")
 
