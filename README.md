@@ -1,9 +1,46 @@
-# Timewarrior Sync Client
+# Timewarrior Synchronization Client
+
 This repository contains the client of the Timewarrior Sync project.
 
-## Setup (for development)
+## Installation
+
+### Using PIP
+
+To install `timewsync` in your current Python environment:
+
+```
+pip install .
+```
+
+### Using Nix
+
+To install `timewsync` in your current Nix environment:
+
+```
+nix-env -f default.nix -i
+```
+
+## Usage
+
+```
+usage: timewsync [-h] [--version] [--data-dir DATA_DIR]
+
+timewarrior synchronization client
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --version            Print version information
+  --data-dir DATA_DIR  The path to the data directory
+```
+
+### Data directory
+
+The data directory contains all information
+
+## Development
 
 ### Using a virtual environment
+
 To avoid conflicts between packages, you can use a virtual environment.
 Make sure you have `virtualenv` installed (first time only):
 
@@ -32,14 +69,16 @@ nix-shell
 ```
 
 ### Installing the projects dependencies
-To install the projects dependencies run:
+
+To install the project dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
 Now you should be good to go :)
 
-## Running the client
+### Running the client
 
 Once you have all dependencies installed, the client can be started:
 
