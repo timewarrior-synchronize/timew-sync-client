@@ -30,9 +30,12 @@ import os
 import subprocess
 import sys
 
+import colorama
+from colorama import Fore
+
 from timewsync import auth, cli
 from timewsync.dispatch import dispatch
-from timewsync.file_parser import to_interval_list, to_monthly_data, extract_tags
+from timewsync.file_parser import as_interval_list, as_file_strings, extract_tags
 from timewsync.io_handler import read_data, write_data
 from timewsync.config import Configuration
 
@@ -47,9 +50,7 @@ def make_parser():
         The complete ArgumentParser object
     """
 
-    parser = argparse.ArgumentParser(
-        prog="timewsync", description="timewarrior synchronization client"
-    )
+    parser = argparse.ArgumentParser(prog="timewsync", description="timewarrior synchronization client")
 
     parser.add_argument(
         "--version",
@@ -65,10 +66,7 @@ def make_parser():
     )
 
     subparsers = parser.add_subparsers(dest="subcommand")
-    subparsers.add_parser(
-        "generate-key",
-        help="Generates a new key pair."
-    )
+    subparsers.add_parser("generate-key", help="Generates a new key pair.")
 
     return parser
 
@@ -93,6 +91,8 @@ def run_conflict_hook(data_dir: str):
 def main():
     """This function is the main entry point to the timewarrior
     synchronization client."""
+    colorama.init()
+
     args = make_parser().parse_args()
     data_dir = os.path.expanduser(args.data_dir)
 
@@ -112,21 +112,28 @@ def sync(configuration: Configuration) -> None:
         configuration: The user's configuration.
     """
     timew_data, snapshot_data = read_data(configuration.data_dir)
-    timew_intervals = to_interval_list(timew_data)
-    snapshot_intervals = to_interval_list(snapshot_data)
+    timew_intervals, active_interval = as_interval_list(timew_data)
+    snapshot_intervals, _ = as_interval_list(snapshot_data)
 
-    response_intervals, conflict_flag = dispatch(
-        configuration, timew_intervals, snapshot_intervals
-    )
+    if active_interval:
+        sys.stderr.write("Time tracking is active. Stopped time tracking.\n")
+
+    response_intervals, conflict_flag = dispatch(configuration, timew_intervals, snapshot_intervals)
 
     if conflict_flag:
         run_conflict_hook(configuration.data_dir)
 
-    server_data = to_monthly_data(response_intervals)
+    server_data, started_tracking = as_file_strings(response_intervals, active_interval)
     new_tags = extract_tags(response_intervals)
     write_data(configuration.data_dir, server_data, new_tags)
 
     sys.stderr.write("Synced successfully!\n")
+
+    if active_interval:
+        if started_tracking:
+            sys.stderr.write("Restarted time tracking.\n")
+        else:
+            sys.stderr.write(Fore.RED + "Warning: Cannot restart time tracking!\n" + Fore.RESET)
 
 
 def generate_key(configuration: Configuration):
@@ -140,13 +147,15 @@ def generate_key(configuration: Configuration):
     priv_pem, pub_pem = io_handler.read_keys(configuration.data_dir)
 
     if priv_pem or pub_pem:
-        confirm = cli.confirmation_reader("The timewsync folder already contains keys. They will be overwritten. Do "
-                                          "you want to continue?")
+        confirm = cli.confirmation_reader(
+            "The timewsync folder already contains keys. They will be overwritten. Do you want to continue?"
+        )
         if not confirm:
             return
 
     priv_pem, pub_pem = auth.generate_keys()
     io_handler.write_keys(configuration.data_dir, priv_pem, pub_pem)
 
-    sys.stderr.write(f"A new key pair was generated. "
-                     f"You can find it in your timewsync folder ({configuration.data_dir}).")
+    sys.stderr.write(
+        f"A new key pair was generated. You can find it in your timewsync folder ({configuration.data_dir})."
+    )

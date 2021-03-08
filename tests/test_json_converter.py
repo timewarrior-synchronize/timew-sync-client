@@ -44,9 +44,7 @@ class TestToJSONRequest:
         # Test with empty Interval object
         test_interval = Interval()
         expt_interval_json = json.dumps(Interval.asdict(test_interval))
-        expt_json = (
-            '{"userID": 1, "added": [' + expt_interval_json + '], "removed": []}'
-        )
+        expt_json = '{"userID": 1, "added": [' + expt_interval_json + '], "removed": []}'
         assert to_json_request(1, ([test_interval], [])) == expt_json
 
         # Test with filled Interval object
@@ -57,17 +55,9 @@ class TestToJSONRequest:
             annotation="this has been added",
         )
         expt_interval_json = json.dumps(Interval.asdict(test_interval))
-        expt_json = (
-            '{"userID": 42, "added": [' + expt_interval_json + '], "removed": []}'
-        )
+        expt_json = '{"userID": 42, "added": [' + expt_interval_json + '], "removed": []}'
         assert to_json_request(42, ([test_interval], [])) == expt_json
-        expt_json = (
-            '{"userID": 128, "added": ['
-            + expt_interval_json
-            + ", "
-            + expt_interval_json
-            + '], "removed": []}'
-        )
+        expt_json = '{"userID": 128, "added": [' + expt_interval_json + ", " + expt_interval_json + '], "removed": []}'
         assert to_json_request(128, ([test_interval, test_interval], [])) == expt_json
 
     def test_removed_only_diff(self):
@@ -76,9 +66,7 @@ class TestToJSONRequest:
         # Test with empty Interval object
         test_interval = Interval()
         expt_interval_json = json.dumps(Interval.asdict(test_interval))
-        expt_json = (
-            '{"userID": 1, "added": [], "removed": [' + expt_interval_json + "]}"
-        )
+        expt_json = '{"userID": 1, "added": [], "removed": [' + expt_interval_json + "]}"
         assert to_json_request(1, ([], [test_interval])) == expt_json
 
         # Test with filled Interval object
@@ -89,19 +77,11 @@ class TestToJSONRequest:
             annotation="this has been removed",
         )
         expt_interval_json = json.dumps(Interval.asdict(test_interval))
-        expt_json = (
-            '{"userID": 42, "added": [], "removed": [' + expt_interval_json + "]}"
-        )
+        expt_json = '{"userID": 42, "added": [], "removed": [' + expt_interval_json + "]}"
         assert to_json_request(42, ([], [test_interval])) == expt_json
 
         # Test with multiple filled Interval objects
-        expt_json = (
-            '{"userID": 128, "added": [], "removed": ['
-            + expt_interval_json
-            + ", "
-            + expt_interval_json
-            + "]}"
-        )
+        expt_json = '{"userID": 128, "added": [], "removed": [' + expt_interval_json + ", " + expt_interval_json + "]}"
         assert to_json_request(128, ([], [test_interval, test_interval])) == expt_json
 
     def test_full_diff(self):
@@ -119,10 +99,7 @@ class TestToJSONRequest:
             + expt_removed_interval_json
             + "]}"
         )
-        assert (
-            to_json_request(1, ([test_added_interval], [test_removed_interval]))
-            == expt_json
-        )
+        assert to_json_request(1, ([test_added_interval], [test_removed_interval])) == expt_json
 
         # Test with filled Interval objects
         test_added_interval = Interval(
@@ -146,10 +123,7 @@ class TestToJSONRequest:
             + expt_removed_interval_json
             + "]}"
         )
-        assert (
-            to_json_request(42, ([test_added_interval], [test_removed_interval]))
-            == expt_json
-        )
+        assert to_json_request(42, ([test_added_interval], [test_removed_interval])) == expt_json
 
         # Test with multiple filled Interval objects
         expt_json = (
@@ -191,9 +165,7 @@ class TestFromJSONResponse:
         # Test with empty interval
         test_interval_dict = {}
         test_interval_json = json.dumps(test_interval_dict)
-        test_json = (
-            '{"conflictsOccurred": false, "intervals": [' + test_interval_json + "]}"
-        )
+        test_json = '{"conflictsOccurred": false, "intervals": [' + test_interval_json + "]}"
         expt_interval_list = [Interval()]
         result, _ = from_json_response(test_json)
         assert len(result) == 1
@@ -207,9 +179,7 @@ class TestFromJSONResponse:
             "annotation": "this is an annotation",
         }
         test_interval_json = json.dumps(test_interval_dict)
-        test_json = (
-            '{"conflictsOccurred": false, "intervals": [' + test_interval_json + "]}"
-        )
+        test_json = '{"conflictsOccurred": false, "intervals": [' + test_interval_json + "]}"
         expt_interval_list = [Interval.from_dict(test_interval_dict)]
         result, _ = from_json_response(test_json)
         assert len(result) == 1
@@ -217,11 +187,7 @@ class TestFromJSONResponse:
 
         # Test with multiple filled intervals
         test_json = (
-            '{"conflictsOccurred": false, "intervals": ['
-            + test_interval_json
-            + ", "
-            + test_interval_json
-            + "]}"
+            '{"conflictsOccurred": false, "intervals": [' + test_interval_json + ", " + test_interval_json + "]}"
         )
         expt_interval_list = [
             Interval.from_dict(test_interval_dict),

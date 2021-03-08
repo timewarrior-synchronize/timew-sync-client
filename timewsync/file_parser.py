@@ -26,70 +26,114 @@
 
 
 from collections import defaultdict
+from datetime import datetime
 from typing import List, Dict
 
 from timewsync.interval import Interval, as_interval
 
 
-def to_interval_list(monthly_data: List[str]) -> List[Interval]:
-    """Converts a list of monthly data into a list of Interval objects.
+def as_interval_list(file_strings: Dict[str, str]) -> (List[Interval], Interval):
+    """Converts a dictionary containing interval file strings into a list of Interval objects.
 
-    Splits the monthly i strings into separate intervals at line breaks.
-    Empty intervals are filtered out.
+    Splits file strings at line breaks into separate intervals.
+    Empty intervals are filtered out. Intervals being currently tracked are closed
+    and re-opened as a new one, which is returned as the second argument.
 
     Args:
-        monthly_data: A list of strings, each of which containing the data for one specific month.
+        file_strings: A dictionary containing the file names and corresponding file strings,
+                      each of which containing intervals in timewarrior format.
 
     Returns:
-        A list of Interval objects.
+        A list of Interval objects and a single Interval object, created if time tracking is active.
     """
     intervals = []
-    for month in monthly_data:
-        for line in month.splitlines():
-            if line:
-                i = as_interval(line)
-                if i.start and not i.end:
-                    raise RuntimeError("cannot sync with active time tracking")
-                if i.start and i.end:
-                    intervals.append(as_interval(line))
-    return intervals
+    active_interval = None
+    for file_str in file_strings.values():
+        for line in list(filter(None, file_str.splitlines())):  # Split and filter empty lines
+            i = as_interval(line)
+            if i.start:
+                if not i.end:  # Split active time tracking, if present
+                    i.end = datetime.utcnow()
+                    active_interval = Interval(
+                        start=i.end,
+                        end=None,
+                        tags=i.tags,
+                        annotation=i.annotation,
+                    )
+                intervals.append(i)
+    return intervals, active_interval
 
 
-def to_monthly_data(intervals: List[Interval]) -> Dict[str, str]:
-    """Converts a list of Interval objects into a string dictionary.
+def as_file_strings(intervals: List[Interval], active_interval: Interval = None) -> (Dict[str, str], bool):
+    """Converts a list of Interval objects into a dictionary containing interval file strings.
 
-    Groups all intervals by month and concatenates them using line breaks.
-    Keys are the file names the values' data should be stored in.
+    Groups and sorts intervals per month and concatenates them using line breaks.
+    Dictionary keys are file names and values corresponding file strings.
+    If the second argument 'active_interval' is set and doesn't conflict
+    with existing intervals, it is inserted as well and the method returns True.
+
+    Args:
+        intervals: A list of Interval objects.
+        active_interval: (Optional) An Interval object being currently tracked.
+
+    Returns:
+        A dictionary containing the file names and corresponding file strings
+        and a boolean value indicating whether time tracking is active.
+    """
+    intervals.sort(key=lambda i: i.start)
+
+    if active_interval and not __conflicting(active_interval, intervals):
+        intervals.append(active_interval)
+        started_tracking = True
+    else:
+        started_tracking = False
+
+    grouped_intervals = __group_by_month(intervals)
+    file_strings = __join_per_group(grouped_intervals)
+
+    return file_strings, started_tracking
+
+
+def __conflicting(active_interval: Interval, sorted_intervals: List[Interval]) -> bool:
+    """Returns true if open 'active_interval' overlaps with closed 'sorted_intervals'."""
+    return sorted_intervals and sorted_intervals[-1].end > active_interval.start
+
+
+def __group_by_month(intervals: List[Interval]) -> Dict[str, List[Interval]]:
+    """Groups intervals per month and returns them as a dictionary.
+
+    Dictionary keys are file names and values corresponding file strings.
 
     Args:
         intervals: A list of Interval objects.
 
     Returns:
-        A dictionary containing the file names and corresponding data for every month.
+        A dictionary containing the file names and corresponding interval lists per month.
     """
-    grouped_intervals_dict = {}
+    grouped_intervals = defaultdict(list)
+    for i in intervals:
+        grouped_intervals[get_file_name(i)].append(i)
+    return grouped_intervals
 
-    # Group all intervals by month
-    for interval in intervals:
-        file_name = get_file_name(interval)
-        if file_name in grouped_intervals_dict:
-            grouped_intervals_dict[file_name].append(interval)
-        else:
-            grouped_intervals_dict[file_name] = [interval]
 
-    monthly_data_dict = {}
+def __join_per_group(grouped_intervals: Dict[str, List[Interval]]) -> Dict[str, str]:
+    """Concatenates grouped intervals per group by using line breaks.
 
-    # Sort and concatenate all intervals per month
-    for file_name, month_i in grouped_intervals_dict.items():
-        month_i.sort(key=lambda i: i.start)
-        month_s = [str(i) for i in month_i]
-        monthly_data_dict[file_name] = "\n".join(month_s)
+    Args:
+        grouped_intervals: A dictionary containing the file names and corresponding interval lists per group.
 
-    return monthly_data_dict
+    Returns:
+        A dictionary containing the file names and corresponding file strings per group.
+    """
+    file_strings = {}
+    for file_name, intervals in grouped_intervals.items():
+        file_str = [str(i) for i in intervals]
+        file_strings[file_name] = "\n".join(file_str)
+    return file_strings
 
 
 def get_file_name(interval: Interval) -> str:
-    """Returns the file name the i should be stored in."""
+    """Returns the file name the Interval object should be stored in."""
     if not interval.start:
         raise RuntimeError("corrupt interval '%s'" % str(interval))
     return interval.start.strftime("%Y-%m.data")
@@ -116,9 +160,7 @@ def extract_tags(lst_of_intervalobjects: List[Interval]) -> str:
     result = "{"
     for tag in all_tags.keys():
         result += "\n    " + tag + ':{"count":' + str(all_tags[tag]) + "},"
-    result = (
-        result[:-1] + "\n}"
-    )  # now, discard the last ',' (which is too much) and add a closing '}'
+    result = result[:-1] + "\n}"  # now, discard the last ',' (which is too much) and add a closing '}'
 
     return result
 

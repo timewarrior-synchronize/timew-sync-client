@@ -29,15 +29,13 @@ import os
 import re
 import tarfile
 from pathlib import Path
-from typing import List, Dict, Tuple, Optional
+from typing import Dict, Tuple, Optional
 
-TIMEW_FOLDER = os.path.expanduser(
-    os.environ.get("TIMEWARRIORDB", os.path.join("~", ".timewarrior"))
-)
+TIMEW_FOLDER = os.path.expanduser(os.environ.get("TIMEWARRIORDB", os.path.join("~", ".timewarrior")))
 DATA_FOLDER = os.path.join(TIMEW_FOLDER, "data")
 
 
-def read_data(timewsync_data_dir: str) -> Tuple[List[str], List[str]]:
+def read_data(timewsync_data_dir: str) -> Tuple[Dict[str, str], Dict[str, str]]:
     """Reads the monthly separated interval data from timewarrior and the snapshot.
 
     Args:
@@ -50,7 +48,7 @@ def read_data(timewsync_data_dir: str) -> Tuple[List[str], List[str]]:
     return read_intervals(), read_snapshot(timewsync_data_dir)
 
 
-def read_intervals() -> List[str]:
+def read_intervals() -> Dict[str, str]:
     """Reads the monthly separated interval data from timewarrior.
 
     Reads from all files matching 'YYYY-MM.data' and creates a separate list entry per month.
@@ -58,25 +56,22 @@ def read_intervals() -> List[str]:
     Returns:
         A list of strings, each of which containing the data for one month.
     """
-    monthly_data = []
+    monthly_data = {}
 
-    # Identify all data sources
     if os.path.exists(DATA_FOLDER):
-        file_list = [
-            f
-            for f in os.listdir(Path(DATA_FOLDER))
-            if (re.search(r"^\d\d\d\d-\d\d\.data$", f))
-        ]
+
+        # Identify all data sources
+        file_list = [f for f in os.listdir(Path(DATA_FOLDER)) if (re.search(r"^\d\d\d\d-\d\d\.data$", f))]
 
         # Read all file contents
         for file_name in file_list:
             with open(os.path.join(DATA_FOLDER, file_name), "r") as file:
-                monthly_data.append(file.read())
+                monthly_data[file_name] = file.read()
 
     return monthly_data
 
 
-def read_snapshot(timewsync_data_dir: str) -> List[str]:
+def read_snapshot(timewsync_data_dir: str) -> Dict[str, str]:
     """Reads the monthly separated interval data from the snapshot.
 
     Args:
@@ -86,7 +81,7 @@ def read_snapshot(timewsync_data_dir: str) -> List[str]:
         A list of strings, each of which containing the data for one specific month.
     """
     snapshot_path = os.path.join(timewsync_data_dir, "snapshot.tgz")
-    snapshot_data = []
+    snapshot_data = {}
 
     # Open the snapshot and read all file contents
     if os.path.exists(snapshot_path):
@@ -94,7 +89,7 @@ def read_snapshot(timewsync_data_dir: str) -> List[str]:
             for member in snapshot.getmembers():
                 with snapshot.extractfile(member) as file:
                     file_data = file.read().decode("utf-8")
-                    snapshot_data.append(file_data)
+                    snapshot_data[member.name] = file_data
 
     return snapshot_data
 
