@@ -120,69 +120,29 @@ class TestIntervalToString:
         assert str(partial_interval) == "inc # " + expt_tags + " # " + expt_annotation
 
         partial_interval = Interval(start=test_date1, end=test_date2, tags=["foo"])
-        assert (
-            str(partial_interval)
-            == "inc " + expt_date1 + " - " + expt_date2 + " # " + "foo"
-        )
+        assert str(partial_interval) == "inc " + expt_date1 + " - " + expt_date2 + " # " + "foo"
 
         partial_interval = Interval(start=test_date1, end=test_date2, tags=test_tags)
+        assert str(partial_interval) == "inc " + expt_date1 + " - " + expt_date2 + " # " + expt_tags
+
+        partial_interval = Interval(start=test_date1, end=test_date2, annotation=test_annotation)
+        assert str(partial_interval) == "inc " + expt_date1 + " - " + expt_date2 + " # # " + expt_annotation
+
+        partial_interval = Interval(start=test_date1, tags=["foo"], annotation=test_annotation)
+        assert str(partial_interval) == "inc " + expt_date1 + " # " + "foo" + " # " + expt_annotation
+
+        partial_interval = Interval(start=test_date1, tags=test_tags, annotation=test_annotation)
+        assert str(partial_interval) == "inc " + expt_date1 + " # " + expt_tags + " # " + expt_annotation
+
+        partial_interval = Interval(start=test_date1, end=test_date2, tags=["foo"], annotation=test_annotation)
         assert (
-            str(partial_interval)
-            == "inc " + expt_date1 + " - " + expt_date2 + " # " + expt_tags
+            str(partial_interval) == "inc " + expt_date1 + " - " + expt_date2 + " # " + "foo" + " # " + expt_annotation
         )
 
-        partial_interval = Interval(
-            start=test_date1, end=test_date2, annotation=test_annotation
-        )
+        partial_interval = Interval(start=test_date1, end=test_date2, tags=test_tags, annotation=test_annotation)
         assert (
             str(partial_interval)
-            == "inc " + expt_date1 + " - " + expt_date2 + " # # " + expt_annotation
-        )
-
-        partial_interval = Interval(
-            start=test_date1, tags=["foo"], annotation=test_annotation
-        )
-        assert (
-            str(partial_interval)
-            == "inc " + expt_date1 + " # " + "foo" + " # " + expt_annotation
-        )
-
-        partial_interval = Interval(
-            start=test_date1, tags=test_tags, annotation=test_annotation
-        )
-        assert (
-            str(partial_interval)
-            == "inc " + expt_date1 + " # " + expt_tags + " # " + expt_annotation
-        )
-
-        partial_interval = Interval(
-            start=test_date1, end=test_date2, tags=["foo"], annotation=test_annotation
-        )
-        assert (
-            str(partial_interval)
-            == "inc "
-            + expt_date1
-            + " - "
-            + expt_date2
-            + " # "
-            + "foo"
-            + " # "
-            + expt_annotation
-        )
-
-        partial_interval = Interval(
-            start=test_date1, end=test_date2, tags=test_tags, annotation=test_annotation
-        )
-        assert (
-            str(partial_interval)
-            == "inc "
-            + expt_date1
-            + " - "
-            + expt_date2
-            + " # "
-            + expt_tags
-            + " # "
-            + expt_annotation
+            == "inc " + expt_date1 + " - " + expt_date2 + " # " + expt_tags + " # " + expt_annotation
         )
 
     def test_ambiguous_interval(self):
@@ -264,71 +224,35 @@ class TestAsInterval:
         assert as_interval(interval_str) == Interval(start=expt_date1, tags=expt_tags)
 
         interval_str = "inc " + test_date1 + " # # " + test_annotation
-        assert as_interval(interval_str) == Interval(
-            start=expt_date1, annotation=expt_annotation
-        )
+        assert as_interval(interval_str) == Interval(start=expt_date1, annotation=expt_annotation)
 
         interval_str = "inc # " + "foo" + " # " + test_annotation
-        assert as_interval(interval_str) == Interval(
-            tags=["foo"], annotation=expt_annotation
-        )
+        assert as_interval(interval_str) == Interval(tags=["foo"], annotation=expt_annotation)
 
         interval_str = "inc # " + test_tags + " # " + test_annotation
-        assert as_interval(interval_str) == Interval(
-            tags=expt_tags, annotation=expt_annotation
-        )
+        assert as_interval(interval_str) == Interval(tags=expt_tags, annotation=expt_annotation)
 
         interval_str = "inc " + test_date1 + " - " + test_date2 + " # " + "foo"
-        assert as_interval(interval_str) == Interval(
-            start=expt_date1, end=expt_date2, tags=["foo"]
-        )
+        assert as_interval(interval_str) == Interval(start=expt_date1, end=expt_date2, tags=["foo"])
 
         interval_str = "inc " + test_date1 + " - " + test_date2 + " # " + test_tags
-        assert as_interval(interval_str) == Interval(
-            start=expt_date1, end=expt_date2, tags=expt_tags
-        )
+        assert as_interval(interval_str) == Interval(start=expt_date1, end=expt_date2, tags=expt_tags)
 
-        interval_str = (
-            "inc " + test_date1 + " - " + test_date2 + " # # " + test_annotation
-        )
-        assert as_interval(interval_str) == Interval(
-            start=expt_date1, end=expt_date2, annotation=expt_annotation
-        )
+        interval_str = "inc " + test_date1 + " - " + test_date2 + " # # " + test_annotation
+        assert as_interval(interval_str) == Interval(start=expt_date1, end=expt_date2, annotation=expt_annotation)
 
         interval_str = "inc " + test_date1 + " # " + "foo" + " # " + test_annotation
-        assert as_interval(interval_str) == Interval(
-            start=expt_date1, tags=["foo"], annotation=expt_annotation
-        )
+        assert as_interval(interval_str) == Interval(start=expt_date1, tags=["foo"], annotation=expt_annotation)
 
         interval_str = "inc " + test_date1 + " # " + test_tags + " # " + test_annotation
-        assert as_interval(interval_str) == Interval(
-            start=expt_date1, tags=expt_tags, annotation=expt_annotation
-        )
+        assert as_interval(interval_str) == Interval(start=expt_date1, tags=expt_tags, annotation=expt_annotation)
 
-        interval_str = (
-            "inc "
-            + test_date1
-            + " - "
-            + test_date2
-            + " # "
-            + "foo"
-            + " # "
-            + test_annotation
-        )
+        interval_str = "inc " + test_date1 + " - " + test_date2 + " # " + "foo" + " # " + test_annotation
         assert as_interval(interval_str) == Interval(
             start=expt_date1, end=expt_date2, tags=["foo"], annotation=expt_annotation
         )
 
-        interval_str = (
-            "inc "
-            + test_date1
-            + " - "
-            + test_date2
-            + " # "
-            + test_tags
-            + " # "
-            + test_annotation
-        )
+        interval_str = "inc " + test_date1 + " - " + test_date2 + " # " + test_tags + " # " + test_annotation
         assert as_interval(interval_str) == Interval(
             start=expt_date1, end=expt_date2, tags=expt_tags, annotation=expt_annotation
         )

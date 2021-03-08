@@ -61,13 +61,9 @@ def dispatch(
     server_response = requests.put(request_url, request_body)
 
     if server_response.status_code != 200:
-        raise RuntimeError(
-            f"Problem while syncing with server. Server responded with {server_response.status_code}."
-        )
+        raise RuntimeError(f"Problem while syncing with server. Server responded with {server_response.status_code}.")
 
-    parsed_response, conflict_flag = json_converter.from_json_response(
-        server_response.text
-    )
+    parsed_response, conflict_flag = json_converter.from_json_response(server_response.text)
 
     return parsed_response, conflict_flag
 

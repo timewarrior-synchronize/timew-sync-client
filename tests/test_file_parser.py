@@ -55,20 +55,9 @@ class TestToIntervalList:
         test_tags = 'shortTag "tag - with quotes" "\\nt3$T \\"edg€ case! " \\""'
         test_annotation = "this interval is for testing purposes only"
 
-        test_interval_str1 = (
-            "inc "
-            + test_date1
-            + " - "
-            + test_date2
-            + " # "
-            + test_tags
-            + " # "
-            + test_annotation
-        )
+        test_interval_str1 = "inc " + test_date1 + " - " + test_date2 + " # " + test_tags + " # " + test_annotation
         test_interval_str2 = "inc " + test_date1 + " - " + test_date2
-        test_interval_str3 = (
-            "inc " + test_date3 + " - " + test_date4 + " # # " + "foo bar"
-        )
+        test_interval_str3 = "inc " + test_date3 + " - " + test_date4 + " # # " + "foo bar"
 
         expt_date1 = datetime.fromisoformat("2021-01-23 13:46:59")
         expt_date2 = datetime.fromisoformat("2021-01-24 02:00:43")
@@ -82,25 +71,17 @@ class TestToIntervalList:
         ]
         expt_annotation = "this interval is for testing purposes only"
 
-        expt_interval1 = Interval(
-            start=expt_date1, end=expt_date2, tags=expt_tags, annotation=expt_annotation
-        )
+        expt_interval1 = Interval(start=expt_date1, end=expt_date2, tags=expt_tags, annotation=expt_annotation)
         expt_interval2 = Interval(start=expt_date1, end=expt_date2)
-        expt_interval3 = Interval(
-            start=expt_date3, end=expt_date4, annotation="foo bar"
-        )
+        expt_interval3 = Interval(start=expt_date3, end=expt_date4, annotation="foo bar")
 
         # Test with similar intervals
-        test_intervals = to_interval_list(
-            [test_interval_str1 + "\n" + test_interval_str2]
-        )
+        test_intervals = to_interval_list([test_interval_str1 + "\n" + test_interval_str2])
         expt_intervals = [expt_interval1, expt_interval2]
         assert test_intervals == expt_intervals
 
         # Test with multiple months
-        test_intervals = to_interval_list(
-            [test_interval_str1 + "\n" + test_interval_str2, test_interval_str3]
-        )
+        test_intervals = to_interval_list([test_interval_str1 + "\n" + test_interval_str2, test_interval_str3])
         expt_intervals = [expt_interval1, expt_interval2, expt_interval3]
         assert test_intervals == expt_intervals
 
@@ -124,13 +105,9 @@ class TestToMonthlyData:
         ]
         test_annotation = "this interval is for testing purposes only"
 
-        test_interval1 = Interval(
-            start=test_date1, end=test_date2, tags=test_tags, annotation=test_annotation
-        )
+        test_interval1 = Interval(start=test_date1, end=test_date2, tags=test_tags, annotation=test_annotation)
         test_interval2 = Interval(start=test_date1, end=test_date2)
-        test_interval3 = Interval(
-            start=test_date3, end=test_date4, annotation="foo bar"
-        )
+        test_interval3 = Interval(start=test_date3, end=test_date4, annotation="foo bar")
         test_interval4 = Interval(start=test_date2, end=test_date3)
 
         expt_date1 = "20210123T134659Z"
@@ -140,42 +117,25 @@ class TestToMonthlyData:
         expt_tags = 'shortTag "tag - with quotes" "\\nt3$T "edg€ case! " \\""'
         expt_annotation = "this interval is for testing purposes only"
 
-        expt_interval_str1 = (
-            "inc "
-            + expt_date1
-            + " - "
-            + expt_date2
-            + " # "
-            + expt_tags
-            + " # "
-            + expt_annotation
-        )
+        expt_interval_str1 = "inc " + expt_date1 + " - " + expt_date2 + " # " + expt_tags + " # " + expt_annotation
         expt_interval_str2 = "inc " + expt_date1 + " - " + expt_date2
-        expt_interval_str3 = (
-            "inc " + expt_date3 + " - " + expt_date4 + " # # " + "foo bar"
-        )
+        expt_interval_str3 = "inc " + expt_date3 + " - " + expt_date4 + " # # " + "foo bar"
         expt_interval_str4 = "inc " + expt_date2 + " - " + expt_date3
         expt_file_name1 = "2021-01.data"
         expt_file_name2 = "2021-02.data"
 
         # Test with similar intervals
         test_interval_dict = to_monthly_data([test_interval1, test_interval2])
-        expt_interval_dict = {
-            expt_file_name1: expt_interval_str1 + "\n" + expt_interval_str2
-        }
+        expt_interval_dict = {expt_file_name1: expt_interval_str1 + "\n" + expt_interval_str2}
         assert test_interval_dict == expt_interval_dict
 
         # Test with unsorted intervals
         test_interval_dict = to_monthly_data([test_interval4, test_interval2])
-        expt_interval_dict = {
-            expt_file_name1: expt_interval_str2 + "\n" + expt_interval_str4
-        }
+        expt_interval_dict = {expt_file_name1: expt_interval_str2 + "\n" + expt_interval_str4}
         assert test_interval_dict == expt_interval_dict
 
         # Test with multiple months
-        test_interval_dict = to_monthly_data(
-            [test_interval1, test_interval2, test_interval3]
-        )
+        test_interval_dict = to_monthly_data([test_interval1, test_interval2, test_interval3])
         expt_interval_dict = {
             expt_file_name1: expt_interval_str1 + "\n" + expt_interval_str2,
             expt_file_name2: expt_interval_str3,
@@ -237,9 +197,7 @@ class TestExtractTags:
                 "tag1",
             ],
         )
-        i3 = Interval(
-            start=date3, end=date4, tags=["tag2"], annotation="I am the annotation."
-        )
+        i3 = Interval(start=date3, end=date4, tags=["tag2"], annotation="I am the annotation.")
         i4 = Interval(
             start=date1,
             end=date3,
@@ -252,25 +210,25 @@ class TestExtractTags:
             "{"
             '\n  "this is tag 1": {'
             '\n    "count": 2'
-            '\n  },'
+            "\n  },"
             '\n  "this is \\"not\\" tag 1": {'
             '\n    "count": 1'
-            '\n  },'
+            "\n  },"
             '\n  "tag2": {'
             '\n    "count": 3'
-            '\n  },'
+            "\n  },"
             '\n  "tag3": {'
             '\n    "count": 2'
-            '\n  },'
+            "\n  },"
             '\n  "tag4": {'
             '\n    "count": 1'
-            '\n  },'
+            "\n  },"
             '\n  "tag1": {'
             '\n    "count": 1'
-            '\n  },'
+            "\n  },"
             '\n  "\\"": {'
             '\n    "count": 2'
-            '\n  }'
+            "\n  }"
             "\n}"
         )
 
@@ -293,8 +251,8 @@ class TestNormalizeTag:
         assert normalize_tag('"ab"') == "ab"
         assert normalize_tag('"12"') == "12"
         assert normalize_tag('"x-"') == "x-"
-        assert normalize_tag('"x\""') == 'x"'
-        assert normalize_tag('"\"x"') == '"x'
+        assert normalize_tag('"x""') == 'x"'
+        assert normalize_tag('""x"') == '"x'
 
     def test_quotes_at_start_or_end(self):
         assert normalize_tag('abc""') == 'abc""'

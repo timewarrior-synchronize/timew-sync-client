@@ -31,9 +31,7 @@ import tarfile
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 
-TIMEW_FOLDER = os.path.expanduser(
-    os.environ.get("TIMEWARRIORDB", os.path.join("~", ".timewarrior"))
-)
+TIMEW_FOLDER = os.path.expanduser(os.environ.get("TIMEWARRIORDB", os.path.join("~", ".timewarrior")))
 DATA_FOLDER = os.path.join(TIMEW_FOLDER, "data")
 
 
@@ -62,11 +60,7 @@ def read_intervals() -> List[str]:
 
     # Identify all data sources
     if os.path.exists(DATA_FOLDER):
-        file_list = [
-            f
-            for f in os.listdir(Path(DATA_FOLDER))
-            if (re.search(r"^\d\d\d\d-\d\d\.data$", f))
-        ]
+        file_list = [f for f in os.listdir(Path(DATA_FOLDER)) if (re.search(r"^\d\d\d\d-\d\d\.data$", f))]
 
         # Read all file contents
         for file_name in file_list:

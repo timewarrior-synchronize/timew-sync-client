@@ -47,7 +47,7 @@ class TestToJSONRequest:
             "start": "20210124T020043Z",
             "end": "20210124T080130Z",
             "tags": ["foo", "bar"],
-            "annotation": "this has been added"
+            "annotation": "this has been added",
         }
         expt_json = '{"userID": 42, "added": [' + json.dumps(test_interval) + '], "removed": []}'
         result = to_json_request(42, ([Interval.from_dict(test_interval)], []))
@@ -59,14 +59,9 @@ class TestToJSONRequest:
                 "start": "20210124T020043Z",
                 "end": "20210124T080130Z",
                 "tags": ["foo", "bar"],
-                "annotation": "this has been added"
+                "annotation": "this has been added",
             },
-            {
-                "start": "20210321T170613Z",
-                "end": "20210321T203246Z",
-                "tags": [],
-                "annotation": ""
-            }
+            {"start": "20210321T170613Z", "end": "20210321T203246Z", "tags": [], "annotation": ""},
         ]
         expt_json = '{"userID": 128, "added": ' + json.dumps(test_intervals) + ', "removed": []}'
         result = to_json_request(128, ([Interval.from_dict(i) for i in test_intervals], []))
@@ -74,7 +69,7 @@ class TestToJSONRequest:
 
     def test_removed_empty(self):
         test_interval = {"start": "", "end": "", "tags": [], "annotation": ""}
-        expt_json = '{"userID": 1, "added": [], "removed": [' + json.dumps(test_interval) + ']}'
+        expt_json = '{"userID": 1, "added": [], "removed": [' + json.dumps(test_interval) + "]}"
         result = to_json_request(1, ([], [Interval()]))
         assert result == expt_json
 
@@ -83,7 +78,7 @@ class TestToJSONRequest:
             "start": "20210124T020043Z",
             "end": "20210124T080130Z",
             "tags": ["foo", "bar"],
-            "annotation": "this has been removed"
+            "annotation": "this has been removed",
         }
         expt_json = '{"userID": 42, "added": [], "removed": [' + json.dumps(test_interval) + "]}"
         result = to_json_request(42, ([], [Interval.from_dict(test_interval)]))
@@ -95,14 +90,9 @@ class TestToJSONRequest:
                 "start": "20210124T020043Z",
                 "end": "20210124T080130Z",
                 "tags": ["foo", "bar"],
-                "annotation": "this has been removed"
+                "annotation": "this has been removed",
             },
-            {
-                "start": "20210321T170613Z",
-                "end": "20210321T203246Z",
-                "tags": [],
-                "annotation": ""
-            }
+            {"start": "20210321T170613Z", "end": "20210321T203246Z", "tags": [], "annotation": ""},
         ]
         expt_json = '{"userID": 128, "added": [], "removed": ' + json.dumps(test_intervals) + "}"
         result = to_json_request(128, ([], [Interval.from_dict(i) for i in test_intervals]))
@@ -110,7 +100,13 @@ class TestToJSONRequest:
 
     def test_both_empty(self):
         test_interval = {"start": "", "end": "", "tags": [], "annotation": ""}
-        expt_json = '{"userID": 1, "added": [' + json.dumps(test_interval) + '], "removed": [' + json.dumps(test_interval) + ']}'
+        expt_json = (
+            '{"userID": 1, "added": ['
+            + json.dumps(test_interval)
+            + '], "removed": ['
+            + json.dumps(test_interval)
+            + "]}"
+        )
         result = to_json_request(1, ([Interval()], [Interval()]))
         assert result == expt_json
 
@@ -119,9 +115,15 @@ class TestToJSONRequest:
             "start": "20210124T020043Z",
             "end": "20210124T080130Z",
             "tags": ["foo", "bar"],
-            "annotation": "this has been added/removed"
+            "annotation": "this has been added/removed",
         }
-        expt_json = '{"userID": 42, "added": [' + json.dumps(test_interval) + '], "removed": [' + json.dumps(test_interval) + "]}"
+        expt_json = (
+            '{"userID": 42, "added": ['
+            + json.dumps(test_interval)
+            + '], "removed": ['
+            + json.dumps(test_interval)
+            + "]}"
+        )
         result = to_json_request(42, ([Interval.from_dict(test_interval)], [Interval.from_dict(test_interval)]))
         assert result == expt_json
 
@@ -131,17 +133,20 @@ class TestToJSONRequest:
                 "start": "20210124T020043Z",
                 "end": "20210124T080130Z",
                 "tags": ["foo", "bar"],
-                "annotation": "this has been added/removed"
+                "annotation": "this has been added/removed",
             },
-            {
-                "start": "20210321T170613Z",
-                "end": "20210321T203246Z",
-                "tags": [],
-                "annotation": ""
-            }
+            {"start": "20210321T170613Z", "end": "20210321T203246Z", "tags": [], "annotation": ""},
         ]
-        expt_json = '{"userID": 128, "added": ' + json.dumps(test_intervals) + ', "removed": ' + json.dumps(test_intervals) + "}"
-        result = to_json_request(128, ([Interval.from_dict(i) for i in test_intervals], [Interval.from_dict(i) for i in test_intervals]))
+        expt_json = (
+            '{"userID": 128, "added": '
+            + json.dumps(test_intervals)
+            + ', "removed": '
+            + json.dumps(test_intervals)
+            + "}"
+        )
+        result = to_json_request(
+            128, ([Interval.from_dict(i) for i in test_intervals], [Interval.from_dict(i) for i in test_intervals])
+        )
         assert result == expt_json
 
 
@@ -168,7 +173,7 @@ class TestFromJSONResponse:
             "start": "20210124T020043Z",
             "end": "20210124T080130Z",
             "tags": ["foo", "bar"],
-            "annotation": "this is an annotation"
+            "annotation": "this is an annotation",
         }
         test_json = '{"conflictsOccurred": false, "intervals": [' + json.dumps(test_interval) + "]}"
         expt_interval = Interval.from_dict(test_interval)
@@ -182,14 +187,9 @@ class TestFromJSONResponse:
                 "start": "20210124T020043Z",
                 "end": "20210124T080130Z",
                 "tags": ["foo", "bar"],
-                "annotation": "this is an annotation"
+                "annotation": "this is an annotation",
             },
-            {
-                "start": "20210321T170613Z",
-                "end": "20210321T203246Z",
-                "tags": [],
-                "annotation": ""
-            }
+            {"start": "20210321T170613Z", "end": "20210321T203246Z", "tags": [], "annotation": ""},
         ]
         test_json = '{"conflictsOccurred": false, "intervals": ' + json.dumps(test_intervals) + "}"
         expt_intervals = [Interval.from_dict(test_intervals[0]), Interval.from_dict(test_intervals[1])]
