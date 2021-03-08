@@ -148,7 +148,7 @@ def generate_key(configuration: Configuration):
 
     if priv_pem or pub_pem:
         confirm = cli.confirmation_reader(
-            "The timewsync folder already contains keys. They will be overwritten. Do " "you want to continue?"
+            "The timewsync folder already contains keys. They will be overwritten. Do you want to continue?"
         )
         if not confirm:
             return
@@ -157,5 +157,5 @@ def generate_key(configuration: Configuration):
     io_handler.write_keys(configuration.data_dir, priv_pem, pub_pem)
 
     sys.stderr.write(
-        f"A new key pair was generated. " f"You can find it in your timewsync folder ({configuration.data_dir})."
+        f"A new key pair was generated. You can find it in your timewsync folder ({configuration.data_dir})."
     )
