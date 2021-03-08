@@ -145,7 +145,7 @@ def generate_key(configuration: Configuration):
 
     if priv_pem or pub_pem:
         confirm = cli.confirmation_reader(
-            "The timewsync folder already contains keys. They will be overwritten. Do " "you want to continue?"
+            "The timewsync folder already contains keys. They will be overwritten. Do you want to continue?"
         )
         if not confirm:
             return
