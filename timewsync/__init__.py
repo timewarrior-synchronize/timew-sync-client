@@ -30,8 +30,10 @@ import os
 import subprocess
 import sys
 
+import bcolors as bcolors
+
 from timewsync.dispatch import dispatch
-from timewsync.file_parser import to_interval_list, to_monthly_data, extract_tags
+from timewsync.file_parser import as_interval_list, as_file_strings, extract_tags
 from timewsync.io_handler import read_data, write_data
 from timewsync.config import Configuration
 
@@ -92,8 +94,11 @@ def main():
     config = Configuration.read(os.path.join(data_dir, "timewsync.conf"))
 
     timew_data, snapshot_data = read_data(data_dir)
-    timew_intervals = to_interval_list(timew_data)
-    snapshot_intervals = to_interval_list(snapshot_data)
+    timew_intervals, active_interval = as_interval_list(timew_data)
+    snapshot_intervals, _ = as_interval_list(snapshot_data)
+
+    if active_interval:
+        sys.stderr.write("Time tracking is active. Stopped time tracking.\n")
 
     response_intervals, conflict_flag = dispatch(
         config, timew_intervals, snapshot_intervals
@@ -102,8 +107,14 @@ def main():
     if conflict_flag:
         run_conflict_hook(data_dir)
 
-    server_data = to_monthly_data(response_intervals)
+    server_data, started_tracking = as_file_strings(response_intervals, active_interval)
     new_tags = extract_tags(response_intervals)
     write_data(data_dir, server_data, new_tags)
 
     sys.stderr.write("Synced successfully!\n")
+
+    if active_interval:
+        if started_tracking:
+            sys.stderr.write("Restarted time tracking.\n")
+        else:
+            sys.stderr.write(f"{bcolors.WARN}Warning: Cannot restart time tracking!{bcolors.ENDC}\n")
