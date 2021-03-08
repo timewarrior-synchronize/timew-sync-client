@@ -30,7 +30,8 @@ import os
 import subprocess
 import sys
 
-import bcolors as bcolors
+import colorama
+from colorama import Fore
 
 from timewsync import auth, cli
 from timewsync.dispatch import dispatch
@@ -90,6 +91,8 @@ def run_conflict_hook(data_dir: str):
 def main():
     """This function is the main entry point to the timewarrior
     synchronization client."""
+    colorama.init()
+
     args = make_parser().parse_args()
     data_dir = os.path.expanduser(args.data_dir)
 
@@ -130,7 +133,7 @@ def sync(configuration: Configuration) -> None:
         if started_tracking:
             sys.stderr.write("Restarted time tracking.\n")
         else:
-            sys.stderr.write(f"{bcolors.WARN}Warning: Cannot restart time tracking!{bcolors.ENDC}\n")
+            sys.stderr.write(Fore.RED + "Warning: Cannot restart time tracking!\n" + Fore.RESET)
 
 
 def generate_key(configuration: Configuration):
