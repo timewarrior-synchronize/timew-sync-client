@@ -28,6 +28,7 @@
 from collections import defaultdict
 from typing import List, Dict
 
+from timewsync import json_converter
 from timewsync.interval import Interval, as_interval
 
 
@@ -95,55 +96,38 @@ def get_file_name(interval: Interval) -> str:
     return interval.start.strftime("%Y-%m.data")
 
 
-def extract_tags(lst_of_intervalobjects: List[Interval]) -> str:
-    """
-    Gets a List of Intervalobjects and extracts all tags from all of these.
+def extract_tags(intervals: List[Interval]) -> str:
+    """Extracts all tags and counts occurrences per tag.
+
     Returns one String containing every tag with how often it occurs.
-    :param
-        lst_of_intervalobjects: A list of time intervals in timewarrior format.
-    :return:
-        A string of all tags and the number of their occurrence written in the correct format for tags.data .
+
+    Args:
+        intervals: A list of Interval objects.
+
+    Returns:
+        A string of all tags and the number of their occurrence written in the correct format for tags.data.
     """
-
-    all_tags = defaultdict(int)
-    for interval in lst_of_intervalobjects:
-        for tag in interval.tags:
-            all_tags[normalize_tag(tag)] += 1
-
-    if len(all_tags) == 0:
-        return ""
-
-    result = "{"
-    for tag in all_tags.keys():
-        result += "\n    " + tag + ':{"count":' + str(all_tags[tag]) + "},"
-    result = (
-        result[:-1] + "\n}"
-    )  # now, discard the last ',' (which is too much) and add a closing '}'
-
-    return result
+    tags = defaultdict(int)
+    for i in intervals:
+        for tag in i.tags:
+            tags[normalize_tag(tag)] += 1
+    return json_converter.to_json_tags(tags)
 
 
 def normalize_tag(tag: str) -> str:
-    """
-    Receives a tag (string) and checks if it has double quotes at start and end '"..."'.
-    If not, it will attach them.
-    Note:
-        - Empty strings and '""' will raise an error because timewarrior cannot work with empty tags.
-        - The two Strings '"' and '\"' will both be returned as '"\""' (but we expect '"' never to be rendered).
+    """Removes encapsulating double quotes, which are otherwise redundant in tags.data.
+
+    Ignores non-encapsulating double quotes (one side only or inside).
+    Empty tags and '""' raise an error because timewarrior cannot work with empty tags.
+
     Args:
-        tag: The tag which shall be normalized.
+        tag: The tag to be pruned.
 
-    Returns: The normalized tag.
-
+    Returns:
+        The pruned tag without encapsulating double quotes.
     """
-    if len(tag) == 0 or tag == '""':
-        raise RuntimeError("invalid tag '%s'" % tag)
-
-    if tag == '"' or tag == '"':
-        return '"\\""'
-
-    if len(tag) < 2 or tag[0] != '"' or tag[-1] != '"':
-        return '"' + tag + '"'
-
-    else:
-        return tag
+    if not tag or tag == '""':
+        raise RuntimeError("empty tag '%s'" % tag)
+    if len(tag) >= 2 and tag[0] == '"' and tag[-1] == '"':
+        return tag[1:-1]
+    return tag

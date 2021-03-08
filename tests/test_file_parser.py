@@ -185,7 +185,6 @@ class TestToMonthlyData:
 
 class TestGetFileName:
     def test_no_start_time(self):
-        """Tests invalid intervals."""
         with pytest.raises(RuntimeError):
             get_file_name(Interval())
 
@@ -194,7 +193,6 @@ class TestGetFileName:
             get_file_name(Interval(end=test_date2, tags=["foo", "bar"]))
 
     def test_short_entry(self):
-        """Tests for correct name extraction from start time."""
         test_date1 = datetime.fromisoformat("2021-01-23 13:46:59")
         test_date2 = datetime.fromisoformat("2021-01-24 02:00:43")
         test_date3 = datetime.fromisoformat("2021-02-01 13:45:01")
@@ -208,7 +206,7 @@ class TestGetFileName:
 
 class TestExtractTags:
     def test_no_entry(self):
-        assert extract_tags([]) == ""
+        assert extract_tags([]) == "{}"
 
     def test_no_tags(self):
         date1 = datetime(2020, 1, 1)
@@ -218,7 +216,7 @@ class TestExtractTags:
         i1 = Interval(start=date1, end=date2)
         i2 = Interval(start=date2, end=date3)
         i3 = Interval(start=date3, end=date4)
-        assert extract_tags([i1, i2, i3]) == ""
+        assert extract_tags([i1, i2, i3]) == "{}"
 
     def test_mixed_input(self):
         date1 = datetime(2020, 1, 1)
@@ -252,13 +250,27 @@ class TestExtractTags:
         i6 = Interval(start=date1, end=date2, tags=['"', '"'])
         assert extract_tags([i1, i2, i3, i4, i5, i6]) == (
             "{"
-            '\n    "this is tag 1":{"count":2},'
-            '\n    "this is "not" tag 1":{"count":1},'
-            '\n    "tag2":{"count":3},'
-            '\n    "tag3":{"count":2},'
-            '\n    "tag4":{"count":1},'
-            '\n    "tag1":{"count":1},'
-            '\n    "\\"":{"count":2}'
+            '\n  "this is tag 1": {'
+            '\n    "count": 2'
+            '\n  },'
+            '\n  "this is \\"not\\" tag 1": {'
+            '\n    "count": 1'
+            '\n  },'
+            '\n  "tag2": {'
+            '\n    "count": 3'
+            '\n  },'
+            '\n  "tag3": {'
+            '\n    "count": 2'
+            '\n  },'
+            '\n  "tag4": {'
+            '\n    "count": 1'
+            '\n  },'
+            '\n  "tag1": {'
+            '\n    "count": 1'
+            '\n  },'
+            '\n  "\\"": {'
+            '\n    "count": 2'
+            '\n  }'
             "\n}"
         )
 
@@ -271,30 +283,29 @@ class TestNormalizeTag:
             normalize_tag('""')
 
     def test_one_double_quote(self):
-        assert normalize_tag('"') == '"\\""'
-        assert normalize_tag('"') == '"\\""'
+        assert normalize_tag('"') == '"'
 
     def test_standard_case(self):
-        assert normalize_tag("two or more words") == '"two or more words"'
-        assert normalize_tag('"oneword"') == '"oneword"'
+        assert normalize_tag('"foo"') == "foo"
+        assert normalize_tag('"two or more words"') == "two or more words"
 
     def test_length_2(self):
-        assert normalize_tag("ab") == '"ab"'
-        assert normalize_tag("12") == '"12"'
-        assert normalize_tag("x-") == '"x-"'
-        assert normalize_tag('x"') == '"x""'
-        assert normalize_tag('"x') == '""x"'
+        assert normalize_tag('"ab"') == "ab"
+        assert normalize_tag('"12"') == "12"
+        assert normalize_tag('"x-"') == "x-"
+        assert normalize_tag('"x\""') == 'x"'
+        assert normalize_tag('"\"x"') == '"x'
 
     def test_quotes_at_start_or_end(self):
-        assert normalize_tag('abc""') == '"abc"""'
-        assert normalize_tag('abc"') == '"abc""'
-        assert normalize_tag('""ab') == '"""ab"'
-        assert normalize_tag('"ab') == '""ab"'
+        assert normalize_tag('abc""') == 'abc""'
+        assert normalize_tag('abc"') == 'abc"'
+        assert normalize_tag('""ab') == '""ab'
+        assert normalize_tag('"ab') == '"ab'
 
     def test_quotes_in_middle(self):
-        assert normalize_tag('ab"c') == '"ab"c"'
+        assert normalize_tag('ab"c') == 'ab"c'
 
     def test_no_quotes(self):
-        assert normalize_tag("abc") == '"abc"'
-        assert normalize_tag("012") == '"012"'
-        assert normalize_tag("a3b") == '"a3b"'
+        assert normalize_tag("abc") == "abc"
+        assert normalize_tag("012") == "012"
+        assert normalize_tag("a3b") == "a3b"
