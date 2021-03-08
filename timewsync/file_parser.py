@@ -160,9 +160,7 @@ def extract_tags(lst_of_intervalobjects: List[Interval]) -> str:
     result = "{"
     for tag in all_tags.keys():
         result += "\n    " + tag + ':{"count":' + str(all_tags[tag]) + "},"
-    result = (
-        result[:-1] + "\n}"
-    )  # now, discard the last ',' (which is too much) and add a closing '}'
+    result = result[:-1] + "\n}"  # now, discard the last ',' (which is too much) and add a closing '}'
 
     return result
 

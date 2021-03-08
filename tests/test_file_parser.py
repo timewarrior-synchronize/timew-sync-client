@@ -63,12 +63,14 @@ class TestAsIntervalList:
 
     def test_single_interval(self):
         test_intervals = {"2021-01.data": "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation"}
-        expt_interval = Interval.from_dict({
-            "start": "20210124T020043Z",
-            "end": "20210124T080130Z",
-            "tags": ["foo", "bar"],
-            "annotation": "this is an annotation"
-        })
+        expt_interval = Interval.from_dict(
+            {
+                "start": "20210124T020043Z",
+                "end": "20210124T080130Z",
+                "tags": ["foo", "bar"],
+                "annotation": "this is an annotation",
+            }
+        )
         result_i, result_a = as_interval_list(test_intervals)
         assert len(result_i) == 1 and not result_a
         assert result_i[0] == expt_interval
@@ -82,16 +84,15 @@ class TestAsIntervalList:
             )
         }
         expt_intervals = [
-            Interval.from_dict({
-                "start": "20210124T020043Z",
-                "end": "20210124T080130Z",
-                "tags": ["foo", "bar"],
-                "annotation": "this is an annotation"
-            }),
-            Interval.from_dict({
-                "start": "20210124T020043Z",
-                "end": "20210124T080130Z"
-            })
+            Interval.from_dict(
+                {
+                    "start": "20210124T020043Z",
+                    "end": "20210124T080130Z",
+                    "tags": ["foo", "bar"],
+                    "annotation": "this is an annotation",
+                }
+            ),
+            Interval.from_dict({"start": "20210124T020043Z", "end": "20210124T080130Z"}),
         ]
         result_i, result_a = as_interval_list(test_intervals)
         assert len(result_i) == 2 and not result_a
@@ -102,20 +103,18 @@ class TestAsIntervalList:
     def test_multiple_months(self):
         test_intervals = {
             "2021-01.data": "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation",
-            "2021-02.data": 'inc 20210201T134501Z - 20210301T145012Z # "29 days"'
+            "2021-02.data": 'inc 20210201T134501Z - 20210301T145012Z # "29 days"',
         }
         expt_intervals = [
-            Interval.from_dict({
-                "start": "20210124T020043Z",
-                "end": "20210124T080130Z",
-                "tags": ["foo", "bar"],
-                "annotation": "this is an annotation"
-            }),
-            Interval.from_dict({
-                "start": "20210201T134501Z",
-                "end": "20210301T145012Z",
-                "tags": ['"29 days"']
-            })
+            Interval.from_dict(
+                {
+                    "start": "20210124T020043Z",
+                    "end": "20210124T080130Z",
+                    "tags": ["foo", "bar"],
+                    "annotation": "this is an annotation",
+                }
+            ),
+            Interval.from_dict({"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['"29 days"']}),
         ]
         result_i, result_a = as_interval_list(test_intervals)
         assert len(result_i) == 2 and not result_a
@@ -126,11 +125,9 @@ class TestAsIntervalList:
 
 class TestAsFileStrings:
     def test_active_tracking(self):
-        test_interval = Interval.from_dict({
-            "start": "20210124T020043Z",
-            "tags": ["foo", "bar"],
-            "annotation": "this is an annotation"
-        })
+        test_interval = Interval.from_dict(
+            {"start": "20210124T020043Z", "tags": ["foo", "bar"], "annotation": "this is an annotation"}
+        )
         expt_intervals = {"2021-01.data": "inc 20210124T020043Z # foo bar # this is an annotation"}
         file_strings, started_tracking = as_file_strings([], test_interval)
         assert file_strings == expt_intervals
@@ -143,12 +140,14 @@ class TestAsFileStrings:
 
     def test_single_interval(self):
         test_intervals = [
-            Interval.from_dict({
-                "start": "20210124T020043Z",
-                "end": "20210124T080130Z",
-                "tags": ["foo", "bar"],
-                "annotation": "this is an annotation"
-            })
+            Interval.from_dict(
+                {
+                    "start": "20210124T020043Z",
+                    "end": "20210124T080130Z",
+                    "tags": ["foo", "bar"],
+                    "annotation": "this is an annotation",
+                }
+            )
         ]
         expt_intervals = {"2021-01.data": "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation"}
         file_strings, started_tracking = as_file_strings(test_intervals)
@@ -157,16 +156,15 @@ class TestAsFileStrings:
 
     def test_similar_intervals(self):
         test_intervals = [
-            Interval.from_dict({
-                "start": "20210124T020043Z",
-                "end": "20210124T080130Z",
-                "tags": ["foo", "bar"],
-                "annotation": "this is an annotation"
-            }),
-            Interval.from_dict({
-                "start": "20210124T020043Z",
-                "end": "20210124T080130Z"
-            })
+            Interval.from_dict(
+                {
+                    "start": "20210124T020043Z",
+                    "end": "20210124T080130Z",
+                    "tags": ["foo", "bar"],
+                    "annotation": "this is an annotation",
+                }
+            ),
+            Interval.from_dict({"start": "20210124T020043Z", "end": "20210124T080130Z"}),
         ]
         expt_intervals = {
             "2021-01.data": (
@@ -181,15 +179,10 @@ class TestAsFileStrings:
 
     def test_unsorted_intervals(self):
         test_intervals = [
-            Interval.from_dict({
-                "start": "20210124T020043Z",
-                "end": "20210124T080130Z",
-                "annotation": "this is the second interval"
-            }),
-            Interval.from_dict({
-                "start": "20210123T134659Z",
-                "end": "20210124T020043Z"
-            })
+            Interval.from_dict(
+                {"start": "20210124T020043Z", "end": "20210124T080130Z", "annotation": "this is the second interval"}
+            ),
+            Interval.from_dict({"start": "20210123T134659Z", "end": "20210124T020043Z"}),
         ]
         expt_intervals = {
             "2021-01.data": (
@@ -204,21 +197,19 @@ class TestAsFileStrings:
 
     def test_multiple_months(self):
         test_intervals = [
-            Interval.from_dict({
-                "start": "20210124T020043Z",
-                "end": "20210124T080130Z",
-                "tags": ["foo", "bar"],
-                "annotation": "this is an annotation"
-            }),
-            Interval.from_dict({
-                "start": "20210201T134501Z",
-                "end": "20210301T145012Z",
-                "tags": ['"29 days"']
-            })
+            Interval.from_dict(
+                {
+                    "start": "20210124T020043Z",
+                    "end": "20210124T080130Z",
+                    "tags": ["foo", "bar"],
+                    "annotation": "this is an annotation",
+                }
+            ),
+            Interval.from_dict({"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['"29 days"']}),
         ]
         expt_intervals = {
             "2021-01.data": "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation",
-            "2021-02.data": 'inc 20210201T134501Z - 20210301T145012Z # "29 days"'
+            "2021-02.data": 'inc 20210201T134501Z - 20210301T145012Z # "29 days"',
         }
         file_strings, started_tracking = as_file_strings(test_intervals)
         assert file_strings == expt_intervals
@@ -281,9 +272,7 @@ class TestExtractTags:
                 "tag1",
             ],
         )
-        i3 = Interval(
-            start=date3, end=date4, tags=["tag2"], annotation="I am the annotation."
-        )
+        i3 = Interval(start=date3, end=date4, tags=["tag2"], annotation="I am the annotation.")
         i4 = Interval(
             start=date1,
             end=date3,

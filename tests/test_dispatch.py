@@ -37,16 +37,18 @@ class TestGenerateDiff:
     def test_added_list(self):
         """Test with only the 'added' list having data."""
         assert generate_diff([Interval()], []) == ([Interval()], [])
-        assert generate_diff(
-            [Interval(tags=["foo"]), Interval(tags=["bar"])], [Interval(tags=["foo"])]
-        ) == ([Interval(tags=["bar"])], [])
+        assert generate_diff([Interval(tags=["foo"]), Interval(tags=["bar"])], [Interval(tags=["foo"])]) == (
+            [Interval(tags=["bar"])],
+            [],
+        )
 
     def test_removed_list(self):
         """Test with only the 'removed' list having data."""
         assert generate_diff([], [Interval()]) == ([], [Interval()])
-        assert generate_diff(
-            [Interval(tags=["foo"])], [Interval(tags=["foo"]), Interval(tags=["bar"])]
-        ) == ([], [Interval(tags=["bar"])])
+        assert generate_diff([Interval(tags=["foo"])], [Interval(tags=["foo"]), Interval(tags=["bar"])]) == (
+            [],
+            [Interval(tags=["bar"])],
+        )
 
     def test_both_lists(self):
         """Test with both lists having data."""
@@ -54,6 +56,7 @@ class TestGenerateDiff:
         added_interval = Interval(tags=["bar"], annotation="this has been added")
         removed_interval = Interval(tags=["bar"], annotation="this has been removed")
         assert generate_diff([unchanged_interval], [unchanged_interval]) == ([], [])
-        assert generate_diff(
-            [unchanged_interval, added_interval], [removed_interval, unchanged_interval]
-        ) == ([added_interval], [removed_interval])
+        assert generate_diff([unchanged_interval, added_interval], [removed_interval, unchanged_interval]) == (
+            [added_interval],
+            [removed_interval],
+        )

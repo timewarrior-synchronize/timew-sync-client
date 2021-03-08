@@ -49,9 +49,7 @@ def make_parser():
         The complete ArgumentParser object
     """
 
-    parser = argparse.ArgumentParser(
-        prog="timewsync", description="timewarrior synchronization client"
-    )
+    parser = argparse.ArgumentParser(prog="timewsync", description="timewarrior synchronization client")
 
     parser.add_argument(
         "--version",
@@ -67,10 +65,7 @@ def make_parser():
     )
 
     subparsers = parser.add_subparsers(dest="subcommand")
-    subparsers.add_parser(
-        "generate-key",
-        help="Generates a new key pair."
-    )
+    subparsers.add_parser("generate-key", help="Generates a new key pair.")
 
     return parser
 
@@ -120,9 +115,7 @@ def sync(configuration: Configuration) -> None:
     if active_interval:
         sys.stderr.write("Time tracking is active. Stopped time tracking.\n")
 
-    response_intervals, conflict_flag = dispatch(
-        configuration, timew_intervals, snapshot_intervals
-    )
+    response_intervals, conflict_flag = dispatch(configuration, timew_intervals, snapshot_intervals)
 
     if conflict_flag:
         run_conflict_hook(configuration.data_dir)
@@ -151,13 +144,15 @@ def generate_key(configuration: Configuration):
     priv_pem, pub_pem = io_handler.read_keys(configuration.data_dir)
 
     if priv_pem or pub_pem:
-        confirm = cli.confirmation_reader("The timewsync folder already contains keys. They will be overwritten. Do "
-                                          "you want to continue?")
+        confirm = cli.confirmation_reader(
+            "The timewsync folder already contains keys. They will be overwritten. Do " "you want to continue?"
+        )
         if not confirm:
             return
 
     priv_pem, pub_pem = auth.generate_keys()
     io_handler.write_keys(configuration.data_dir, priv_pem, pub_pem)
 
-    sys.stderr.write(f"A new key pair was generated. "
-                     f"You can find it in your timewsync folder ({configuration.data_dir}).")
+    sys.stderr.write(
+        f"A new key pair was generated. " f"You can find it in your timewsync folder ({configuration.data_dir})."
+    )
