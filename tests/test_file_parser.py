@@ -124,7 +124,7 @@ class TestAsIntervalList:
 
 
 class TestAsFileStrings:
-    def test_active_tracking(self):
+    def test_active_tracking_success(self):
         test_interval = Interval.from_dict(
             {"start": "20210124T020043Z", "tags": ["foo", "bar"], "annotation": "this is an annotation"}
         )
@@ -132,6 +132,18 @@ class TestAsFileStrings:
         file_strings, started_tracking = as_file_strings([], test_interval)
         assert file_strings == expt_intervals
         assert started_tracking is True
+
+    def test_active_tracking_failure(self):
+        test_interval = Interval.from_dict(
+            {"start": "20210124T020043Z", "tags": ["foo", "bar"], "annotation": "this is an annotation"}
+        )
+        conflicting_interval = Interval.from_dict(
+            {"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['"29 days"']}
+        )
+        expt_intervals = {"2021-02.data": 'inc 20210201T134501Z - 20210301T145012Z # "29 days"'}
+        file_strings, started_tracking = as_file_strings([conflicting_interval], test_interval)
+        assert file_strings == expt_intervals
+        assert started_tracking is False
 
     def test_no_intervals(self):
         file_strings, started_tracking = as_file_strings([])
