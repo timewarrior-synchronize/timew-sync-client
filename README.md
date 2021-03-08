@@ -1,8 +1,83 @@
-# Timewarrior Sync Client
-This repository contains the Client of the Timewarrior Sync project.
+# Timewarrior Synchronization Client
 
-## Setup (for development)
+This repository contains the client of the Timewarrior Sync project.
+
+## Installation
+
+### Using PIP
+
+To install `timewsync` in your current Python environment:
+
+```
+pip install .
+```
+
+### Using Nix
+
+To install `timewsync` in your current Nix environment:
+
+```
+nix-env -f default.nix -i
+```
+
+## Usage
+
+```
+usage: timewsync [-h] [--version] [--data-dir DATA_DIR] {generate-key} ...
+
+timewarrior synchronization client
+
+positional arguments:
+  {generate-key}
+    generate-key       Generates a new key pair.
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --version            Print version information
+  --data-dir DATA_DIR  The path to the data directory
+```
+
+### Data directory
+
+The data directory contains all information required by `timewsync`
+for storing configuration options and tracking changes.
+
+The path of the data directory defaults to `~/.timewsync`. This can be
+overridden with the command line flag `--data-dir`.
+
+#### Configuration
+
+An example configuration file is available under `example.conf`. The
+two available configuration options are the base URL of the server and
+the client ID.
+
+`timewsync` reads the configuration from `$TIMEWSYNC/timewsync.conf`
+where `$TIMEWSYNC` represents the path of the data directory (i.e. if
+the default data directory path is assumed, the configuration file is
+at `~/.timewsync/timewsync.conf`).
+
+#### Authentification keys
+
+The public-private key pair used for authentification is also stored
+in the data directory under `$TIMEWSYNC/private_key.pem` and
+`$TIMEWSYNC/public_key.pem`. The key pair can be generated using the
+`generate-keys` subcommand.
+
+#### Hooks
+
+Hooks are special files located in the data directory which will be
+contextually executed on specific events. They reside in
+`$TIMEWSYNC/hooks` (e.g. `$TIMEWSYNC/hooks/conflicts-occurred`).
+
+Available hooks:
+
+- `conflicts-occurred`: Triggered when the server responds with the
+  information that a conflict has been resolved by merging intervals.
+
+## Development
+
 ### Using a virtual environment
+
 To avoid conflicts between packages, you can use a virtual environment.
 Make sure you have `virtualenv` installed (first time only):
 
@@ -31,14 +106,16 @@ nix-shell
 ```
 
 ### Installing the projects dependencies
-To install the projects dependencies run:
+
+To install the project dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
 Now you should be good to go :)
 
-## Running the client
+### Running the client
 
 Once you have all dependencies installed, the client can be started:
 

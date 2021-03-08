@@ -2,7 +2,7 @@
 
 pkgs.mkShell {
   buildInputs = with pkgs; [
-    (python37.withPackages (ps: with ps; [ virtualenv ]))
+    (python38.withPackages (ps: with ps; [ virtualenv ]))
   ];
 
   shellHook = ''

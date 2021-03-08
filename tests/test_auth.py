@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Copyright 2020 - Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
+# Copyright 2021 - Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,15 @@
 #
 ###############################################################################
 
-import os
 
-import timewsync
-
-
-def test_no_args():
-    parser = timewsync.make_parser()
-    args = parser.parse_args([])
-    assert args.data_dir == os.path.join("~", ".timewsync")
-    assert args.subcommand is None
+from timewsync import auth
 
 
-def test_generate_key_arg():
-    parser = timewsync.make_parser()
-    args = parser.parse_args(["generate-key"])
-    assert args.subcommand == "generate-key"
+def test_generate_keys():
+    private_key_pem, public_key_pem = auth.generate_keys()
 
+    assert str(private_key_pem).find("-----BEGIN PRIVATE KEY-----") != -1
+    assert str(private_key_pem).find("-----END PRIVATE KEY-----") != -1
 
-def test_config_file():
-    parser = timewsync.make_parser()
-    args = parser.parse_args(["--data-dir", "~/.customdir"])
-    assert args.data_dir == "~/.customdir"
+    assert str(public_key_pem).find("-----BEGIN PUBLIC KEY-----") != -1
+    assert str(public_key_pem).find("-----END PUBLIC KEY-----") != -1

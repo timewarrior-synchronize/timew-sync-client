@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Copyright 2020 - Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
+# Copyright 2021 - Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,22 @@
 #
 ###############################################################################
 
-import os
 
-import timewsync
+def confirmation_reader(msg: str) -> bool:
+    """Prints a message and asks for user confirmation.
 
+    Asks the user with a [Y/n] option for confirmation.
 
-def test_no_args():
-    parser = timewsync.make_parser()
-    args = parser.parse_args([])
-    assert args.data_dir == os.path.join("~", ".timewsync")
-    assert args.subcommand is None
+    Args:
+        msg: The message to be printed before the confirmation choice.
 
+    Returns:
+        The users answer in form of a boolean value.
+    """
+    answer = input(f"{msg} [Y/n]: ")
+    answer = answer.strip().lower()
 
-def test_generate_key_arg():
-    parser = timewsync.make_parser()
-    args = parser.parse_args(["generate-key"])
-    assert args.subcommand == "generate-key"
+    if not answer or answer == "y":
+        return True
 
-
-def test_config_file():
-    parser = timewsync.make_parser()
-    args = parser.parse_args(["--data-dir", "~/.customdir"])
-    assert args.data_dir == "~/.customdir"
+    return False

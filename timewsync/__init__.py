@@ -32,6 +32,7 @@ import sys
 
 import bcolors as bcolors
 
+from timewsync import auth, cli
 from timewsync.dispatch import dispatch
 from timewsync.file_parser import as_interval_list, as_file_strings, extract_tags
 from timewsync.io_handler import read_data, write_data
@@ -65,6 +66,12 @@ def make_parser():
         help="The path to the data directory",
     )
 
+    subparsers = parser.add_subparsers(dest="subcommand")
+    subparsers.add_parser(
+        "generate-key",
+        help="Generates a new key pair."
+    )
+
     return parser
 
 
@@ -91,9 +98,22 @@ def main():
     args = make_parser().parse_args()
     data_dir = os.path.expanduser(args.data_dir)
 
-    config = Configuration.read(os.path.join(data_dir, "timewsync.conf"))
+    configuration = Configuration.read(data_dir, "timewsync.conf")
 
-    timew_data, snapshot_data = read_data(data_dir)
+    if args.subcommand == "generate-key":
+        generate_key(configuration)
+        return
+
+    sync(configuration)
+
+
+def sync(configuration: Configuration) -> None:
+    """Sync's the timewarrior data with the server.
+
+    Args:
+        configuration: The user's configuration.
+    """
+    timew_data, snapshot_data = read_data(configuration.data_dir)
     timew_intervals, active_interval = as_interval_list(timew_data)
     snapshot_intervals, _ = as_interval_list(snapshot_data)
 
@@ -101,15 +121,15 @@ def main():
         sys.stderr.write("Time tracking is active. Stopped time tracking.\n")
 
     response_intervals, conflict_flag = dispatch(
-        config, timew_intervals, snapshot_intervals
+        configuration, timew_intervals, snapshot_intervals
     )
 
     if conflict_flag:
-        run_conflict_hook(data_dir)
+        run_conflict_hook(configuration.data_dir)
 
     server_data, started_tracking = as_file_strings(response_intervals, active_interval)
     new_tags = extract_tags(response_intervals)
-    write_data(data_dir, server_data, new_tags)
+    write_data(configuration.data_dir, server_data, new_tags)
 
     sys.stderr.write("Synced successfully!\n")
 
@@ -118,3 +138,26 @@ def main():
             sys.stderr.write("Restarted time tracking.\n")
         else:
             sys.stderr.write(f"{bcolors.WARN}Warning: Cannot restart time tracking!{bcolors.ENDC}\n")
+
+
+def generate_key(configuration: Configuration):
+    """Generates a new RSA key pair.
+
+    Prompts the user for confirmation if keys already exist.
+
+    Args:
+        configuration: The user's configuration.
+    """
+    priv_pem, pub_pem = io_handler.read_keys(configuration.data_dir)
+
+    if priv_pem or pub_pem:
+        confirm = cli.confirmation_reader("The timewsync folder already contains keys. They will be overwritten. Do "
+                                          "you want to continue?")
+        if not confirm:
+            return
+
+    priv_pem, pub_pem = auth.generate_keys()
+    io_handler.write_keys(configuration.data_dir, priv_pem, pub_pem)
+
+    sys.stderr.write(f"A new key pair was generated. "
+                     f"You can find it in your timewsync folder ({configuration.data_dir}).")
