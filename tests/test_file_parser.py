@@ -30,8 +30,8 @@ from datetime import datetime
 import pytest
 
 from timewsync.file_parser import (
-    to_interval_list,
-    to_monthly_data,
+    as_interval_list,
+    as_file_strings,
     get_file_name,
     extract_tags,
     normalize_tag,
@@ -39,108 +39,193 @@ from timewsync.file_parser import (
 from timewsync.interval import Interval
 
 
-class TestToIntervalList:
+class TestAsIntervalList:
+    def test_active_tracking(self):
+        test_interval = "inc 20210124T020043Z # foo bar # this is an annotation"
+        expt_time = datetime.fromisoformat("2021-01-24 02:00:43")
+        expt_tags = ["foo", "bar"]
+        expt_annotation = "this is an annotation"
+        result_i, result_a = as_interval_list({"": test_interval})
+        assert len(result_i) == 1 and result_a
+        assert result_i[0].start == expt_time
+        assert result_i[0].end
+        assert result_i[0].tags == expt_tags
+        assert result_i[0].annotation == expt_annotation
+        assert result_a.start == result_i[0].end
+        assert result_a.end is None
+        assert result_a.tags == expt_tags
+        assert result_a.annotation == expt_annotation
+
     def test_no_data(self):
-        """Tests with no intervals in list."""
-        assert to_interval_list([]) == []
-        assert to_interval_list([""]) == []
-        assert to_interval_list(["\n\n"]) == []
+        assert as_interval_list({}) == ([], None)
+        assert as_interval_list({"2021-01.data": ""}) == ([], None)
+        assert as_interval_list({"2021-01.data": "\n\n"}) == ([], None)
 
-    def test_with_data(self):
-        """Tests intervals starting in the same/different months."""
-        test_date1 = "20210123T134659Z"
-        test_date2 = "20210124T020043Z"
-        test_date3 = "20210201T134501Z"
-        test_date4 = "20210301T145012Z"
-        test_tags = 'shortTag "tag - with quotes" "\\nt3$T \\"edg€ case! " \\""'
-        test_annotation = "this interval is for testing purposes only"
+    def test_single_interval(self):
+        test_intervals = {"2021-01.data": "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation"}
+        expt_interval = Interval.from_dict(
+            {
+                "start": "20210124T020043Z",
+                "end": "20210124T080130Z",
+                "tags": ["foo", "bar"],
+                "annotation": "this is an annotation",
+            }
+        )
+        result_i, result_a = as_interval_list(test_intervals)
+        assert len(result_i) == 1 and not result_a
+        assert result_i[0] == expt_interval
 
-        test_interval_str1 = "inc " + test_date1 + " - " + test_date2 + " # " + test_tags + " # " + test_annotation
-        test_interval_str2 = "inc " + test_date1 + " - " + test_date2
-        test_interval_str3 = "inc " + test_date3 + " - " + test_date4 + " # # " + "foo bar"
-
-        expt_date1 = datetime.fromisoformat("2021-01-23 13:46:59")
-        expt_date2 = datetime.fromisoformat("2021-01-24 02:00:43")
-        expt_date3 = datetime.fromisoformat("2021-02-01 13:45:01")
-        expt_date4 = datetime.fromisoformat("2021-03-01 14:50:12")
-        expt_tags = [
-            "shortTag",
-            '"tag - with quotes"',
-            '"\\nt3$T \\"edg€ case! "',
-            '\\""',
-        ]
-        expt_annotation = "this interval is for testing purposes only"
-
-        expt_interval1 = Interval(start=expt_date1, end=expt_date2, tags=expt_tags, annotation=expt_annotation)
-        expt_interval2 = Interval(start=expt_date1, end=expt_date2)
-        expt_interval3 = Interval(start=expt_date3, end=expt_date4, annotation="foo bar")
-
-        # Test with similar intervals
-        test_intervals = to_interval_list([test_interval_str1 + "\n" + test_interval_str2])
-        expt_intervals = [expt_interval1, expt_interval2]
-        assert test_intervals == expt_intervals
-
-        # Test with multiple months
-        test_intervals = to_interval_list([test_interval_str1 + "\n" + test_interval_str2, test_interval_str3])
-        expt_intervals = [expt_interval1, expt_interval2, expt_interval3]
-        assert test_intervals == expt_intervals
-
-
-class TestToMonthlyData:
-    def test_no_intervals(self):
-        """Tests with no intervals in list."""
-        assert to_monthly_data([]) == {}
-
-    def test_with_intervals(self):
-        """Tests un-/sorted intervals starting in the same/different months."""
-        test_date1 = datetime.fromisoformat("2021-01-23 13:46:59")
-        test_date2 = datetime.fromisoformat("2021-01-24 02:00:43")
-        test_date3 = datetime.fromisoformat("2021-02-01 13:45:01")
-        test_date4 = datetime.fromisoformat("2021-03-01 14:50:12")
-        test_tags = [
-            "shortTag",
-            '"tag - with quotes"',
-            '"\\nt3$T "edg€ case! "',
-            '\\""',
-        ]
-        test_annotation = "this interval is for testing purposes only"
-
-        test_interval1 = Interval(start=test_date1, end=test_date2, tags=test_tags, annotation=test_annotation)
-        test_interval2 = Interval(start=test_date1, end=test_date2)
-        test_interval3 = Interval(start=test_date3, end=test_date4, annotation="foo bar")
-        test_interval4 = Interval(start=test_date2, end=test_date3)
-
-        expt_date1 = "20210123T134659Z"
-        expt_date2 = "20210124T020043Z"
-        expt_date3 = "20210201T134501Z"
-        expt_date4 = "20210301T145012Z"
-        expt_tags = 'shortTag "tag - with quotes" "\\nt3$T "edg€ case! " \\""'
-        expt_annotation = "this interval is for testing purposes only"
-
-        expt_interval_str1 = "inc " + expt_date1 + " - " + expt_date2 + " # " + expt_tags + " # " + expt_annotation
-        expt_interval_str2 = "inc " + expt_date1 + " - " + expt_date2
-        expt_interval_str3 = "inc " + expt_date3 + " - " + expt_date4 + " # # " + "foo bar"
-        expt_interval_str4 = "inc " + expt_date2 + " - " + expt_date3
-        expt_file_name1 = "2021-01.data"
-        expt_file_name2 = "2021-02.data"
-
-        # Test with similar intervals
-        test_interval_dict = to_monthly_data([test_interval1, test_interval2])
-        expt_interval_dict = {expt_file_name1: expt_interval_str1 + "\n" + expt_interval_str2}
-        assert test_interval_dict == expt_interval_dict
-
-        # Test with unsorted intervals
-        test_interval_dict = to_monthly_data([test_interval4, test_interval2])
-        expt_interval_dict = {expt_file_name1: expt_interval_str2 + "\n" + expt_interval_str4}
-        assert test_interval_dict == expt_interval_dict
-
-        # Test with multiple months
-        test_interval_dict = to_monthly_data([test_interval1, test_interval2, test_interval3])
-        expt_interval_dict = {
-            expt_file_name1: expt_interval_str1 + "\n" + expt_interval_str2,
-            expt_file_name2: expt_interval_str3,
+    def test_similar_intervals(self):
+        test_intervals = {
+            "2021-01.data": (
+                "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation"
+                "\n"
+                "inc 20210124T020043Z - 20210124T080130Z"
+            )
         }
-        assert test_interval_dict == expt_interval_dict
+        expt_intervals = [
+            Interval.from_dict(
+                {
+                    "start": "20210124T020043Z",
+                    "end": "20210124T080130Z",
+                    "tags": ["foo", "bar"],
+                    "annotation": "this is an annotation",
+                }
+            ),
+            Interval.from_dict({"start": "20210124T020043Z", "end": "20210124T080130Z"}),
+        ]
+        result_i, result_a = as_interval_list(test_intervals)
+        assert len(result_i) == 2 and not result_a
+        result_i.sort(key=lambda i: i.start)
+        expt_intervals.sort(key=lambda i: i.start)
+        assert result_i[0] == expt_intervals[0] and result_i[1] == expt_intervals[1]
+
+    def test_multiple_months(self):
+        test_intervals = {
+            "2021-01.data": "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation",
+            "2021-02.data": 'inc 20210201T134501Z - 20210301T145012Z # "29 days"',
+        }
+        expt_intervals = [
+            Interval.from_dict(
+                {
+                    "start": "20210124T020043Z",
+                    "end": "20210124T080130Z",
+                    "tags": ["foo", "bar"],
+                    "annotation": "this is an annotation",
+                }
+            ),
+            Interval.from_dict({"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['"29 days"']}),
+        ]
+        result_i, result_a = as_interval_list(test_intervals)
+        assert len(result_i) == 2 and not result_a
+        result_i.sort(key=lambda i: i.start)
+        expt_intervals.sort(key=lambda i: i.start)
+        assert result_i[0] == expt_intervals[0] and result_i[1] == expt_intervals[1]
+
+
+class TestAsFileStrings:
+    def test_active_tracking_success(self):
+        test_interval = Interval.from_dict(
+            {"start": "20210124T020043Z", "tags": ["foo", "bar"], "annotation": "this is an annotation"}
+        )
+        expt_intervals = {"2021-01.data": "inc 20210124T020043Z # foo bar # this is an annotation"}
+        file_strings, started_tracking = as_file_strings([], test_interval)
+        assert file_strings == expt_intervals
+        assert started_tracking is True
+
+    def test_active_tracking_failure(self):
+        test_interval = Interval.from_dict(
+            {"start": "20210124T020043Z", "tags": ["foo", "bar"], "annotation": "this is an annotation"}
+        )
+        conflicting_interval = Interval.from_dict(
+            {"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['"29 days"']}
+        )
+        expt_intervals = {"2021-02.data": 'inc 20210201T134501Z - 20210301T145012Z # "29 days"'}
+        file_strings, started_tracking = as_file_strings([conflicting_interval], test_interval)
+        assert file_strings == expt_intervals
+        assert started_tracking is False
+
+    def test_no_intervals(self):
+        file_strings, started_tracking = as_file_strings([])
+        assert file_strings == {}
+        assert started_tracking is False
+
+    def test_single_interval(self):
+        test_intervals = [
+            Interval.from_dict(
+                {
+                    "start": "20210124T020043Z",
+                    "end": "20210124T080130Z",
+                    "tags": ["foo", "bar"],
+                    "annotation": "this is an annotation",
+                }
+            )
+        ]
+        expt_intervals = {"2021-01.data": "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation"}
+        file_strings, started_tracking = as_file_strings(test_intervals)
+        assert file_strings == expt_intervals
+        assert started_tracking is False
+
+    def test_similar_intervals(self):
+        test_intervals = [
+            Interval.from_dict(
+                {
+                    "start": "20210124T020043Z",
+                    "end": "20210124T080130Z",
+                    "tags": ["foo", "bar"],
+                    "annotation": "this is an annotation",
+                }
+            ),
+            Interval.from_dict({"start": "20210124T020043Z", "end": "20210124T080130Z"}),
+        ]
+        expt_intervals = {
+            "2021-01.data": (
+                "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation"
+                "\n"
+                "inc 20210124T020043Z - 20210124T080130Z"
+            )
+        }
+        file_strings, started_tracking = as_file_strings(test_intervals)
+        assert file_strings == expt_intervals
+        assert started_tracking is False
+
+    def test_unsorted_intervals(self):
+        test_intervals = [
+            Interval.from_dict(
+                {"start": "20210124T020043Z", "end": "20210124T080130Z", "annotation": "this is the second interval"}
+            ),
+            Interval.from_dict({"start": "20210123T134659Z", "end": "20210124T020043Z"}),
+        ]
+        expt_intervals = {
+            "2021-01.data": (
+                "inc 20210123T134659Z - 20210124T020043Z"
+                "\n"
+                "inc 20210124T020043Z - 20210124T080130Z # # this is the second interval"
+            )
+        }
+        file_strings, started_tracking = as_file_strings(test_intervals)
+        assert file_strings == expt_intervals
+        assert started_tracking is False
+
+    def test_multiple_months(self):
+        test_intervals = [
+            Interval.from_dict(
+                {
+                    "start": "20210124T020043Z",
+                    "end": "20210124T080130Z",
+                    "tags": ["foo", "bar"],
+                    "annotation": "this is an annotation",
+                }
+            ),
+            Interval.from_dict({"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['"29 days"']}),
+        ]
+        expt_intervals = {
+            "2021-01.data": "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation",
+            "2021-02.data": 'inc 20210201T134501Z - 20210301T145012Z # "29 days"',
+        }
+        file_strings, started_tracking = as_file_strings(test_intervals)
+        assert file_strings == expt_intervals
+        assert started_tracking is False
 
 
 class TestGetFileName:
