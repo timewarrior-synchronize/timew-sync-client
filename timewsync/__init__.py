@@ -126,7 +126,7 @@ def sync(configuration: Configuration) -> None:
         return
 
     if active_interval:
-        sys.stderr.write("Time tracking is active. Stopped time tracking.\n")
+        print("Time tracking is active. Stopped time tracking.", file=sys.sterr)
 
     private_key, _ = io_handler.read_keys(configuration.data_dir)
     token = auth.generate_jwt(private_key, configuration.user_id)
@@ -153,9 +153,13 @@ def sync(configuration: Configuration) -> None:
 
     if active_interval:
         if started_tracking:
-            sys.stderr.write("Restarted time tracking.\n")
+            print("Restarted time tracking.", file=sys.stderr)
         else:
-            sys.stderr.write(Fore.RED + "Warning: Cannot restart time tracking!\n" + Fore.RESET)
+            print(
+                Fore.RED + "Warning: Cannot restart time tracking! This error occured because there exists "
+                "an interval in the future which would overlap with the open interval" + Fore.RESET,
+                file=sys.stderr,
+            )
 
 
 def generate_key(configuration: Configuration):
@@ -189,5 +193,5 @@ def generate_key(configuration: Configuration):
 
     print(
         f"A new key pair was generated. You can find it in your timewsync folder ({configuration.data_dir}).",
-        file=sys.stderr
+        file=sys.stderr,
     )
