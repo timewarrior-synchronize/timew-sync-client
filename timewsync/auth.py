@@ -23,11 +23,11 @@
 # https://www.opensource.org/licenses/mit-license.php
 #
 ###############################################################################
-
-
+import datetime
 from typing import Tuple
 
 import jwcrypto.jwk as jwk
+import python_jwt as jwt
 
 
 def generate_keys() -> Tuple[bytes, bytes]:
@@ -43,3 +43,22 @@ def generate_keys() -> Tuple[bytes, bytes]:
     pub_pem = keys.export_to_pem()
 
     return priv_pem, pub_pem
+
+
+def generate_jwt(priv_key: jwk.JWK, user_id: int) -> str:
+    """Generates a JWT token, signed with the given private key.
+
+    Args:
+        priv_key: The private key, used to sign the jwt.
+        user_id: The id of the user.
+
+    Returns:
+        A JWT containing the user id. It is signed with the provided private key.
+    """
+    payload = {
+        "userID": user_id
+    }
+
+    token = jwt.generate_jwt(payload, priv_key, "RS256", lifetime=datetime.timedelta(minutes=1))
+
+    return token

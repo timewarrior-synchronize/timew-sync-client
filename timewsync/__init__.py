@@ -118,7 +118,12 @@ def sync(configuration: Configuration) -> None:
     if active_interval:
         sys.stderr.write("Time tracking is active. Stopped time tracking.\n")
 
-    response_intervals, conflict_flag = dispatch(configuration, timew_intervals, snapshot_intervals)
+    private_key, _ = io_handler.read_keys(configuration.data_dir)
+    token = auth.generate_jwt(private_key, configuration.user_id)
+
+    response_intervals, conflict_flag = dispatch(
+        configuration, timew_intervals, snapshot_intervals, token
+    )
 
     if conflict_flag:
         run_conflict_hook(configuration.data_dir)

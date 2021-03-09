@@ -25,6 +25,9 @@
 ###############################################################################
 
 
+from jwcrypto import jwk
+import python_jwt as jwt
+
 from timewsync import auth
 
 
@@ -36,3 +39,18 @@ def test_generate_keys():
 
     assert str(public_key_pem).find("-----BEGIN PUBLIC KEY-----") != -1
     assert str(public_key_pem).find("-----END PUBLIC KEY-----") != -1
+
+
+def test_generate_jwt():
+    key = jwk.JWK.generate(kty="RSA", size=2048)
+
+    token = auth.generate_jwt(key, 42)
+
+    header, claims = jwt.verify_jwt(token, key, ["RS256"])
+
+    assert claims is not None
+    assert header is not None
+
+    assert claims["userID"] == 42
+    assert header["alg"] == "RS256"
+    assert header["typ"] == "JWT"
