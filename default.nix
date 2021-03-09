@@ -12,5 +12,6 @@ buildPythonApplication rec {
   propagatedBuildInputs = [
     requests
     jwcrypto
+    colorama
   ];
 }
