@@ -67,9 +67,7 @@ class TestTokenize:
     def test_quotes_simple(self):
         """Tests with simple quoted substrings."""
         with pytest.raises(AssertionError):
-            assert tokenize("'foo bar'") == [
-                "'foo bar'"
-            ]  # single quotes do not qualify
+            assert tokenize("'foo bar'") == ["'foo bar'"]  # single quotes do not qualify
         assert tokenize("'foo bar'") == [
             "'foo",
             "bar'",
@@ -77,9 +75,7 @@ class TestTokenize:
         assert tokenize('""') == ['""']  # double quotes without content
         assert tokenize('" "') == ['" "']  # double quoted whitespace
         assert tokenize('"foo"') == ['"foo"']  # double quoted text
-        assert tokenize('"foo bar"') == [
-            '"foo bar"'
-        ]  # double quoted text treated as single token
+        assert tokenize('"foo bar"') == ['"foo bar"']  # double quoted text treated as single token
         assert tokenize('"foo bar baz"') == ['"foo bar baz"']  # quote check 1
         assert tokenize('"foo bar" "baz"') == ['"foo bar"', '"baz"']  # quote check 2
         assert tokenize('"foo" "bar baz"') == ['"foo"', '"bar baz"']  # quote check 3

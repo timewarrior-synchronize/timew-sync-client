@@ -45,27 +45,17 @@ class Configuration:
             if "BaseURL" in config["Server"]:
                 server_base_url = config.get("Server", "BaseURL")
             else:
-                raise RuntimeError(
-                    "The configuration file needs to define Server.BaseURL"
-                )
+                raise RuntimeError("The configuration file needs to define Server.BaseURL")
         else:
-            raise RuntimeError(
-                'The configuration file needs to have a "Server" section'
-            )
+            raise RuntimeError('The configuration file needs to have a "Server" section')
 
         if "Client" in config:
             if "UserID" in config["Client"]:
                 user_id = config.getint("Client", "UserID")
             else:
-                raise RuntimeError(
-                    "The configuration file needs to define Client.UserID"
-                )
-            merge_conflict_hook = config.get(
-                "Client", "OnMergeConflictHook", fallback=""
-            )
+                raise RuntimeError("The configuration file needs to define Client.UserID")
+            merge_conflict_hook = config.get("Client", "OnMergeConflictHook", fallback="")
         else:
-            raise RuntimeError(
-                'The configuration file needs to have a "Client" section'
-            )
+            raise RuntimeError('The configuration file needs to have a "Client" section')
 
         return cls(data_dir, server_base_url, user_id, merge_conflict_hook)
