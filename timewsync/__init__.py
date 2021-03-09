@@ -26,6 +26,7 @@
 
 
 import argparse
+import logging
 import os
 import subprocess
 import sys
@@ -96,7 +97,11 @@ def main():
     args = make_parser().parse_args()
     data_dir = os.path.expanduser(args.data_dir)
 
-    configuration = Configuration.read(data_dir, "timewsync.conf")
+    try:
+        configuration = Configuration.read(data_dir, "timewsync.conf")
+    except RuntimeError as e:
+        logging.error("Error reading from configuration file: %s", e)
+        return
 
     if args.subcommand == "generate-key":
         generate_key(configuration)
@@ -111,9 +116,14 @@ def sync(configuration: Configuration) -> None:
     Args:
         configuration: The user's configuration.
     """
-    timew_data, snapshot_data = read_data(configuration.data_dir)
-    timew_intervals, active_interval = as_interval_list(timew_data)
-    snapshot_intervals, _ = as_interval_list(snapshot_data)
+
+    try:
+        timew_data, snapshot_data = read_data(configuration.data_dir)
+        timew_intervals, active_interval = as_interval_list(timew_data)
+        snapshot_intervals, _ = as_interval_list(snapshot_data)
+    except OSError as e:
+        logging.error("Error reading intervals from disk: %s. No changes were made", e)
+        return
 
     if active_interval:
         sys.stderr.write("Time tracking is active. Stopped time tracking.\n")
@@ -121,16 +131,25 @@ def sync(configuration: Configuration) -> None:
     private_key, _ = io_handler.read_keys(configuration.data_dir)
     token = auth.generate_jwt(private_key, configuration.user_id)
 
-    response_intervals, conflict_flag = dispatch(configuration, timew_intervals, snapshot_intervals, token)
+    try:
+        response_intervals, conflict_flag = dispatch(configuration, timew_intervals, snapshot_intervals, token)
+    except:
+        logging.error()
+        return
 
     if conflict_flag:
-        run_conflict_hook(configuration.data_dir)
+        try:
+            run_conflict_hook(configuration.data_dir)
+        except SubprocessError:
+            logging.warn("Hook exited with a non-zero exit code")
+        except OSError as e:
+            logging.error("Error occurred while executing the conflict-occured hook: %s. Continuing", e)
 
     server_data, started_tracking = as_file_strings(response_intervals, active_interval)
     new_tags = extract_tags(response_intervals)
     write_data(configuration.data_dir, server_data, new_tags)
 
-    sys.stderr.write("Synced successfully!\n")
+    print("Synchronization successful!", file=sys.stderr)
 
     if active_interval:
         if started_tracking:
@@ -156,9 +175,19 @@ def generate_key(configuration: Configuration):
         if not confirm:
             return
 
-    priv_pem, pub_pem = auth.generate_keys()
-    io_handler.write_keys(configuration.data_dir, priv_pem, pub_pem)
+    try:
+        priv_pem, pub_pem = auth.generate_keys()
+    except Exception as e:
+        logging.error("Unexpected error occurred while generating keys: %s", e)
+        return
 
-    sys.stderr.write(
-        f"A new key pair was generated. You can find it in your timewsync folder ({configuration.data_dir})."
+    try:
+        io_handler.write_keys(configuration.data_dir, priv_pem, pub_pem)
+    except OSError as e:
+        logging.error("Error occured while writing new keys: %s", e)
+        return
+
+    print(
+        f"A new key pair was generated. You can find it in your timewsync folder ({configuration.data_dir}).",
+        file=sys.stderr
     )
