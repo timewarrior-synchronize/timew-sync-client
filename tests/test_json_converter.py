@@ -50,7 +50,7 @@ class TestToJSONRequest:
             "annotation": "this has been added",
         }
         expt_json = '{"userID": 42, "added": [' + json.dumps(test_interval) + '], "removed": []}'
-        result = to_json_request(42, ([Interval.from_dict(test_interval)], []))
+        result = to_json_request(42, ([Interval.from_dict(**test_interval)], []))
         assert result == expt_json
 
     def test_added_multiple(self):
@@ -64,7 +64,7 @@ class TestToJSONRequest:
             {"start": "20210321T170613Z", "end": "20210321T203246Z", "tags": [], "annotation": ""},
         ]
         expt_json = '{"userID": 128, "added": ' + json.dumps(test_intervals) + ', "removed": []}'
-        result = to_json_request(128, ([Interval.from_dict(i) for i in test_intervals], []))
+        result = to_json_request(128, ([Interval.from_dict(**i) for i in test_intervals], []))
         assert result == expt_json
 
     def test_removed_empty(self):
@@ -81,7 +81,7 @@ class TestToJSONRequest:
             "annotation": "this has been removed",
         }
         expt_json = '{"userID": 42, "added": [], "removed": [' + json.dumps(test_interval) + "]}"
-        result = to_json_request(42, ([], [Interval.from_dict(test_interval)]))
+        result = to_json_request(42, ([], [Interval.from_dict(**test_interval)]))
         assert result == expt_json
 
     def test_removed_multiple(self):
@@ -95,7 +95,7 @@ class TestToJSONRequest:
             {"start": "20210321T170613Z", "end": "20210321T203246Z", "tags": [], "annotation": ""},
         ]
         expt_json = '{"userID": 128, "added": [], "removed": ' + json.dumps(test_intervals) + "}"
-        result = to_json_request(128, ([], [Interval.from_dict(i) for i in test_intervals]))
+        result = to_json_request(128, ([], [Interval.from_dict(**i) for i in test_intervals]))
         assert result == expt_json
 
     def test_both_empty(self):
@@ -124,7 +124,7 @@ class TestToJSONRequest:
             + json.dumps(test_interval)
             + "]}"
         )
-        result = to_json_request(42, ([Interval.from_dict(test_interval)], [Interval.from_dict(test_interval)]))
+        result = to_json_request(42, ([Interval.from_dict(**test_interval)], [Interval.from_dict(**test_interval)]))
         assert result == expt_json
 
     def test_both_multiple(self):
@@ -145,7 +145,7 @@ class TestToJSONRequest:
             + "}"
         )
         result = to_json_request(
-            128, ([Interval.from_dict(i) for i in test_intervals], [Interval.from_dict(i) for i in test_intervals])
+            128, ([Interval.from_dict(**i) for i in test_intervals], [Interval.from_dict(**i) for i in test_intervals])
         )
         assert result == expt_json
 
@@ -176,7 +176,7 @@ class TestFromJSONResponse:
             "annotation": "this is an annotation",
         }
         test_json = '{"conflictsOccurred": false, "intervals": [' + json.dumps(test_interval) + "]}"
-        expt_interval = Interval.from_dict(test_interval)
+        expt_interval = Interval.from_dict(**test_interval)
         result, _ = from_json_response(test_json)
         assert len(result) == 1
         assert result[0] == expt_interval
@@ -192,7 +192,7 @@ class TestFromJSONResponse:
             {"start": "20210321T170613Z", "end": "20210321T203246Z", "tags": [], "annotation": ""},
         ]
         test_json = '{"conflictsOccurred": false, "intervals": ' + json.dumps(test_intervals) + "}"
-        expt_intervals = [Interval.from_dict(test_intervals[0]), Interval.from_dict(test_intervals[1])]
+        expt_intervals = [Interval.from_dict(**test_intervals[0]), Interval.from_dict(**test_intervals[1])]
         result, _ = from_json_response(test_json)
         assert len(result) == 2
         assert result[0] == expt_intervals[0] and result[1] == expt_intervals[1]

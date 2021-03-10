@@ -29,14 +29,7 @@ from datetime import datetime
 
 import pytest
 
-from timewsync.interval import Interval, as_interval
-
-
-class TestIntervalFromIntervalStr:
-    def test_not_implemented(self):
-        """Test for raised error."""
-        with pytest.raises(NotImplementedError):
-            Interval.from_interval_str()
+from timewsync.interval import Interval
 
 
 class TestIntervalFromDict:
@@ -44,7 +37,7 @@ class TestIntervalFromDict:
         """Test with an empty dictionary."""
         test_interval_dict = {}
         expt_interval = Interval()
-        assert Interval.from_dict(test_interval_dict) == expt_interval
+        assert Interval.from_dict(**test_interval_dict) == expt_interval
 
     def test_valid_dict(self):
         """Test with a valid dictionary."""
@@ -60,7 +53,7 @@ class TestIntervalFromDict:
             tags=["foo", "bar"],
             annotation="this is an annotation",
         )
-        assert Interval.from_dict(test_interval_dict) == expt_interval
+        assert Interval.from_dict(**test_interval_dict) == expt_interval
 
 
 class TestIntervalToString:
@@ -200,79 +193,79 @@ class TestAsInterval:
         expt_annotation = "this interval is for testing purposes only"
 
         interval_str = "inc"
-        assert as_interval(interval_str) == Interval()
+        assert Interval.from_interval_str(interval_str) == Interval()
 
         interval_str = "inc " + test_date1
-        assert as_interval(interval_str) == Interval(start=expt_date1)
+        assert Interval.from_interval_str(interval_str) == Interval(start=expt_date1)
 
         interval_str = "inc # foo"
-        assert as_interval(interval_str) == Interval(tags=["foo"])
+        assert Interval.from_interval_str(interval_str) == Interval(tags=["foo"])
 
         interval_str = "inc # " + test_tags
-        assert as_interval(interval_str) == Interval(tags=expt_tags)
+        assert Interval.from_interval_str(interval_str) == Interval(tags=expt_tags)
 
         interval_str = "inc # # " + test_annotation
-        assert as_interval(interval_str) == Interval(annotation=expt_annotation)
+        assert Interval.from_interval_str(interval_str) == Interval(annotation=expt_annotation)
 
         interval_str = "inc " + test_date1 + " - " + test_date2
-        assert as_interval(interval_str) == Interval(start=expt_date1, end=expt_date2)
+        assert Interval.from_interval_str(interval_str) == Interval(start=expt_date1, end=expt_date2)
 
         interval_str = "inc " + test_date1 + " # " + "foo"
-        assert as_interval(interval_str) == Interval(start=expt_date1, tags=["foo"])
+        assert Interval.from_interval_str(interval_str) == Interval(start=expt_date1, tags=["foo"])
 
         interval_str = "inc " + test_date1 + " # " + test_tags
-        assert as_interval(interval_str) == Interval(start=expt_date1, tags=expt_tags)
+        assert Interval.from_interval_str(interval_str) == Interval(start=expt_date1, tags=expt_tags)
 
         interval_str = "inc " + test_date1 + " # # " + test_annotation
-        assert as_interval(interval_str) == Interval(start=expt_date1, annotation=expt_annotation)
+        assert Interval.from_interval_str(interval_str) == Interval(start=expt_date1, annotation=expt_annotation)
 
         interval_str = "inc # " + "foo" + " # " + test_annotation
-        assert as_interval(interval_str) == Interval(tags=["foo"], annotation=expt_annotation)
+        assert Interval.from_interval_str(interval_str) == Interval(tags=["foo"], annotation=expt_annotation)
 
         interval_str = "inc # " + test_tags + " # " + test_annotation
-        assert as_interval(interval_str) == Interval(tags=expt_tags, annotation=expt_annotation)
+        assert Interval.from_interval_str(interval_str) == Interval(tags=expt_tags, annotation=expt_annotation)
 
         interval_str = "inc " + test_date1 + " - " + test_date2 + " # " + "foo"
-        assert as_interval(interval_str) == Interval(start=expt_date1, end=expt_date2, tags=["foo"])
+        assert Interval.from_interval_str(interval_str) == Interval(start=expt_date1, end=expt_date2, tags=["foo"])
 
         interval_str = "inc " + test_date1 + " - " + test_date2 + " # " + test_tags
-        assert as_interval(interval_str) == Interval(start=expt_date1, end=expt_date2, tags=expt_tags)
+        assert Interval.from_interval_str(interval_str) == Interval(start=expt_date1, end=expt_date2, tags=expt_tags)
 
         interval_str = "inc " + test_date1 + " - " + test_date2 + " # # " + test_annotation
-        assert as_interval(interval_str) == Interval(start=expt_date1, end=expt_date2, annotation=expt_annotation)
+        assert Interval.from_interval_str(interval_str) == Interval(start=expt_date1, end=expt_date2, annotation=expt_annotation)
 
         interval_str = "inc " + test_date1 + " # " + "foo" + " # " + test_annotation
-        assert as_interval(interval_str) == Interval(start=expt_date1, tags=["foo"], annotation=expt_annotation)
+        assert Interval.from_interval_str(interval_str) == Interval(start=expt_date1, tags=["foo"], annotation=expt_annotation)
 
         interval_str = "inc " + test_date1 + " # " + test_tags + " # " + test_annotation
-        assert as_interval(interval_str) == Interval(start=expt_date1, tags=expt_tags, annotation=expt_annotation)
+        assert Interval.from_interval_str(interval_str) == Interval(start=expt_date1, tags=expt_tags, annotation=expt_annotation)
 
         interval_str = "inc " + test_date1 + " - " + test_date2 + " # " + "foo" + " # " + test_annotation
-        assert as_interval(interval_str) == Interval(
+        assert Interval.from_interval_str(interval_str) == Interval(
             start=expt_date1, end=expt_date2, tags=["foo"], annotation=expt_annotation
         )
 
         interval_str = "inc " + test_date1 + " - " + test_date2 + " # " + test_tags + " # " + test_annotation
-        assert as_interval(interval_str) == Interval(
+        assert Interval.from_interval_str(interval_str) == Interval(
             start=expt_date1, end=expt_date2, tags=expt_tags, annotation=expt_annotation
         )
 
     def test_invalid_strings(self):
         """Test invalid interval strings."""
         with pytest.raises(RuntimeError):
-            as_interval("")
+            Interval.from_interval_str("")
 
         with pytest.raises(RuntimeError):
-            as_interval("20210123T134659Z - 20210124T020043Z")
+            Interval.from_interval_str("20210123T134659Z - 20210124T020043Z")
 
         with pytest.raises(RuntimeError):
-            as_interval("dec # thisIsNoValidInterval")
+            Interval.from_interval_str("dec # thisIsNoValidInterval")
 
         with pytest.raises(RuntimeError):
-            as_interval("inc#thisIsNoValidInterval")
+            Interval.from_interval_str("inc#thisIsNoValidInterval")
 
         with pytest.raises(RuntimeError):
-            as_interval("inc\\n#\\nthisIsNoValidInterval")
+            Interval.from_interval_str("inc\\n#\\nthisIsNoValidInterval")
 
         with pytest.raises(RuntimeError):
-            as_interval("inc 1")
+            Interval.from_interval_str("inc 1")

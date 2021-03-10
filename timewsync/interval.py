@@ -25,6 +25,8 @@
 ###############################################################################
 
 
+from __future__ import annotations
+
 from datetime import datetime
 from typing import List
 
@@ -49,24 +51,88 @@ class Interval:
         self.annotation: str = annotation
 
     @classmethod
-    def from_interval_str(cls):
-        """Initialize object from interval string."""
-        raise NotImplementedError
+    def from_interval_str(cls, line: str) -> Interval:
+        """Initialize object from interval string.
+
+        Syntax (tokens separated by whitespace):
+            'inc' [ <iso> [ '-' <iso> ]] [[ '#' <tag> [ <tag> ... ]] | [ '#' [ <tag> ... ] '#' <annotation> ]]
+
+        Args:
+            line: An interval string in correct syntax.
+
+        Returns:
+            A reference to the new Interval object.
+        """
+        tokens = tokenize(line)
+
+        # Required 'inc'
+        if not tokens or tokens[0] != "inc":
+            raise RuntimeError("unrecognizable line '%s'" % line)
+
+        start = None
+        end = None
+        tags = []
+        annotation = None
+        cursor = 1
+
+        # Optional <iso>
+        if len(tokens) > 1 and len(tokens[1]) == 16:
+            start = datetime.strptime(tokens[1], DATETIME_FORMAT)
+            cursor = 2
+
+            # Optional '-' <iso>
+            if len(tokens) > 3 and tokens[2] == "-" and len(tokens[3]) == 16:
+                end = datetime.strptime(tokens[3], DATETIME_FORMAT)
+                cursor = 4
+
+        # Optional '#'
+        if len(tokens) > (cursor + 1) and tokens[cursor] == "#":
+
+            # Optional <tag> ...
+            tags = []
+            cursor += 1
+            while cursor < len(tokens) and tokens[cursor] != "#":
+                tags.append(tokens[cursor])
+                cursor += 1
+
+            # Optional '#' <annotation>
+            if cursor < len(tokens) and tokens[cursor] == "#":
+                annotation = ""
+                cursor += 1
+                while cursor < len(tokens):
+                    annotation += " " + tokens[cursor]
+                    cursor += 1
+                annotation = annotation.lstrip()
+
+        # Unparsed tokens
+        if cursor < len(tokens):
+            raise RuntimeError("unrecognizable line '%s'" % line)
+
+        return cls(
+            start=start,
+            end=end,
+            tags=tags,
+            annotation=annotation,
+        )
 
     @classmethod
-    def from_dict(cls, interval_dict: dict):
+    def from_dict(cls, start: str = None, end: str = None, tags: List[str] = None, annotation: str = None) -> Interval:
         """Initialize object from dictionary.
 
-        Field 'start' must contain a date in DATETIME_FORMAT if present.
-        Field 'end' must contain a date in DATETIME_FORMAT if present.
-        Field 'tags' must contain a list if present.
-        Field 'annotation' must contain a string if present.
+        Args:
+            start: (Optional) A date in DATETIME_FORMAT specifying the start of the interval.
+            end: (Optional) A date in DATETIME_FORMAT specifying the end of the interval.
+            tags: (Optional) A list of tags the interval contains.
+            annotation: (Optional) The annotation of the interval.
+
+        Returns:
+            A reference to the new Interval object.
         """
         return cls(
-            start=datetime.strptime(interval_dict["start"], DATETIME_FORMAT) if "start" in interval_dict else None,
-            end=datetime.strptime(interval_dict["end"], DATETIME_FORMAT) if "end" in interval_dict else None,
-            tags=interval_dict["tags"] if "tags" in interval_dict else [],
-            annotation=interval_dict["annotation"] if "annotation" in interval_dict else None,
+            start=datetime.strptime(start, DATETIME_FORMAT) if start else None,
+            end=datetime.strptime(end, DATETIME_FORMAT) if end else None,
+            tags=tags,
+            annotation=annotation,
         )
 
     def __eq__(self, other):
@@ -105,59 +171,3 @@ class Interval:
             "tags": self.tags,
             "annotation": self.annotation if self.annotation else "",
         }
-
-
-def as_interval(line: str) -> Interval:
-    """Parse an Interval from the provided string.
-
-    Syntax (tokens separated by whitespace):
-        'inc' [ <iso> [ '-' <iso> ]] [[ '#' <tag> [ <tag> ... ]] | [ '#' [ <tag> ... ] '#' <annotation> ]]
-
-    Args:
-        line: An interval string in correct syntax.
-
-    Returns:
-        The same interval parsed to an Interval object.
-    """
-    tokens = tokenize(line)
-
-    # Required 'inc'
-    if not tokens or tokens[0] != "inc":
-        raise RuntimeError("unrecognizable line '%s'" % line)
-    interval = Interval()
-    cursor = 1
-
-    # Optional <iso>
-    if len(tokens) > 1 and len(tokens[1]) == 16:
-        interval.start = datetime.strptime(tokens[1], DATETIME_FORMAT)
-        cursor = 2
-
-        # Optional '-' <iso>
-        if len(tokens) > 3 and tokens[2] == "-" and len(tokens[3]) == 16:
-            interval.end = datetime.strptime(tokens[3], DATETIME_FORMAT)
-            cursor = 4
-
-    # Optional '#'
-    if len(tokens) > (cursor + 1) and tokens[cursor] == "#":
-
-        # Optional <tag> ...
-        interval.tags = []
-        cursor += 1
-        while cursor < len(tokens) and tokens[cursor] != "#":
-            interval.tags.append(tokens[cursor])
-            cursor += 1
-
-        # Optional '#' <annotation>
-        if cursor < len(tokens) and tokens[cursor] == "#":
-            annotation = ""
-            cursor += 1
-            while cursor < len(tokens):
-                annotation += " " + tokens[cursor]
-                cursor += 1
-            interval.annotation = annotation.lstrip()
-
-    # Unparsed tokens
-    if cursor < len(tokens):
-        raise RuntimeError("unrecognizable line '%s'" % line)
-
-    return interval

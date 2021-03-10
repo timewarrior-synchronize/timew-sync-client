@@ -30,7 +30,7 @@ from datetime import datetime
 from typing import List, Dict
 
 from timewsync import json_converter
-from timewsync.interval import Interval, as_interval
+from timewsync.interval import Interval
 
 
 def as_interval_list(file_strings: Dict[str, str]) -> (List[Interval], Interval):
@@ -51,7 +51,7 @@ def as_interval_list(file_strings: Dict[str, str]) -> (List[Interval], Interval)
     active_interval = None
     for file_str in file_strings.values():
         for line in list(filter(None, file_str.splitlines())):  # Split and filter empty lines
-            i = as_interval(line)
+            i = Interval.from_interval_str(line)
             if i.start:
                 if not i.end:  # Split active time tracking, if present
                     i.end = datetime.utcnow()
@@ -83,24 +83,24 @@ def as_file_strings(intervals: List[Interval], active_interval: Interval = None)
     """
     intervals.sort(key=lambda i: i.start)
 
-    if active_interval and not __conflicting(active_interval, intervals):
+    if active_interval and not _conflicting(active_interval, intervals):
         intervals.append(active_interval)
         started_tracking = True
     else:
         started_tracking = False
 
-    grouped_intervals = __group_by_month(intervals)
-    file_strings = __join_per_group(grouped_intervals)
+    grouped_intervals = _group_by_month(intervals)
+    file_strings = _join_per_group(grouped_intervals)
 
     return file_strings, started_tracking
 
 
-def __conflicting(active_interval: Interval, sorted_intervals: List[Interval]) -> bool:
+def _conflicting(active_interval: Interval, sorted_intervals: List[Interval]) -> bool:
     """Returns true if open 'active_interval' overlaps with closed 'sorted_intervals'."""
     return sorted_intervals and sorted_intervals[-1].end > active_interval.start
 
 
-def __group_by_month(intervals: List[Interval]) -> Dict[str, List[Interval]]:
+def _group_by_month(intervals: List[Interval]) -> Dict[str, List[Interval]]:
     """Groups intervals per month and returns them as a dictionary.
 
     Dictionary keys are file names and values corresponding file strings.
@@ -117,7 +117,7 @@ def __group_by_month(intervals: List[Interval]) -> Dict[str, List[Interval]]:
     return grouped_intervals
 
 
-def __join_per_group(grouped_intervals: Dict[str, List[Interval]]) -> Dict[str, str]:
+def _join_per_group(grouped_intervals: Dict[str, List[Interval]]) -> Dict[str, str]:
     """Concatenates grouped intervals per group by using line breaks.
 
     Args:
