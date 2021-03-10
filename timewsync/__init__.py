@@ -125,10 +125,12 @@ def sync(configuration: Configuration) -> None:
         logging.error("Error reading intervals from disk: %s. No changes were made", e)
         return
 
-    if active_interval:
-        print("Time tracking is active. Stopped time tracking.", file=sys.sterr)
+    try:
+        private_key, _ = io_handler.read_keys(configuration.data_dir)
+    except OSError as e:
+        logging.error("Error reading private key from disk: %s. No changes were made", e)
+        return
 
-    private_key, _ = io_handler.read_keys(configuration.data_dir)
     token = auth.generate_jwt(private_key, configuration.user_id)
 
     try:
@@ -148,6 +150,9 @@ def sync(configuration: Configuration) -> None:
     server_data, started_tracking = as_file_strings(response_intervals, active_interval)
     new_tags = extract_tags(response_intervals)
     write_data(configuration.data_dir, server_data, new_tags)
+
+    if active_interval:
+        print("Time tracking is active. Stopped time tracking.", file=sys.sterr)
 
     print("Synchronization successful!", file=sys.stderr)
 
