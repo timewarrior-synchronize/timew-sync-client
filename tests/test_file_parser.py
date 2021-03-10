@@ -72,14 +72,16 @@ class TestAsIntervalList:
 
     def test_single_interval(self):
         test_intervals = {"2021-01.data": "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation"}
-        expt_intervals = [Interval.from_dict(
-            **{
-                "start": "20210124T020043Z",
-                "end": "20210124T080130Z",
-                "tags": ["foo", "bar"],
-                "annotation": "this is an annotation",
-            }
-        )]
+        expt_intervals = [
+            Interval.from_dict(
+                **{
+                    "start": "20210124T020043Z",
+                    "end": "20210124T080130Z",
+                    "tags": ["foo", "bar"],
+                    "annotation": "this is an annotation",
+                }
+            )
+        ]
         result_i, result_a = as_interval_list(test_intervals)
         assert not result_a
         _compare(result_i, expt_intervals)

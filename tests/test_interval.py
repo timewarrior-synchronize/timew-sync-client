@@ -232,13 +232,19 @@ class TestAsInterval:
         assert Interval.from_interval_str(interval_str) == Interval(start=expt_date1, end=expt_date2, tags=expt_tags)
 
         interval_str = "inc " + test_date1 + " - " + test_date2 + " # # " + test_annotation
-        assert Interval.from_interval_str(interval_str) == Interval(start=expt_date1, end=expt_date2, annotation=expt_annotation)
+        assert Interval.from_interval_str(interval_str) == Interval(
+            start=expt_date1, end=expt_date2, annotation=expt_annotation
+        )
 
         interval_str = "inc " + test_date1 + " # " + "foo" + " # " + test_annotation
-        assert Interval.from_interval_str(interval_str) == Interval(start=expt_date1, tags=["foo"], annotation=expt_annotation)
+        assert Interval.from_interval_str(interval_str) == Interval(
+            start=expt_date1, tags=["foo"], annotation=expt_annotation
+        )
 
         interval_str = "inc " + test_date1 + " # " + test_tags + " # " + test_annotation
-        assert Interval.from_interval_str(interval_str) == Interval(start=expt_date1, tags=expt_tags, annotation=expt_annotation)
+        assert Interval.from_interval_str(interval_str) == Interval(
+            start=expt_date1, tags=expt_tags, annotation=expt_annotation
+        )
 
         interval_str = "inc " + test_date1 + " - " + test_date2 + " # " + "foo" + " # " + test_annotation
         assert Interval.from_interval_str(interval_str) == Interval(
