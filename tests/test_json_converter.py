@@ -28,7 +28,8 @@
 import json
 
 from timewsync.interval import Interval
-from timewsync.json_converter import to_json_request, from_json_response, to_json_tags
+from timewsync.json_converter import to_json_request, from_json_response, to_json_tags, from_json_error_response
+from timewsync.json_converter import to_json_request, from_json_response,
 
 
 class TestToJSONRequest:
@@ -224,3 +225,11 @@ class TestToJSONTags:
         test_dict = json.loads(test_json)
         expt_dict = {'"': {"count": 0}, '""': {"count": 10}}
         assert test_dict == expt_dict
+
+
+class TestFromJSONErrorResponse:
+    def test_simple_message_and_details(self):
+        test_json = '{"message": "Houston, we have a problem", "details": "We\'ve had a Main B Bus Undervolt."}'
+        message, details = from_json_error_response(test_json)
+        assert message == "Houston, we have a problem"
+        assert details == "We've had a Main B Bus Undervolt."

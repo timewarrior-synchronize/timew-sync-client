@@ -37,6 +37,21 @@ from timewsync.config import Configuration
 SYNC_ENDPOINT = os.path.join("api", "sync")
 
 
+class ServerError(Exception):
+    """Error response from the synchronization server
+
+    Attributes:
+        status_code -- HTTP status code reported by the server
+        message -- Error message sent by server
+        details -- Additional technical details reported by the server
+    """
+
+    def __init__(self, status_code: int, message: str, details: str):
+        self.status_code: int = status_code
+        self.message: str = message
+        self.details: str = details
+
+
 def dispatch(
     config: Configuration, timew_intervals: List[Interval], snapshot_intervals: List[Interval], auth_token: str
 ) -> (List[Interval], bool):
@@ -62,7 +77,8 @@ def dispatch(
     server_response = requests.put(request_url, request_body, headers=header)
 
     if server_response.status_code != 200:
-        raise RuntimeError(f"Problem while syncing with server. Server responded with {server_response.status_code}.")
+        message, details = json_converter.from_json_error_response(server_response.text)
+        raise ServerError(server_response.status_code, message, details)
 
     parsed_response, conflict_flag = json_converter.from_json_response(server_response.text)
 

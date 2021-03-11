@@ -33,9 +33,10 @@ import sys
 
 import colorama
 from colorama import Fore
+import requests
 
 from timewsync import auth, cli
-from timewsync.dispatch import dispatch
+from timewsync.dispatch import ServerError, dispatch
 from timewsync.file_parser import as_interval_list, as_file_strings, extract_tags
 from timewsync.io_handler import read_data, write_data
 from timewsync.config import Configuration
@@ -117,6 +118,7 @@ def sync(configuration: Configuration) -> None:
         configuration: The user's configuration.
     """
 
+    # Read data
     try:
         timew_data, snapshot_data = read_data(configuration.data_dir)
         timew_intervals, active_interval = as_interval_list(timew_data)
@@ -125,6 +127,7 @@ def sync(configuration: Configuration) -> None:
         logging.error("Error reading intervals from disk: %s. No changes were made", e)
         return
 
+    # Read key
     try:
         private_key, _ = io_handler.read_keys(configuration.data_dir)
     except OSError as e:
@@ -133,24 +136,36 @@ def sync(configuration: Configuration) -> None:
 
     token = auth.generate_jwt(private_key, configuration.user_id)
 
+    # Communicate with server
     try:
         response_intervals, conflict_flag = dispatch(configuration, timew_intervals, snapshot_intervals, token)
-    except:
-        logging.error()
+    except requests.ConnectionError as e:
+        logging.debug("Connction error: %s", e)
+        logging.error("Error connecting to server")
+        return
+    except ServerError as e:
+        logging.error("Error details: %s", e)
+        logging.error("Server responded with error")
+        return
+    except Exception as e:
+        logging.error("Unexpected error occured during communication with server: %s", e)
         return
 
-    if conflict_flag:
-        try:
-            run_conflict_hook(configuration.data_dir)
-        except SubprocessError:
-            logging.warn("Hook exited with a non-zero exit code")
-        except OSError as e:
-            logging.error("Error occurred while executing the conflict-occured hook: %s. Continuing", e)
-
+    # Write data
     server_data, started_tracking = as_file_strings(response_intervals, active_interval)
     new_tags = extract_tags(response_intervals)
     write_data(configuration.data_dir, server_data, new_tags)
 
+    # Run hook if necessary
+    if conflict_flag:
+        try:
+            run_conflict_hook(configuration.data_dir)
+        except SubprocessError:
+            logging.warn("Hook exited with a non-zero exit code. Continuing")
+        except OSError as e:
+            logging.error("Error occurred while executing the conflict-occured hook: %s. Continuing", e)
+
+    # Output
     if active_interval:
         print("Time tracking is active. Stopped time tracking.", file=sys.sterr)
 
