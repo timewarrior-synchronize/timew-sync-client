@@ -26,173 +26,201 @@
 
 
 import json
-from datetime import datetime
 
 from timewsync.interval import Interval
-from timewsync.json_converter import to_json_request, from_json_response
+from timewsync.json_converter import to_json_request, from_json_response, to_json_tags
 
 
 class TestToJSONRequest:
     def test_empty_diff(self):
-        """Test with empty diff."""
         expt_json = '{"userID": 1, "added": [], "removed": []}'
         assert to_json_request(1, ([], [])) == expt_json
 
-    def test_added_only_diff(self):
-        """Test with only the 'added' list having data."""
+    def test_added_empty(self):
+        test_interval = {"start": "", "end": "", "tags": [], "annotation": ""}
+        expt_json = '{"userID": 1, "added": [' + json.dumps(test_interval) + '], "removed": []}'
+        result = to_json_request(1, ([Interval()], []))
+        assert result == expt_json
 
-        # Test with empty Interval object
-        test_interval = Interval()
-        expt_interval_json = json.dumps(Interval.asdict(test_interval))
-        expt_json = '{"userID": 1, "added": [' + expt_interval_json + '], "removed": []}'
-        assert to_json_request(1, ([test_interval], [])) == expt_json
+    def test_added_filled(self):
+        test_interval = {
+            "start": "20210124T020043Z",
+            "end": "20210124T080130Z",
+            "tags": ["foo", "bar"],
+            "annotation": "this has been added",
+        }
+        expt_json = '{"userID": 42, "added": [' + json.dumps(test_interval) + '], "removed": []}'
+        result = to_json_request(42, ([Interval.from_dict(**test_interval)], []))
+        assert result == expt_json
 
-        # Test with filled Interval object
-        test_interval = Interval(
-            start=datetime.fromisoformat("2021-01-24 02:00:43"),
-            end=datetime.fromisoformat("2021-01-24 08:01:30"),
-            tags=["foo", "bar"],
-            annotation="this has been added",
-        )
-        expt_interval_json = json.dumps(Interval.asdict(test_interval))
-        expt_json = '{"userID": 42, "added": [' + expt_interval_json + '], "removed": []}'
-        assert to_json_request(42, ([test_interval], [])) == expt_json
-        expt_json = '{"userID": 128, "added": [' + expt_interval_json + ", " + expt_interval_json + '], "removed": []}'
-        assert to_json_request(128, ([test_interval, test_interval], [])) == expt_json
+    def test_added_multiple(self):
+        test_intervals = [
+            {
+                "start": "20210124T020043Z",
+                "end": "20210124T080130Z",
+                "tags": ["foo", "bar"],
+                "annotation": "this has been added",
+            },
+            {"start": "20210321T170613Z", "end": "20210321T203246Z", "tags": [], "annotation": ""},
+        ]
+        expt_json = '{"userID": 128, "added": ' + json.dumps(test_intervals) + ', "removed": []}'
+        result = to_json_request(128, ([Interval.from_dict(**i) for i in test_intervals], []))
+        assert result == expt_json
 
-    def test_removed_only_diff(self):
-        """Test with only the 'removed' list having data."""
+    def test_removed_empty(self):
+        test_interval = {"start": "", "end": "", "tags": [], "annotation": ""}
+        expt_json = '{"userID": 1, "added": [], "removed": [' + json.dumps(test_interval) + "]}"
+        result = to_json_request(1, ([], [Interval()]))
+        assert result == expt_json
 
-        # Test with empty Interval object
-        test_interval = Interval()
-        expt_interval_json = json.dumps(Interval.asdict(test_interval))
-        expt_json = '{"userID": 1, "added": [], "removed": [' + expt_interval_json + "]}"
-        assert to_json_request(1, ([], [test_interval])) == expt_json
+    def test_removed_filled(self):
+        test_interval = {
+            "start": "20210124T020043Z",
+            "end": "20210124T080130Z",
+            "tags": ["foo", "bar"],
+            "annotation": "this has been removed",
+        }
+        expt_json = '{"userID": 42, "added": [], "removed": [' + json.dumps(test_interval) + "]}"
+        result = to_json_request(42, ([], [Interval.from_dict(**test_interval)]))
+        assert result == expt_json
 
-        # Test with filled Interval object
-        test_interval = Interval(
-            start=datetime.fromisoformat("2021-01-24 02:00:43"),
-            end=datetime.fromisoformat("2021-01-24 08:01:30"),
-            tags=["foo", "bar"],
-            annotation="this has been removed",
-        )
-        expt_interval_json = json.dumps(Interval.asdict(test_interval))
-        expt_json = '{"userID": 42, "added": [], "removed": [' + expt_interval_json + "]}"
-        assert to_json_request(42, ([], [test_interval])) == expt_json
+    def test_removed_multiple(self):
+        test_intervals = [
+            {
+                "start": "20210124T020043Z",
+                "end": "20210124T080130Z",
+                "tags": ["foo", "bar"],
+                "annotation": "this has been removed",
+            },
+            {"start": "20210321T170613Z", "end": "20210321T203246Z", "tags": [], "annotation": ""},
+        ]
+        expt_json = '{"userID": 128, "added": [], "removed": ' + json.dumps(test_intervals) + "}"
+        result = to_json_request(128, ([], [Interval.from_dict(**i) for i in test_intervals]))
+        assert result == expt_json
 
-        # Test with multiple filled Interval objects
-        expt_json = '{"userID": 128, "added": [], "removed": [' + expt_interval_json + ", " + expt_interval_json + "]}"
-        assert to_json_request(128, ([], [test_interval, test_interval])) == expt_json
-
-    def test_full_diff(self):
-        """Test with both lists of diff having data."""
-
-        # Test with empty Interval objects
-        test_added_interval = Interval()
-        test_removed_interval = Interval()
-        expt_added_interval_json = json.dumps(Interval.asdict(test_added_interval))
-        expt_removed_interval_json = json.dumps(Interval.asdict(test_removed_interval))
+    def test_both_empty(self):
+        test_interval = {"start": "", "end": "", "tags": [], "annotation": ""}
         expt_json = (
             '{"userID": 1, "added": ['
-            + expt_added_interval_json
+            + json.dumps(test_interval)
             + '], "removed": ['
-            + expt_removed_interval_json
+            + json.dumps(test_interval)
             + "]}"
         )
-        assert to_json_request(1, ([test_added_interval], [test_removed_interval])) == expt_json
+        result = to_json_request(1, ([Interval()], [Interval()]))
+        assert result == expt_json
 
-        # Test with filled Interval objects
-        test_added_interval = Interval(
-            start=datetime.fromisoformat("2021-01-24 02:00:43"),
-            end=datetime.fromisoformat("2021-01-24 08:01:30"),
-            tags=["foo", "bar"],
-            annotation="this has been added",
-        )
-        test_removed_interval = Interval(
-            start=datetime.fromisoformat("2021-01-24 02:00:43"),
-            end=datetime.fromisoformat("2021-01-24 08:01:30"),
-            tags=["foo", "bar"],
-            annotation="this has been removed",
-        )
-        expt_added_interval_json = json.dumps(Interval.asdict(test_added_interval))
-        expt_removed_interval_json = json.dumps(Interval.asdict(test_removed_interval))
+    def test_both_filled(self):
+        test_interval = {
+            "start": "20210124T020043Z",
+            "end": "20210124T080130Z",
+            "tags": ["foo", "bar"],
+            "annotation": "this has been added/removed",
+        }
         expt_json = (
             '{"userID": 42, "added": ['
-            + expt_added_interval_json
+            + json.dumps(test_interval)
             + '], "removed": ['
-            + expt_removed_interval_json
+            + json.dumps(test_interval)
             + "]}"
         )
-        assert to_json_request(42, ([test_added_interval], [test_removed_interval])) == expt_json
+        result = to_json_request(42, ([Interval.from_dict(**test_interval)], [Interval.from_dict(**test_interval)]))
+        assert result == expt_json
 
-        # Test with multiple filled Interval objects
+    def test_both_multiple(self):
+        test_intervals = [
+            {
+                "start": "20210124T020043Z",
+                "end": "20210124T080130Z",
+                "tags": ["foo", "bar"],
+                "annotation": "this has been added/removed",
+            },
+            {"start": "20210321T170613Z", "end": "20210321T203246Z", "tags": [], "annotation": ""},
+        ]
         expt_json = (
-            '{"userID": 128, "added": ['
-            + expt_added_interval_json
-            + ", "
-            + expt_added_interval_json
-            + '], "removed": ['
-            + expt_removed_interval_json
-            + ", "
-            + expt_removed_interval_json
-            + "]}"
+            '{"userID": 128, "added": '
+            + json.dumps(test_intervals)
+            + ', "removed": '
+            + json.dumps(test_intervals)
+            + "}"
         )
-        assert (
-            to_json_request(
-                128,
-                (
-                    [test_added_interval, test_added_interval],
-                    [test_removed_interval, test_removed_interval],
-                ),
-            )
-            == expt_json
+        result = to_json_request(
+            128, ([Interval.from_dict(**i) for i in test_intervals], [Interval.from_dict(**i) for i in test_intervals])
         )
+        assert result == expt_json
 
 
 class TestFromJSONResponse:
-    def test_conflict_flag(self):
-        """Test the flag indicating that conflicts had occurred."""
+    def test_conflict_flag_false(self):
         test_json = '{"conflictsOccurred": false, "intervals": []}'
         _, c_flag = from_json_response(test_json)
         assert c_flag is False
+
+    def test_conflict_flag_true(self):
         test_json = '{"conflictsOccurred": true, "intervals": []}'
         _, c_flag = from_json_response(test_json)
         assert c_flag is True
 
-    def test_interval_list(self):
-        """Test with list in json having data."""
-
-        # Test with empty interval
-        test_interval_dict = {}
-        test_interval_json = json.dumps(test_interval_dict)
-        test_json = '{"conflictsOccurred": false, "intervals": [' + test_interval_json + "]}"
-        expt_interval_list = [Interval()]
+    def test_empty_interval(self):
+        test_json = '{"conflictsOccurred": false, "intervals": [{}]}'
+        expt_interval = Interval()
         result, _ = from_json_response(test_json)
         assert len(result) == 1
-        assert result[0] == expt_interval_list[0]
+        assert result[0] == expt_interval
 
-        # Test with filled interval
-        test_interval_dict = {
+    def test_filled_interval(self):
+        test_interval = {
             "start": "20210124T020043Z",
             "end": "20210124T080130Z",
             "tags": ["foo", "bar"],
             "annotation": "this is an annotation",
         }
-        test_interval_json = json.dumps(test_interval_dict)
-        test_json = '{"conflictsOccurred": false, "intervals": [' + test_interval_json + "]}"
-        expt_interval_list = [Interval.from_dict(test_interval_dict)]
+        test_json = '{"conflictsOccurred": false, "intervals": [' + json.dumps(test_interval) + "]}"
+        expt_interval = Interval.from_dict(**test_interval)
         result, _ = from_json_response(test_json)
         assert len(result) == 1
-        assert result[0] == expt_interval_list[0]
+        assert result[0] == expt_interval
 
-        # Test with multiple filled intervals
-        test_json = (
-            '{"conflictsOccurred": false, "intervals": [' + test_interval_json + ", " + test_interval_json + "]}"
-        )
-        expt_interval_list = [
-            Interval.from_dict(test_interval_dict),
-            Interval.from_dict(test_interval_dict),
+    def test_multiple_intervals(self):
+        test_intervals = [
+            {
+                "start": "20210124T020043Z",
+                "end": "20210124T080130Z",
+                "tags": ["foo", "bar"],
+                "annotation": "this is an annotation",
+            },
+            {"start": "20210321T170613Z", "end": "20210321T203246Z", "tags": [], "annotation": ""},
         ]
+        test_json = '{"conflictsOccurred": false, "intervals": ' + json.dumps(test_intervals) + "}"
+        expt_intervals = [Interval.from_dict(**test_intervals[0]), Interval.from_dict(**test_intervals[1])]
         result, _ = from_json_response(test_json)
         assert len(result) == 2
-        assert result[0] == expt_interval_list[0] and result[1] == expt_interval_list[1]
+        assert result[0] == expt_intervals[0] and result[1] == expt_intervals[1]
+
+
+class TestToJSONTags:
+    def test_empty_tags(self):
+        test_json = to_json_tags({})
+        test_dict = json.loads(test_json)
+        assert test_dict == {}
+
+    def test_single_tag(self):
+        test_tags = {"foo": 1}
+        test_json = to_json_tags(test_tags)
+        test_dict = json.loads(test_json)
+        expt_dict = {"foo": {"count": 1}}
+        assert test_dict == expt_dict
+
+    def test_multiple_tags(self):
+        test_tags = {"foo": 2, "bar": 5}
+        test_json = to_json_tags(test_tags)
+        test_dict = json.loads(test_json)
+        expt_dict = {"foo": {"count": 2}, "bar": {"count": 5}}
+        assert test_dict == expt_dict
+
+    def test_quote_tags(self):
+        test_tags = {'"': 0, '""': 10}
+        test_json = to_json_tags(test_tags)
+        test_dict = json.loads(test_json)
+        expt_dict = {'"': {"count": 0}, '""': {"count": 10}}
+        assert test_dict == expt_dict

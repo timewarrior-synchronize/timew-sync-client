@@ -26,6 +26,7 @@
 
 
 from datetime import datetime
+from typing import List
 
 import pytest
 
@@ -37,6 +38,14 @@ from timewsync.file_parser import (
     normalize_tag,
 )
 from timewsync.interval import Interval
+
+
+def _compare(intervals_1: List[Interval], intervals_2: List[Interval]):
+    assert len(intervals_1) == len(intervals_2)
+    intervals_1.sort(key=lambda i: i.start)
+    intervals_2.sort(key=lambda i: i.start)
+    for index in range(len(intervals_1)):
+        assert intervals_1[index] == intervals_2[index]
 
 
 class TestAsIntervalList:
@@ -63,17 +72,19 @@ class TestAsIntervalList:
 
     def test_single_interval(self):
         test_intervals = {"2021-01.data": "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation"}
-        expt_interval = Interval.from_dict(
-            {
-                "start": "20210124T020043Z",
-                "end": "20210124T080130Z",
-                "tags": ["foo", "bar"],
-                "annotation": "this is an annotation",
-            }
-        )
+        expt_intervals = [
+            Interval.from_dict(
+                **{
+                    "start": "20210124T020043Z",
+                    "end": "20210124T080130Z",
+                    "tags": ["foo", "bar"],
+                    "annotation": "this is an annotation",
+                }
+            )
+        ]
         result_i, result_a = as_interval_list(test_intervals)
-        assert len(result_i) == 1 and not result_a
-        assert result_i[0] == expt_interval
+        assert not result_a
+        _compare(result_i, expt_intervals)
 
     def test_similar_intervals(self):
         test_intervals = {
@@ -85,20 +96,18 @@ class TestAsIntervalList:
         }
         expt_intervals = [
             Interval.from_dict(
-                {
+                **{
                     "start": "20210124T020043Z",
                     "end": "20210124T080130Z",
                     "tags": ["foo", "bar"],
                     "annotation": "this is an annotation",
                 }
             ),
-            Interval.from_dict({"start": "20210124T020043Z", "end": "20210124T080130Z"}),
+            Interval.from_dict(**{"start": "20210124T020043Z", "end": "20210124T080130Z"}),
         ]
         result_i, result_a = as_interval_list(test_intervals)
-        assert len(result_i) == 2 and not result_a
-        result_i.sort(key=lambda i: i.start)
-        expt_intervals.sort(key=lambda i: i.start)
-        assert result_i[0] == expt_intervals[0] and result_i[1] == expt_intervals[1]
+        assert not result_a
+        _compare(result_i, expt_intervals)
 
     def test_multiple_months(self):
         test_intervals = {
@@ -107,26 +116,24 @@ class TestAsIntervalList:
         }
         expt_intervals = [
             Interval.from_dict(
-                {
+                **{
                     "start": "20210124T020043Z",
                     "end": "20210124T080130Z",
                     "tags": ["foo", "bar"],
                     "annotation": "this is an annotation",
                 }
             ),
-            Interval.from_dict({"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['"29 days"']}),
+            Interval.from_dict(**{"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['"29 days"']}),
         ]
         result_i, result_a = as_interval_list(test_intervals)
-        assert len(result_i) == 2 and not result_a
-        result_i.sort(key=lambda i: i.start)
-        expt_intervals.sort(key=lambda i: i.start)
-        assert result_i[0] == expt_intervals[0] and result_i[1] == expt_intervals[1]
+        assert not result_a
+        _compare(result_i, expt_intervals)
 
 
 class TestAsFileStrings:
     def test_active_tracking_success(self):
         test_interval = Interval.from_dict(
-            {"start": "20210124T020043Z", "tags": ["foo", "bar"], "annotation": "this is an annotation"}
+            **{"start": "20210124T020043Z", "tags": ["foo", "bar"], "annotation": "this is an annotation"}
         )
         expt_intervals = {"2021-01.data": "inc 20210124T020043Z # foo bar # this is an annotation"}
         file_strings, started_tracking = as_file_strings([], test_interval)
@@ -135,10 +142,10 @@ class TestAsFileStrings:
 
     def test_active_tracking_failure(self):
         test_interval = Interval.from_dict(
-            {"start": "20210124T020043Z", "tags": ["foo", "bar"], "annotation": "this is an annotation"}
+            **{"start": "20210124T020043Z", "tags": ["foo", "bar"], "annotation": "this is an annotation"}
         )
         conflicting_interval = Interval.from_dict(
-            {"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['"29 days"']}
+            **{"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['"29 days"']}
         )
         expt_intervals = {"2021-02.data": 'inc 20210201T134501Z - 20210301T145012Z # "29 days"'}
         file_strings, started_tracking = as_file_strings([conflicting_interval], test_interval)
@@ -153,7 +160,7 @@ class TestAsFileStrings:
     def test_single_interval(self):
         test_intervals = [
             Interval.from_dict(
-                {
+                **{
                     "start": "20210124T020043Z",
                     "end": "20210124T080130Z",
                     "tags": ["foo", "bar"],
@@ -169,14 +176,14 @@ class TestAsFileStrings:
     def test_similar_intervals(self):
         test_intervals = [
             Interval.from_dict(
-                {
+                **{
                     "start": "20210124T020043Z",
                     "end": "20210124T080130Z",
                     "tags": ["foo", "bar"],
                     "annotation": "this is an annotation",
                 }
             ),
-            Interval.from_dict({"start": "20210124T020043Z", "end": "20210124T080130Z"}),
+            Interval.from_dict(**{"start": "20210124T020043Z", "end": "20210124T080130Z"}),
         ]
         expt_intervals = {
             "2021-01.data": (
@@ -192,9 +199,9 @@ class TestAsFileStrings:
     def test_unsorted_intervals(self):
         test_intervals = [
             Interval.from_dict(
-                {"start": "20210124T020043Z", "end": "20210124T080130Z", "annotation": "this is the second interval"}
+                **{"start": "20210124T020043Z", "end": "20210124T080130Z", "annotation": "this is the second interval"}
             ),
-            Interval.from_dict({"start": "20210123T134659Z", "end": "20210124T020043Z"}),
+            Interval.from_dict(**{"start": "20210123T134659Z", "end": "20210124T020043Z"}),
         ]
         expt_intervals = {
             "2021-01.data": (
@@ -210,14 +217,14 @@ class TestAsFileStrings:
     def test_multiple_months(self):
         test_intervals = [
             Interval.from_dict(
-                {
+                **{
                     "start": "20210124T020043Z",
                     "end": "20210124T080130Z",
                     "tags": ["foo", "bar"],
                     "annotation": "this is an annotation",
                 }
             ),
-            Interval.from_dict({"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['"29 days"']}),
+            Interval.from_dict(**{"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['"29 days"']}),
         ]
         expt_intervals = {
             "2021-01.data": "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation",
@@ -230,7 +237,6 @@ class TestAsFileStrings:
 
 class TestGetFileName:
     def test_no_start_time(self):
-        """Tests invalid intervals."""
         with pytest.raises(RuntimeError):
             get_file_name(Interval())
 
@@ -239,7 +245,6 @@ class TestGetFileName:
             get_file_name(Interval(end=test_date2, tags=["foo", "bar"]))
 
     def test_short_entry(self):
-        """Tests for correct name extraction from start time."""
         test_date1 = datetime.fromisoformat("2021-01-23 13:46:59")
         test_date2 = datetime.fromisoformat("2021-01-24 02:00:43")
         test_date3 = datetime.fromisoformat("2021-02-01 13:45:01")
@@ -253,7 +258,7 @@ class TestGetFileName:
 
 class TestExtractTags:
     def test_no_entry(self):
-        assert extract_tags([]) == ""
+        assert extract_tags([]) == "{}"
 
     def test_no_tags(self):
         date1 = datetime(2020, 1, 1)
@@ -263,7 +268,7 @@ class TestExtractTags:
         i1 = Interval(start=date1, end=date2)
         i2 = Interval(start=date2, end=date3)
         i3 = Interval(start=date3, end=date4)
-        assert extract_tags([i1, i2, i3]) == ""
+        assert extract_tags([i1, i2, i3]) == "{}"
 
     def test_mixed_input(self):
         date1 = datetime(2020, 1, 1)
@@ -295,13 +300,27 @@ class TestExtractTags:
         i6 = Interval(start=date1, end=date2, tags=['"', '"'])
         assert extract_tags([i1, i2, i3, i4, i5, i6]) == (
             "{"
-            '\n    "this is tag 1":{"count":2},'
-            '\n    "this is "not" tag 1":{"count":1},'
-            '\n    "tag2":{"count":3},'
-            '\n    "tag3":{"count":2},'
-            '\n    "tag4":{"count":1},'
-            '\n    "tag1":{"count":1},'
-            '\n    "\\"":{"count":2}'
+            '\n  "this is tag 1": {'
+            '\n    "count": 2'
+            "\n  },"
+            '\n  "this is \\"not\\" tag 1": {'
+            '\n    "count": 1'
+            "\n  },"
+            '\n  "tag2": {'
+            '\n    "count": 3'
+            "\n  },"
+            '\n  "tag3": {'
+            '\n    "count": 2'
+            "\n  },"
+            '\n  "tag4": {'
+            '\n    "count": 1'
+            "\n  },"
+            '\n  "tag1": {'
+            '\n    "count": 1'
+            "\n  },"
+            '\n  "\\"": {'
+            '\n    "count": 2'
+            "\n  }"
             "\n}"
         )
 
@@ -314,30 +333,29 @@ class TestNormalizeTag:
             normalize_tag('""')
 
     def test_one_double_quote(self):
-        assert normalize_tag('"') == '"\\""'
-        assert normalize_tag('"') == '"\\""'
+        assert normalize_tag('"') == '"'
 
     def test_standard_case(self):
-        assert normalize_tag("two or more words") == '"two or more words"'
-        assert normalize_tag('"oneword"') == '"oneword"'
+        assert normalize_tag('"foo"') == "foo"
+        assert normalize_tag('"two or more words"') == "two or more words"
 
     def test_length_2(self):
-        assert normalize_tag("ab") == '"ab"'
-        assert normalize_tag("12") == '"12"'
-        assert normalize_tag("x-") == '"x-"'
-        assert normalize_tag('x"') == '"x""'
-        assert normalize_tag('"x') == '""x"'
+        assert normalize_tag('"ab"') == "ab"
+        assert normalize_tag('"12"') == "12"
+        assert normalize_tag('"x-"') == "x-"
+        assert normalize_tag('"x""') == 'x"'
+        assert normalize_tag('""x"') == '"x'
 
     def test_quotes_at_start_or_end(self):
-        assert normalize_tag('abc""') == '"abc"""'
-        assert normalize_tag('abc"') == '"abc""'
-        assert normalize_tag('""ab') == '"""ab"'
-        assert normalize_tag('"ab') == '""ab"'
+        assert normalize_tag('abc""') == 'abc""'
+        assert normalize_tag('abc"') == 'abc"'
+        assert normalize_tag('""ab') == '""ab'
+        assert normalize_tag('"ab') == '"ab'
 
     def test_quotes_in_middle(self):
-        assert normalize_tag('ab"c') == '"ab"c"'
+        assert normalize_tag('ab"c') == 'ab"c'
 
     def test_no_quotes(self):
-        assert normalize_tag("abc") == '"abc"'
-        assert normalize_tag("012") == '"012"'
-        assert normalize_tag("a3b") == '"a3b"'
+        assert normalize_tag("abc") == "abc"
+        assert normalize_tag("012") == "012"
+        assert normalize_tag("a3b") == "a3b"

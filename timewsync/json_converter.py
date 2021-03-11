@@ -25,7 +25,8 @@
 ###############################################################################
 
 
-from typing import List, Tuple
+from collections import defaultdict
+from typing import List, Tuple, Dict
 import json
 
 from timewsync.interval import Interval
@@ -63,6 +64,14 @@ def from_json_response(json_str: str) -> (List[Interval], bool):
         A list of Interval objects and a boolean flag indicating whether a conflict had been resolved.
     """
     json_dict = json.loads(json_str)
-    intervals = [Interval.from_dict(interval_dict) for interval_dict in json_dict["intervals"]]
+    intervals = [Interval.from_dict(**interval_dict) for interval_dict in json_dict["intervals"]]
     conflict_flag = json_dict["conflictsOccurred"]
     return intervals, conflict_flag
+
+
+def to_json_tags(tags: Dict[str, int]) -> str:
+    """Converts a dictionary holding tags and occurrences into a single JSON string."""
+    file_str = defaultdict(dict)
+    for tag, count in tags.items():
+        file_str[tag] = {"count": count}
+    return json.dumps(file_str, indent=2)

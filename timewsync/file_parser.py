@@ -29,7 +29,8 @@ from collections import defaultdict
 from datetime import datetime
 from typing import List, Dict
 
-from timewsync.interval import Interval, as_interval
+from timewsync import json_converter
+from timewsync.interval import Interval
 
 
 def as_interval_list(file_strings: Dict[str, str]) -> (List[Interval], Interval):
@@ -50,7 +51,7 @@ def as_interval_list(file_strings: Dict[str, str]) -> (List[Interval], Interval)
     active_interval = None
     for file_str in file_strings.values():
         for line in list(filter(None, file_str.splitlines())):  # Split and filter empty lines
-            i = as_interval(line)
+            i = Interval.from_interval_str(line)
             if i.start:
                 if not i.end:  # Split active time tracking, if present
                     i.end = datetime.utcnow()
@@ -82,24 +83,24 @@ def as_file_strings(intervals: List[Interval], active_interval: Interval = None)
     """
     intervals.sort(key=lambda i: i.start)
 
-    if active_interval and not __conflicting(active_interval, intervals):
+    if active_interval and not _conflicting(active_interval, intervals):
         intervals.append(active_interval)
         started_tracking = True
     else:
         started_tracking = False
 
-    grouped_intervals = __group_by_month(intervals)
-    file_strings = __join_per_group(grouped_intervals)
+    grouped_intervals = _group_by_month(intervals)
+    file_strings = _join_per_group(grouped_intervals)
 
     return file_strings, started_tracking
 
 
-def __conflicting(active_interval: Interval, sorted_intervals: List[Interval]) -> bool:
+def _conflicting(active_interval: Interval, sorted_intervals: List[Interval]) -> bool:
     """Returns true if open 'active_interval' overlaps with closed 'sorted_intervals'."""
     return sorted_intervals and sorted_intervals[-1].end > active_interval.start
 
 
-def __group_by_month(intervals: List[Interval]) -> Dict[str, List[Interval]]:
+def _group_by_month(intervals: List[Interval]) -> Dict[str, List[Interval]]:
     """Groups intervals per month and returns them as a dictionary.
 
     Dictionary keys are file names and values corresponding file strings.
@@ -116,7 +117,7 @@ def __group_by_month(intervals: List[Interval]) -> Dict[str, List[Interval]]:
     return grouped_intervals
 
 
-def __join_per_group(grouped_intervals: Dict[str, List[Interval]]) -> Dict[str, str]:
+def _join_per_group(grouped_intervals: Dict[str, List[Interval]]) -> Dict[str, str]:
     """Concatenates grouped intervals per group by using line breaks.
 
     Args:
@@ -139,53 +140,38 @@ def get_file_name(interval: Interval) -> str:
     return interval.start.strftime("%Y-%m.data")
 
 
-def extract_tags(lst_of_intervalobjects: List[Interval]) -> str:
-    """
-    Gets a List of Intervalobjects and extracts all tags from all of these.
+def extract_tags(intervals: List[Interval]) -> str:
+    """Extracts all tags and counts occurrences per tag.
+
     Returns one String containing every tag with how often it occurs.
-    :param
-        lst_of_intervalobjects: A list of time intervals in timewarrior format.
-    :return:
-        A string of all tags and the number of their occurrence written in the correct format for tags.data .
+
+    Args:
+        intervals: A list of Interval objects.
+
+    Returns:
+        A string of all tags and the number of their occurrence written in the correct format for tags.data.
     """
-
-    all_tags = defaultdict(int)
-    for interval in lst_of_intervalobjects:
-        for tag in interval.tags:
-            all_tags[normalize_tag(tag)] += 1
-
-    if len(all_tags) == 0:
-        return ""
-
-    result = "{"
-    for tag in all_tags.keys():
-        result += "\n    " + tag + ':{"count":' + str(all_tags[tag]) + "},"
-    result = result[:-1] + "\n}"  # now, discard the last ',' (which is too much) and add a closing '}'
-
-    return result
+    tags = defaultdict(int)
+    for i in intervals:
+        for tag in i.tags:
+            tags[normalize_tag(tag)] += 1
+    return json_converter.to_json_tags(tags)
 
 
 def normalize_tag(tag: str) -> str:
-    """
-    Receives a tag (string) and checks if it has double quotes at start and end '"..."'.
-    If not, it will attach them.
-    Note:
-        - Empty strings and '""' will raise an error because timewarrior cannot work with empty tags.
-        - The two Strings '"' and '\"' will both be returned as '"\""' (but we expect '"' never to be rendered).
+    """Removes encapsulating double quotes, which are otherwise redundant in tags.data.
+
+    Ignores non-encapsulating double quotes (one side only or inside).
+    Empty tags and '""' raise an error because timewarrior cannot work with empty tags.
+
     Args:
-        tag: The tag which shall be normalized.
+        tag: The tag to be pruned.
 
-    Returns: The normalized tag.
-
+    Returns:
+        The pruned tag without encapsulating double quotes.
     """
-    if len(tag) == 0 or tag == '""':
-        raise RuntimeError("invalid tag '%s'" % tag)
-
-    if tag == '"' or tag == '"':
-        return '"\\""'
-
-    if len(tag) < 2 or tag[0] != '"' or tag[-1] != '"':
-        return '"' + tag + '"'
-
-    else:
-        return tag
+    if not tag or tag == '""':
+        raise RuntimeError("empty tag '%s'" % tag)
+    if len(tag) >= 2 and tag[0] == '"' and tag[-1] == '"':
+        return tag[1:-1]
+    return tag
