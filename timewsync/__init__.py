@@ -39,7 +39,7 @@ from timewsync import auth, cli
 from timewsync.dispatch import ServerError, dispatch
 from timewsync.file_parser import as_interval_list, as_file_strings, extract_tags
 from timewsync.io_handler import read_data, write_data
-from timewsync.config import Configuration
+from timewsync.config import NoConfigurationFileError, MissingSectionError, MissingConfigurationError, Configuration
 
 DEFAULT_DATA_DIR = os.path.join("~", ".timewsync")
 
@@ -100,8 +100,14 @@ def main():
 
     try:
         configuration = Configuration.read(data_dir, "timewsync.conf")
-    except RuntimeError as e:
-        logging.error("Error reading from configuration file: %s", e)
+    except NoConfigurationFileError:
+        logging.error("The configuration file could not be found")
+        return
+    except MissingSectionError as e:
+        logging.error("The configuration file needs to define the section \"%s\"", e.section)
+        return
+    except MissingConfigurationError as e:
+        logging.error("The section \"%s\" in the configuration needs to define \"%s\"", e.section, e.name)
         return
 
     if args.subcommand == "generate-key":
@@ -124,31 +130,40 @@ def sync(configuration: Configuration) -> None:
         timew_intervals, active_interval = as_interval_list(timew_data)
         snapshot_intervals, _ = as_interval_list(snapshot_data)
     except OSError as e:
-        logging.error("Error reading intervals from disk: %s. No changes were made", e)
+        logging.debug("OSError: %s", e)
+        logging.error("Error reading intervals from disk: No changes were made")
         return
 
     # Read key
     try:
         private_key, _ = io_handler.read_keys(configuration.data_dir)
     except OSError as e:
-        logging.error("Error reading private key from disk: %s. No changes were made", e)
+        logging.debug("OSError: %s", e)
+        logging.error("Error reading private key from disk: No changes were made")
         return
 
-    token = auth.generate_jwt(private_key, configuration.user_id)
+    # Generate token
+    try:
+        token = auth.generate_jwt(private_key, configuration.user_id)
+    except Exception as e:
+        logging.debug("Unexpected Exception: %s", e)
+        logging.error("Unexpected error occured during JWT generation. No changes were made")
+        return
 
     # Communicate with server
     try:
         response_intervals, conflict_flag = dispatch(configuration, timew_intervals, snapshot_intervals, token)
     except requests.ConnectionError as e:
         logging.debug("Connction error: %s", e)
-        logging.error("Error connecting to server")
+        logging.error("Error connecting to server. No changes were made.")
         return
     except ServerError as e:
         logging.error("Error details: %s", e)
-        logging.error("Server responded with error")
+        logging.error("Server responded with error. No changes were made.")
         return
     except Exception as e:
-        logging.error("Unexpected error occured during communication with server: %s", e)
+        logging.debug("Unexpected Exception: %s", e)
+        logging.error("Unexpected error occured during communication with server. No changes were made.")
         return
 
     # Write data
@@ -163,7 +178,8 @@ def sync(configuration: Configuration) -> None:
         except SubprocessError:
             logging.warn("Hook exited with a non-zero exit code. Continuing")
         except OSError as e:
-            logging.error("Error occurred while executing the conflict-occured hook: %s. Continuing", e)
+            logging.debug("OSError: %s", e)
+            logging.error("Error occurred while executing the conflict-occured hook. Continuing")
 
     # Output
     if active_interval:

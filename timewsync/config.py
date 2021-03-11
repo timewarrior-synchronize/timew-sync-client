@@ -29,33 +29,65 @@ import configparser
 import os
 
 
+class NoConfigurationFileError(Exception):
+    """A configuration file was not found
+    """
+    pass
+
+
+class MissingSectionError(Exception):
+    """A section is missing from the configuration file
+
+    Attributes:
+        section -- The section which is missing
+    """
+
+    def __init__(self, section: str):
+        self.section: str = section
+
+
+class MissingConfigurationError(Exception):
+    """A section is missing from the configuration file
+
+    Attributes:
+        section -- The section in which the missing configuration is supposed to be
+        name -- The name of the configuration parameter
+    """
+
+    def __init__(self, section: str, name: str):
+        self.section: str = section
+        self.name: str = name
+
+
 class Configuration:
-    def __init__(self, data_dir: str, server_base_url: str, user_id: int, merge_conflict_hook: str):
+    def __init__(self, data_dir: str, server_base_url: str, user_id: int):
         self.data_dir = data_dir
         self.server_base_url: str = server_base_url
         self.user_id: int = user_id
-        self.merge_conflict_hook: str = merge_conflict_hook
 
     @classmethod
     def read(cls, data_dir: str, filename: str):
+        path = os.path.join(data_dir, filename)
+        if not os.path.isfile(path):
+            raise NoConfigurationFileError()
+
         config = configparser.ConfigParser()
-        config.read(os.path.join(data_dir, filename))
+        config.read(path)
 
         if "Server" in config:
             if "BaseURL" in config["Server"]:
                 server_base_url = config.get("Server", "BaseURL")
             else:
-                raise RuntimeError("The configuration file needs to define Server.BaseURL")
+                raise MissingConfigurationError("Server", "BaseURL")
         else:
-            raise RuntimeError('The configuration file needs to have a "Server" section')
+            raise MissingSectionError("Server")
 
         if "Client" in config:
             if "UserID" in config["Client"]:
                 user_id = config.getint("Client", "UserID")
             else:
-                raise RuntimeError("The configuration file needs to define Client.UserID")
-            merge_conflict_hook = config.get("Client", "OnMergeConflictHook", fallback="")
+                raise MissingConfigurationError("Client", "UserID")
         else:
-            raise RuntimeError('The configuration file needs to have a "Client" section')
+            raise MissingSectionError("Client")
 
-        return cls(data_dir, server_base_url, user_id, merge_conflict_hook)
+        return cls(data_dir, server_base_url, user_id)
