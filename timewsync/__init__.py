@@ -61,6 +61,12 @@ def make_parser():
         help="Print version information",
     )
     parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Enable debug output",
+    )
+    parser.add_argument(
         "--data-dir",
         dest="data_dir",
         default=DEFAULT_DATA_DIR,
@@ -97,6 +103,9 @@ def main():
 
     args = make_parser().parse_args()
     data_dir = os.path.expanduser(args.data_dir)
+
+    logging_level = logging.DEBUG if args.verbose else logging.WARNING
+    logging.basicConfig(level=logging_level)
 
     try:
         configuration = Configuration.read(data_dir, "timewsync.conf")
@@ -137,6 +146,9 @@ def sync(configuration: Configuration) -> None:
     # Read key
     try:
         private_key, _ = io_handler.read_keys(configuration.data_dir)
+        if private_key is None:
+            logging.error("No private key was found. Generate a key pair using `timewsync generate-key`.")
+            return
     except OSError as e:
         logging.debug("OSError: %s", e)
         logging.error("Error reading private key from disk: No changes were made")
@@ -158,7 +170,7 @@ def sync(configuration: Configuration) -> None:
         logging.error("Error connecting to server. No changes were made.")
         return
     except ServerError as e:
-        logging.error("Error details: %s", e)
+        logging.debug("Error details: %s", e)
         logging.error("Server responded with error. No changes were made.")
         return
     except Exception as e:
@@ -183,7 +195,7 @@ def sync(configuration: Configuration) -> None:
 
     # Output
     if active_interval:
-        print("Time tracking is active. Stopped time tracking.", file=sys.sterr)
+        print("Time tracking is active. Stopped time tracking.", file=sys.stderr)
 
     print("Synchronization successful!", file=sys.stderr)
 
@@ -191,10 +203,9 @@ def sync(configuration: Configuration) -> None:
         if started_tracking:
             print("Restarted time tracking.", file=sys.stderr)
         else:
-            print(
-                Fore.RED + "Warning: Cannot restart time tracking! This error occured because there exists "
-                "an interval in the future which would overlap with the open interval" + Fore.RESET,
-                file=sys.stderr,
+            logging.warning(
+                "Warning: Cannot restart time tracking! This error occured because there exists "
+                "an interval in the future which would overlap with the open interval"
             )
 
 
