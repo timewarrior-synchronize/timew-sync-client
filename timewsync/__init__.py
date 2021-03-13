@@ -38,7 +38,7 @@ import requests
 from timewsync import auth, cli
 from timewsync.dispatch import ServerError, dispatch
 from timewsync.file_parser import as_interval_list, as_file_strings, extract_tags
-from timewsync.io_handler import read_data, write_data, delete_snapshot
+from timewsync.io_handler import read_data, read_keys, write_data, write_keys, delete_snapshot
 from timewsync.config import NoConfigurationFileError, MissingSectionError, MissingConfigurationError, Configuration
 from timewsync.logging_helpers import MinMaxLevelFilter
 
@@ -160,7 +160,7 @@ def sync(configuration: Configuration) -> None:
 
     # Read key
     try:
-        private_key, _ = io_handler.read_keys(configuration.data_dir)
+        private_key, _ = read_keys(configuration.data_dir)
         if private_key is None:
             log.error("No private key was found. Generate a key pair using `timewsync generate-key`.")
             return
@@ -216,7 +216,7 @@ def sync(configuration: Configuration) -> None:
     if conflict_flag:
         try:
             run_conflict_hook(configuration.data_dir)
-        except SubprocessError:
+        except subprocess.CalledProcessError:
             log.warn("Hook exited with a non-zero exit code. Continuing")
         except OSError as e:
             log.debug("OSError: %s", e)
@@ -248,7 +248,7 @@ def generate_key(configuration: Configuration) -> None:
     """
     log = logging.getLogger(__name__)
 
-    priv_pem, pub_pem = io_handler.read_keys(configuration.data_dir)
+    priv_pem, pub_pem = read_keys(configuration.data_dir)
 
     if priv_pem or pub_pem:
         confirm = cli.confirmation_reader(
@@ -264,7 +264,7 @@ def generate_key(configuration: Configuration) -> None:
         return
 
     try:
-        io_handler.write_keys(configuration.data_dir, priv_pem, pub_pem)
+        write_keys(configuration.data_dir, priv_pem, pub_pem)
     except OSError as e:
         log.error("Error occured while writing new keys: %s", e)
         return
