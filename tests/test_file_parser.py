@@ -35,7 +35,6 @@ from timewsync.file_parser import (
     as_file_strings,
     get_file_name,
     extract_tags,
-    normalize_tag,
 )
 from timewsync.interval import Interval
 
@@ -123,7 +122,7 @@ class TestAsIntervalList:
                     "annotation": "this is an annotation",
                 }
             ),
-            Interval.from_dict(**{"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['"29 days"']}),
+            Interval.from_dict(**{"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['29 days']}),
         ]
         result_i, result_a = as_interval_list(test_intervals)
         assert not result_a
@@ -325,37 +324,4 @@ class TestExtractTags:
         )
 
 
-class TestNormalizeTag:
-    def test_empty_string(self):
-        with pytest.raises(RuntimeError):
-            normalize_tag("")
-        with pytest.raises(RuntimeError):
-            normalize_tag('""')
 
-    def test_one_double_quote(self):
-        assert normalize_tag('"') == '"'
-
-    def test_standard_case(self):
-        assert normalize_tag('"foo"') == "foo"
-        assert normalize_tag('"two or more words"') == "two or more words"
-
-    def test_length_2(self):
-        assert normalize_tag('"ab"') == "ab"
-        assert normalize_tag('"12"') == "12"
-        assert normalize_tag('"x-"') == "x-"
-        assert normalize_tag('"x""') == 'x"'
-        assert normalize_tag('""x"') == '"x'
-
-    def test_quotes_at_start_or_end(self):
-        assert normalize_tag('abc""') == 'abc""'
-        assert normalize_tag('abc"') == 'abc"'
-        assert normalize_tag('""ab') == '""ab'
-        assert normalize_tag('"ab') == '"ab'
-
-    def test_quotes_in_middle(self):
-        assert normalize_tag('ab"c') == 'ab"c'
-
-    def test_no_quotes(self):
-        assert normalize_tag("abc") == "abc"
-        assert normalize_tag("012") == "012"
-        assert normalize_tag("a3b") == "a3b"

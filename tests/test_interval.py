@@ -29,7 +29,7 @@ from datetime import datetime
 
 import pytest
 
-from timewsync.interval import Interval
+from timewsync.interval import Interval, _strip_double_quotes
 
 
 class TestIntervalFromDict:
@@ -186,8 +186,8 @@ class TestAsInterval:
         expt_date2 = datetime.fromisoformat("2021-01-24 02:00:43")
         expt_tags = [
             "shortTag",
-            '"tag - with quotes"',
-            '"\\nt3$T \\"edg€ case! "',
+            'tag - with quotes',
+            '\\nt3$T \\"edg€ case! ',
             '\\""',
         ]
         expt_annotation = "this interval is for testing purposes only"
@@ -275,3 +275,37 @@ class TestAsInterval:
 
         with pytest.raises(RuntimeError):
             Interval.from_interval_str("inc 1")
+
+
+class TestNormalizeTag:
+    def test_empty_string(self):
+        assert _strip_double_quotes("") == ""
+        assert _strip_double_quotes('""') == ""
+
+    def test_one_double_quote(self):
+        assert _strip_double_quotes('"') == '"'
+
+    def test_standard_case(self):
+        assert _strip_double_quotes('"foo"') == "foo"
+        assert _strip_double_quotes('"two or more words"') == "two or more words"
+
+    def test_length_2(self):
+        assert _strip_double_quotes('"ab"') == "ab"
+        assert _strip_double_quotes('"12"') == "12"
+        assert _strip_double_quotes('"x-"') == "x-"
+        assert _strip_double_quotes('"x""') == 'x"'
+        assert _strip_double_quotes('""x"') == '"x'
+
+    def test_quotes_at_start_or_end(self):
+        assert _strip_double_quotes('abc""') == 'abc""'
+        assert _strip_double_quotes('abc"') == 'abc"'
+        assert _strip_double_quotes('""ab') == '""ab'
+        assert _strip_double_quotes('"ab') == '"ab'
+
+    def test_quotes_in_middle(self):
+        assert _strip_double_quotes('ab"c') == 'ab"c'
+
+    def test_no_quotes(self):
+        assert _strip_double_quotes("abc") == "abc"
+        assert _strip_double_quotes("012") == "012"
+        assert _strip_double_quotes("a3b") == "a3b"
