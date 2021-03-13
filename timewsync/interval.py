@@ -62,12 +62,15 @@ class Interval:
 
         Returns:
             A reference to the new Interval object.
+
+        Raises:
+            ValueError: The syntax has been violated
         """
         tokens = tokenize(line)
 
         # Required 'inc'
         if not tokens or tokens[0] != "inc":
-            raise RuntimeError("unrecognizable line '%s'" % line)
+            raise ValueError("unrecognizable line '%s'" % line)
 
         start = None
         end = None
@@ -107,7 +110,7 @@ class Interval:
 
         # Unparsed tokens
         if cursor < len(tokens):
-            raise RuntimeError("unrecognizable line '%s'" % line)
+            raise ValueError("unrecognizable line '%s'" % line)
 
         return cls(
             start=start,

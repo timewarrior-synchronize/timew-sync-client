@@ -28,6 +28,8 @@
 import configparser
 import os
 
+CONFIGURATION_FILE_NAME = "timewsync.conf"
+
 
 class NoConfigurationFileError(Exception):
     """A configuration file was not found"""
@@ -60,14 +62,34 @@ class MissingConfigurationError(Exception):
 
 
 class Configuration:
+    """Holds all configuration options defined in the timewsync client
+    configuration file
+
+    Attributes:
+        data_dir: The path to the timewsync data directory
+        server_base_url: The base URL (API Endpoint) of the synchronization server
+        user_id: The unique ID of the timewsync user
+    """
+
     def __init__(self, data_dir: str, server_base_url: str, user_id: int):
         self.data_dir = data_dir
         self.server_base_url: str = server_base_url
         self.user_id: int = user_id
 
     @classmethod
-    def read(cls, data_dir: str, filename: str):
-        path = os.path.join(data_dir, filename)
+    def read(cls, data_dir: str):
+        """Reads the configuration from the configuration file in the
+        timewsync data directory.
+
+        Args:
+            data_dir: The path to the timewsync data directory
+
+        Raises:
+            NoConfigurationFileError: The configuration file does not exist
+            MissingSectionError: A mandatory section is missing from the configuration file
+            MissingConfigurationError: A mandatory variable is missing from the configuration file
+        """
+        path = os.path.join(data_dir, CONFIGURATION_FILE_NAME)
         if not os.path.isfile(path):
             raise NoConfigurationFileError()
 

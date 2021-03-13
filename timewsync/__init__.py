@@ -122,7 +122,7 @@ def main():
         log.addHandler(debug_handler)
 
     try:
-        configuration = Configuration.read(data_dir, "timewsync.conf")
+        configuration = Configuration.read(data_dir)
     except NoConfigurationFileError:
         log.error("The configuration file could not be found")
         return

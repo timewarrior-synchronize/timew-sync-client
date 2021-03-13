@@ -40,7 +40,7 @@ class TestTokenize:
         """Test with one token."""
         assert tokenize("a") == ["a"]  # single character
         assert tokenize("foo") == ["foo"]  # single word
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             tokenize('"')  # invalid quotation syntax
 
     def test_multiple(self):
@@ -102,16 +102,16 @@ class TestTokenize:
             '"\\\\\\""',
         ]  # escape characters in quotes functional
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             tokenize('" " "')  # quotation mark missing
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             tokenize('"foo')  # quotation mark missing
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             tokenize('"\\"')  # quotation mark missing
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             tokenize('"\\\\""')  # quotation mark missing
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             tokenize('"foo"bar')  # whitespace separator missing
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             tokenize('"foo""bar"')  # whitespace separator missing
