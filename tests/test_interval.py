@@ -29,7 +29,7 @@ from datetime import datetime
 
 import pytest
 
-from timewsync.interval import Interval, _strip_double_quotes
+from timewsync.interval import Interval, _strip_double_quotes, _quote_tag_if_needed
 
 
 class TestIntervalFromDict:
@@ -68,15 +68,15 @@ class TestIntervalToString:
         test_date2 = datetime.fromisoformat("2021-01-24 02:00:43")
         test_tags = [
             "shortTag",
-            '"tag - with quotes"',
-            '"\\nt3$T \\"edg€ case! "',
+            "tag - with quotes",
+            '\\nt3$T \\"edg€ case! ',
             '\\""',
         ]
         test_annotation = "this interval is for testing purposes only"
 
         expt_date1 = "20210123T134659Z"
         expt_date2 = "20210124T020043Z"
-        expt_tags = 'shortTag "tag - with quotes" "\\nt3$T \\"edg€ case! " \\""'
+        expt_tags = 'shortTag "tag - with quotes" "\\nt3$T \\"edg€ case! " "\\"""'
         expt_annotation = "this interval is for testing purposes only"
 
         partial_interval = Interval()
@@ -128,15 +128,10 @@ class TestIntervalToString:
         assert str(partial_interval) == f'inc {expt_date1} # {expt_tags} # "{expt_annotation}"'
 
         partial_interval = Interval(start=test_date1, end=test_date2, tags=["foo"], annotation=test_annotation)
-        assert (
-            str(partial_interval) == f'inc {expt_date1} - {expt_date2} # foo # "{expt_annotation}"'
-        )
+        assert str(partial_interval) == f'inc {expt_date1} - {expt_date2} # foo # "{expt_annotation}"'
 
         partial_interval = Interval(start=test_date1, end=test_date2, tags=test_tags, annotation=test_annotation)
-        assert (
-            str(partial_interval)
-            == f'inc {expt_date1} - {expt_date2} # {expt_tags} # "{expt_annotation}"'
-        )
+        assert str(partial_interval) == f'inc {expt_date1} - {expt_date2} # {expt_tags} # "{expt_annotation}"'
 
     def test_ambiguous_interval(self):
         """Test an interval without start but with end time, which is ignored at the conversion."""
@@ -186,7 +181,7 @@ class TestAsInterval:
         expt_date2 = datetime.fromisoformat("2021-01-24 02:00:43")
         expt_tags = [
             "shortTag",
-            'tag - with quotes',
+            "tag - with quotes",
             '\\nt3$T \\"edg€ case! ',
             '\\""',
         ]
@@ -309,3 +304,22 @@ class TestNormalizeTag:
         assert _strip_double_quotes("abc") == "abc"
         assert _strip_double_quotes("012") == "012"
         assert _strip_double_quotes("a3b") == "a3b"
+
+
+class TestQuoteTagIfNeeded:
+    def test_no_escaping_needed(self):
+        data = "Bananas"
+
+        assert _quote_tag_if_needed(data) == data
+
+    def test_spaces(self):
+        data = "Tag with spaces"
+        expected = '"Tag with spaces"'
+
+        assert _quote_tag_if_needed(data) == expected
+
+    def test_special_chars(self):
+        data = "tag_with_special_chars"
+        expected = '"tag_with_special_chars"'
+
+        assert _quote_tag_if_needed(data) == expected

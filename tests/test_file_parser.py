@@ -122,7 +122,7 @@ class TestAsIntervalList:
                     "annotation": "this is an annotation",
                 }
             ),
-            Interval.from_dict(**{"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['29 days']}),
+            Interval.from_dict(**{"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ["29 days"]}),
         ]
         result_i, result_a = as_interval_list(test_intervals)
         assert not result_a
@@ -144,7 +144,7 @@ class TestAsFileStrings:
             **{"start": "20210124T020043Z", "tags": ["foo", "bar"], "annotation": "this is an annotation"}
         )
         conflicting_interval = Interval.from_dict(
-            **{"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['"29 days"']}
+            **{"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ["29 days"]}
         )
         expt_intervals = {"2021-02.data": 'inc 20210201T134501Z - 20210301T145012Z # "29 days"'}
         file_strings, started_tracking = as_file_strings([conflicting_interval], test_interval)
@@ -223,7 +223,7 @@ class TestAsFileStrings:
                     "annotation": "this is an annotation",
                 }
             ),
-            Interval.from_dict(**{"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['"29 days"']}),
+            Interval.from_dict(**{"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ["29 days"]}),
         ]
         expt_intervals = {
             "2021-01.data": 'inc 20210124T020043Z - 20210124T080130Z # foo bar # "this is an annotation"',
@@ -322,6 +322,3 @@ class TestExtractTags:
             "\n  }"
             "\n}"
         )
-
-
-
