@@ -40,6 +40,7 @@ from timewsync.dispatch import ServerError, dispatch
 from timewsync.file_parser import as_interval_list, as_file_strings, extract_tags
 from timewsync.io_handler import read_data, write_data, delete_snapshot
 from timewsync.config import NoConfigurationFileError, MissingSectionError, MissingConfigurationError, Configuration
+from timewsync.logging_helpers import MinMaxLevelFilter
 
 DEFAULT_DATA_DIR = os.path.join("~", ".timewsync")
 
@@ -79,7 +80,7 @@ def make_parser():
     return parser
 
 
-def run_conflict_hook(data_dir: str):
+def run_conflict_hook(data_dir: str) -> None:
     """Run 'conflicts-occurred' file if present.
 
     Expected in '.timewsync/hooks' directory.
@@ -104,19 +105,32 @@ def main():
     args = make_parser().parse_args()
     data_dir = os.path.expanduser(args.data_dir)
 
-    logging_level = logging.DEBUG if args.verbose else logging.WARNING
-    logging.basicConfig(level=logging_level)
+    log = logging.getLogger()
+    log.setLevel(logging.DEBUG)
+
+    red_formatter = logging.Formatter(Fore.RED + "%(levelname)s: %(message)s" + Fore.RESET)
+    red_handler = logging.StreamHandler(sys.stderr)
+    red_handler.addFilter(MinMaxLevelFilter(logging.WARNING, logging.CRITICAL))
+    red_handler.setFormatter(red_formatter)
+    log.addHandler(red_handler)
+
+    if args.verbose:
+        debug_formatter = logging.Formatter("%(levelname)s: %(message)s")
+        debug_handler = logging.StreamHandler(sys.stderr)
+        debug_handler.addFilter(MinMaxLevelFilter(logging.DEBUG, logging.INFO))
+        debug_handler.setFormatter(debug_formatter)
+        log.addHandler(debug_handler)
 
     try:
         configuration = Configuration.read(data_dir, "timewsync.conf")
     except NoConfigurationFileError:
-        logging.error("The configuration file could not be found")
+        log.error("The configuration file could not be found")
         return
     except MissingSectionError as e:
-        logging.error('The configuration file needs to define the section "%s"', e.section)
+        log.error('The configuration file needs to define the section "%s"', e.section)
         return
     except MissingConfigurationError as e:
-        logging.error('The section "%s" in the configuration needs to define "%s"', e.section, e.name)
+        log.error('The section "%s" in the configuration needs to define "%s"', e.section, e.name)
         return
 
     if args.subcommand == "generate-key":
@@ -132,6 +146,7 @@ def sync(configuration: Configuration) -> None:
     Args:
         configuration: The user's configuration.
     """
+    log = logging.getLogger(__name__)
 
     # Read data
     try:
@@ -139,43 +154,43 @@ def sync(configuration: Configuration) -> None:
         timew_intervals, active_interval = as_interval_list(timew_data)
         snapshot_intervals, _ = as_interval_list(snapshot_data)
     except OSError as e:
-        logging.debug("OSError: %s", e)
-        logging.error("Error reading intervals from disk: No changes were made")
+        log.debug("OSError: %s", e)
+        log.error("Error reading intervals from disk: No changes were made")
         return
 
     # Read key
     try:
         private_key, _ = io_handler.read_keys(configuration.data_dir)
         if private_key is None:
-            logging.error("No private key was found. Generate a key pair using `timewsync generate-key`.")
+            log.error("No private key was found. Generate a key pair using `timewsync generate-key`.")
             return
     except OSError as e:
-        logging.debug("OSError: %s", e)
-        logging.error("Error reading private key from disk: No changes were made")
+        log.debug("OSError: %s", e)
+        log.error("Error reading private key from disk: No changes were made")
         return
 
     # Generate token
     try:
         token = auth.generate_jwt(private_key, configuration.user_id)
     except Exception as e:
-        logging.debug("Unexpected Exception: %s", e)
-        logging.error("Unexpected error occured during JWT generation. No changes were made")
+        log.debug("Unexpected Exception: %s", e)
+        log.error("Unexpected error occured during JWT generation. No changes were made")
         return
 
     # Communicate with server
     try:
         response_intervals, conflict_flag = dispatch(configuration, timew_intervals, snapshot_intervals, token)
     except requests.ConnectionError as e:
-        logging.debug("Connction error: %s", e)
-        logging.error("Error connecting to server. No changes were made.")
+        log.debug("Connction error: %s", e)
+        log.error("Error connecting to server. No changes were made.")
         return
     except ServerError as e:
-        logging.debug("Error details: %s", e)
-        logging.error("Server responded with error. No changes were made.")
+        log.debug("Error details: %s", e)
+        log.error("Server responded with error. No changes were made.")
         return
     except Exception as e:
-        logging.debug("Unexpected Exception: %s", e)
-        logging.error("Unexpected error occured during communication with server. No changes were made.")
+        log.debug("Unexpected Exception: %s", e)
+        log.error("Unexpected error occured during communication with server. No changes were made.")
         return
 
     # Write data
@@ -185,13 +200,13 @@ def sync(configuration: Configuration) -> None:
         write_data(configuration.data_dir, server_data, new_tags)
     except IOError as e:
         delete_snapshot(configuration.data_dir)
-        logging.debug("IOError: %s", e)
-        logging.error("Error writing data to disk. To ensure consistency, the newly created snapshot was deleted.")
+        log.debug("IOError: %s", e)
+        log.error("Error writing data to disk. To ensure consistency, the newly created snapshot was deleted.")
         return
     except Exception as e:
         delete_snapshot(configuration.data_dir)
-        logging.debug("Unexpected Exception: %s", e)
-        logging.error(
+        log.debug("Unexpected Exception: %s", e)
+        log.error(
             "Unexpected error occured during writing of data. "
             "To ensure consistency, the newly created snapshot was deleted."
         )
@@ -202,10 +217,10 @@ def sync(configuration: Configuration) -> None:
         try:
             run_conflict_hook(configuration.data_dir)
         except SubprocessError:
-            logging.warn("Hook exited with a non-zero exit code. Continuing")
+            log.warn("Hook exited with a non-zero exit code. Continuing")
         except OSError as e:
-            logging.debug("OSError: %s", e)
-            logging.error("Error occurred while executing the conflict-occured hook. Continuing")
+            log.debug("OSError: %s", e)
+            log.error("Error occurred while executing the conflict-occured hook. Continuing")
 
     # Output
     if active_interval:
@@ -217,13 +232,13 @@ def sync(configuration: Configuration) -> None:
         if started_tracking:
             print("Restarted time tracking.", file=sys.stderr)
         else:
-            logging.warning(
+            log.warning(
                 "Warning: Cannot restart time tracking! This error occured because there exists "
                 "an interval in the future which would overlap with the open interval"
             )
 
 
-def generate_key(configuration: Configuration):
+def generate_key(configuration: Configuration) -> None:
     """Generates a new RSA key pair.
 
     Prompts the user for confirmation if keys already exist.
@@ -231,6 +246,8 @@ def generate_key(configuration: Configuration):
     Args:
         configuration: The user's configuration.
     """
+    log = logging.getLogger(__name__)
+
     priv_pem, pub_pem = io_handler.read_keys(configuration.data_dir)
 
     if priv_pem or pub_pem:
@@ -243,13 +260,13 @@ def generate_key(configuration: Configuration):
     try:
         priv_pem, pub_pem = auth.generate_keys()
     except Exception as e:
-        logging.error("Unexpected error occurred while generating keys: %s", e)
+        log.error("Unexpected error occurred while generating keys: %s", e)
         return
 
     try:
         io_handler.write_keys(configuration.data_dir, priv_pem, pub_pem)
     except OSError as e:
-        logging.error("Error occured while writing new keys: %s", e)
+        log.error("Error occured while writing new keys: %s", e)
         return
 
     print(
