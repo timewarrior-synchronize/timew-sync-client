@@ -42,9 +42,9 @@ class ServerError(Exception):
     """Error response from the synchronization server
 
     Attributes:
-        status_code -- HTTP status code reported by the server
-        message -- Error message sent by server
-        details -- Additional technical details reported by the server
+        status_code: HTTP status code reported by the server
+        message: Error message sent by server
+        details: Additional technical details reported by the server
     """
 
     def __init__(self, status_code: int, message: str, details: str):

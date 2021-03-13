@@ -41,7 +41,7 @@ class MissingSectionError(Exception):
     """A section is missing from the configuration file
 
     Attributes:
-        section -- The section which is missing
+        section: The section which is missing
     """
 
     def __init__(self, section: str):
@@ -52,8 +52,8 @@ class MissingConfigurationError(Exception):
     """A section is missing from the configuration file
 
     Attributes:
-        section -- The section in which the missing configuration is supposed to be
-        name -- The name of the configuration parameter
+        section: The section in which the missing configuration is supposed to be
+        name: The name of the configuration parameter
     """
 
     def __init__(self, section: str, name: str):
