@@ -55,9 +55,7 @@ def generate_jwt(priv_key: jwk.JWK, user_id: int) -> str:
     Returns:
         A JWT containing the user id. It is signed with the provided private key.
     """
-    payload = {
-        "userID": user_id
-    }
+    payload = {"userID": user_id}
 
     token = jwt.generate_jwt(payload, priv_key, "RS256", lifetime=datetime.timedelta(minutes=1))
 

@@ -38,10 +38,7 @@ SYNC_ENDPOINT = os.path.join("api", "sync")
 
 
 def dispatch(
-    config: Configuration,
-    timew_intervals: List[Interval],
-    snapshot_intervals: List[Interval],
-    auth_token: str
+    config: Configuration, timew_intervals: List[Interval], snapshot_intervals: List[Interval], auth_token: str
 ) -> (List[Interval], bool):
     """Send a sync request to the server.
 
@@ -60,9 +57,7 @@ def dispatch(
     request_url = os.path.join(config.server_base_url, SYNC_ENDPOINT)
     request_body = json_converter.to_json_request(config.user_id, diff)
 
-    header = {
-        "Authorization": f"Bearer {auth_token}"
-    }
+    header = {"Authorization": f"Bearer {auth_token}"}
 
     server_response = requests.put(request_url, request_body, headers=header)
 
