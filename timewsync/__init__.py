@@ -38,7 +38,7 @@ import requests
 from timewsync import auth, cli
 from timewsync.dispatch import ServerError, dispatch
 from timewsync.file_parser import as_interval_list, as_file_strings, extract_tags
-from timewsync.io_handler import read_data, write_data
+from timewsync.io_handler import read_data, write_data, delete_snapshot
 from timewsync.config import NoConfigurationFileError, MissingSectionError, MissingConfigurationError, Configuration
 
 DEFAULT_DATA_DIR = os.path.join("~", ".timewsync")
@@ -179,9 +179,23 @@ def sync(configuration: Configuration) -> None:
         return
 
     # Write data
-    server_data, started_tracking = as_file_strings(response_intervals, active_interval)
-    new_tags = extract_tags(response_intervals)
-    write_data(configuration.data_dir, server_data, new_tags)
+    try:
+        server_data, started_tracking = as_file_strings(response_intervals, active_interval)
+        new_tags = extract_tags(response_intervals)
+        write_data(configuration.data_dir, server_data, new_tags)
+    except IOError as e:
+        delete_snapshot(configuration.data_dir)
+        logging.debug("IOError: %s", e)
+        logging.error("Error writing data to disk. To ensure consistency, the newly created snapshot was deleted.")
+        return
+    except Exception as e:
+        delete_snapshot(configuration.data_dir)
+        logging.debug("Unexpected Exception: %s", e)
+        logging.error(
+            "Unexpected error occured during writing of data. "
+            "To ensure consistency, the newly created snapshot was deleted."
+        )
+        return
 
     # Run hook if necessary
     if conflict_flag:
