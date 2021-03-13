@@ -50,7 +50,7 @@ def _compare(intervals_1: List[Interval], intervals_2: List[Interval]):
 
 class TestAsIntervalList:
     def test_active_tracking(self):
-        test_interval = "inc 20210124T020043Z # foo bar # this is an annotation"
+        test_interval = 'inc 20210124T020043Z # foo bar # "this is an annotation"'
         expt_time = datetime.fromisoformat("2021-01-24 02:00:43")
         expt_tags = ["foo", "bar"]
         expt_annotation = "this is an annotation"
@@ -71,7 +71,7 @@ class TestAsIntervalList:
         assert as_interval_list({"2021-01.data": "\n\n"}) == ([], None)
 
     def test_single_interval(self):
-        test_intervals = {"2021-01.data": "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation"}
+        test_intervals = {"2021-01.data": 'inc 20210124T020043Z - 20210124T080130Z # foo bar # "this is an annotation"'}
         expt_intervals = [
             Interval.from_dict(
                 **{
@@ -89,7 +89,7 @@ class TestAsIntervalList:
     def test_similar_intervals(self):
         test_intervals = {
             "2021-01.data": (
-                "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation"
+                'inc 20210124T020043Z - 20210124T080130Z # foo bar # "this is an annotation"'
                 "\n"
                 "inc 20210124T020043Z - 20210124T080130Z"
             )
@@ -111,7 +111,7 @@ class TestAsIntervalList:
 
     def test_multiple_months(self):
         test_intervals = {
-            "2021-01.data": "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation",
+            "2021-01.data": 'inc 20210124T020043Z - 20210124T080130Z # foo bar # "this is an annotation"',
             "2021-02.data": 'inc 20210201T134501Z - 20210301T145012Z # "29 days"',
         }
         expt_intervals = [
@@ -135,7 +135,7 @@ class TestAsFileStrings:
         test_interval = Interval.from_dict(
             **{"start": "20210124T020043Z", "tags": ["foo", "bar"], "annotation": "this is an annotation"}
         )
-        expt_intervals = {"2021-01.data": "inc 20210124T020043Z # foo bar # this is an annotation"}
+        expt_intervals = {"2021-01.data": 'inc 20210124T020043Z # foo bar # "this is an annotation"'}
         file_strings, started_tracking = as_file_strings([], test_interval)
         assert file_strings == expt_intervals
         assert started_tracking is True
@@ -168,7 +168,7 @@ class TestAsFileStrings:
                 }
             )
         ]
-        expt_intervals = {"2021-01.data": "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation"}
+        expt_intervals = {"2021-01.data": 'inc 20210124T020043Z - 20210124T080130Z # foo bar # "this is an annotation"'}
         file_strings, started_tracking = as_file_strings(test_intervals)
         assert file_strings == expt_intervals
         assert started_tracking is False
@@ -187,7 +187,7 @@ class TestAsFileStrings:
         ]
         expt_intervals = {
             "2021-01.data": (
-                "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation"
+                'inc 20210124T020043Z - 20210124T080130Z # foo bar # "this is an annotation"'
                 "\n"
                 "inc 20210124T020043Z - 20210124T080130Z"
             )
@@ -207,7 +207,7 @@ class TestAsFileStrings:
             "2021-01.data": (
                 "inc 20210123T134659Z - 20210124T020043Z"
                 "\n"
-                "inc 20210124T020043Z - 20210124T080130Z # # this is the second interval"
+                'inc 20210124T020043Z - 20210124T080130Z # # "this is the second interval"'
             )
         }
         file_strings, started_tracking = as_file_strings(test_intervals)
@@ -227,7 +227,7 @@ class TestAsFileStrings:
             Interval.from_dict(**{"start": "20210201T134501Z", "end": "20210301T145012Z", "tags": ['"29 days"']}),
         ]
         expt_intervals = {
-            "2021-01.data": "inc 20210124T020043Z - 20210124T080130Z # foo bar # this is an annotation",
+            "2021-01.data": 'inc 20210124T020043Z - 20210124T080130Z # foo bar # "this is an annotation"',
             "2021-02.data": 'inc 20210201T134501Z - 20210301T145012Z # "29 days"',
         }
         file_strings, started_tracking = as_file_strings(test_intervals)

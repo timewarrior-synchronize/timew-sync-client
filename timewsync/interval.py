@@ -102,7 +102,7 @@ class Interval:
                 while cursor < len(tokens):
                     annotation += " " + tokens[cursor]
                     cursor += 1
-                annotation = annotation.lstrip()
+                annotation = annotation.lstrip()[1:-1]
 
         # Unparsed tokens
         if cursor < len(tokens):
@@ -160,7 +160,7 @@ class Interval:
         if self.annotation:
             if not self.tags:
                 out += " #"
-            out += " # " + self.annotation
+            out += f' # "{self.annotation}"'
         return out
 
     def asdict(self) -> dict:
