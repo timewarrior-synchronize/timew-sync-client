@@ -27,6 +27,7 @@
 
 import os
 from typing import List, Tuple
+from urllib.parse import urljoin
 
 import requests
 
@@ -34,7 +35,7 @@ from timewsync import json_converter
 from timewsync.interval import Interval
 from timewsync.config import Configuration
 
-SYNC_ENDPOINT = os.path.join("api", "sync")
+SYNC_ENDPOINT = "/api/sync"
 
 
 class ServerError(Exception):
@@ -69,7 +70,7 @@ def dispatch(
     """
     diff = generate_diff(timew_intervals, snapshot_intervals)
 
-    request_url = os.path.join(config.server_base_url, SYNC_ENDPOINT)
+    request_url = urljoin(config.server_base_url, SYNC_ENDPOINT)
     request_body = json_converter.to_json_request(config.user_id, diff)
 
     header = {"Authorization": f"Bearer {auth_token}"}

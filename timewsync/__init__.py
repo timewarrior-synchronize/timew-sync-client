@@ -185,8 +185,8 @@ def sync(configuration: Configuration) -> None:
         log.error("Error connecting to server. No changes were made.")
         return
     except ServerError as e:
-        log.debug("Error details: %s", e)
-        log.error("Server responded with error. No changes were made.")
+        log.debug("Error details: %s", e.details)
+        log.error("Server responded with error message \"%s\". No changes were made.", e.message)
         return
     except Exception as e:
         log.debug("Unexpected Exception: %s", e)
