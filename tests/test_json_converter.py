@@ -29,7 +29,6 @@ import json
 
 from timewsync.interval import Interval
 from timewsync.json_converter import to_json_request, from_json_response, to_json_tags, from_json_error_response
-from timewsync.json_converter import to_json_request, from_json_response,
 
 
 class TestToJSONRequest:

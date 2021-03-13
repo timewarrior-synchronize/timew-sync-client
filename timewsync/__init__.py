@@ -113,10 +113,10 @@ def main():
         logging.error("The configuration file could not be found")
         return
     except MissingSectionError as e:
-        logging.error("The configuration file needs to define the section \"%s\"", e.section)
+        logging.error('The configuration file needs to define the section "%s"', e.section)
         return
     except MissingConfigurationError as e:
-        logging.error("The section \"%s\" in the configuration needs to define \"%s\"", e.section, e.name)
+        logging.error('The section "%s" in the configuration needs to define "%s"', e.section, e.name)
         return
 
     if args.subcommand == "generate-key":

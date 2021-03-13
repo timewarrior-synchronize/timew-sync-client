@@ -30,8 +30,8 @@ import os
 
 
 class NoConfigurationFileError(Exception):
-    """A configuration file was not found
-    """
+    """A configuration file was not found"""
+
     pass
 
 
