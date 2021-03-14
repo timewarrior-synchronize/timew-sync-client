@@ -179,7 +179,7 @@ def sync(configuration: Configuration) -> None:
         token = auth.generate_jwt(private_key, configuration.user_id)
     except Exception as e:
         log.debug("Unexpected Exception: %s", e)
-        log.error("Unexpected error occured during JWT generation. No changes were made")
+        log.error("Unexpected error occurred during JWT generation. No changes were made")
         return
 
     # Communicate with server
