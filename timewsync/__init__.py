@@ -222,7 +222,7 @@ def sync(configuration: Configuration) -> None:
         try:
             run_conflict_hook(configuration.data_dir)
         except subprocess.CalledProcessError:
-            log.warn("Hook exited with a non-zero exit code. Continuing...")
+            log.warning("Hook exited with a non-zero exit code. Continuing...")
         except OSError as e:
             log.debug("OSError: %s", e)
             log.error("Error occurred while executing the conflict-occurred hook. Continuing...")
