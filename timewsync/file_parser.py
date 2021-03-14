@@ -134,9 +134,16 @@ def _join_per_group(grouped_intervals: Dict[str, List[Interval]]) -> Dict[str, s
 
 
 def get_file_name(interval: Interval) -> str:
-    """Returns the file name the Interval object should be stored in."""
+    """Returns the file name the Interval object should be stored in.
+
+    Args:
+        interval: The interval object to be classified
+
+    Raises:
+        ValueError: The interval does not have a start time
+    """
     if not interval.start:
-        raise RuntimeError("corrupt interval '%s'" % str(interval))
+        raise ValueError("Missing start time in interval '%s'" % str(interval))
     return interval.start.strftime("%Y-%m.data")
 
 

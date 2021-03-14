@@ -47,10 +47,10 @@ def read_data(timewsync_data_dir: str) -> Tuple[Dict[str, str], Dict[str, str]]:
         A Tuple containing two lists of strings, holding the data for current and snapshot time intervals
         respectively, with each string containing the data for one month.
     """
-    return read_intervals(), read_snapshot(timewsync_data_dir)
+    return _read_intervals(), _read_snapshot(timewsync_data_dir)
 
 
-def read_intervals() -> Dict[str, str]:
+def _read_intervals() -> Dict[str, str]:
     """Reads the monthly separated interval data from timewarrior.
 
     Reads from all files matching 'YYYY-MM.data' and creates a separate list entry per month.
@@ -73,7 +73,7 @@ def read_intervals() -> Dict[str, str]:
     return monthly_data
 
 
-def read_snapshot(timewsync_data_dir: str) -> Dict[str, str]:
+def _read_snapshot(timewsync_data_dir: str) -> Dict[str, str]:
     """Reads the monthly separated interval data from the snapshot.
 
     Args:
@@ -134,12 +134,12 @@ def write_data(timewsync_data_dir: str, monthly_data: Dict[str, str], tags: str)
         monthly_data: A dictionary containing the file names and corresponding data for every month.
         tags: A string of tags and how often they have occurred, in the final format.
     """
-    write_intervals(monthly_data)
-    write_snapshot(timewsync_data_dir, monthly_data)
-    write_tags(tags)
+    _write_intervals(monthly_data)
+    _write_snapshot(timewsync_data_dir, monthly_data)
+    _write_tags(tags)
 
 
-def write_intervals(monthly_data: Dict[str, str]):
+def _write_intervals(monthly_data: Dict[str, str]):
     """Writes the monthly separated data to files, which are named accordingly.
 
     Args:
@@ -154,7 +154,7 @@ def write_intervals(monthly_data: Dict[str, str]):
             file.write(data)
 
 
-def write_snapshot(timewsync_data_dir: str, monthly_data: Dict[str, str]):
+def _write_snapshot(timewsync_data_dir: str, monthly_data: Dict[str, str]) -> None:
     """Creates a backup of the written files as a tar archive in gz compression.
 
     Takes the file name specified in the timewsync config, defaults to 'snapshot.tgz'.
@@ -174,7 +174,7 @@ def write_snapshot(timewsync_data_dir: str, monthly_data: Dict[str, str]):
             snapshot.add(os.path.join(DATA_FOLDER, file_name), arcname=file_name)
 
 
-def write_tags(tags: str) -> None:
+def _write_tags(tags: str) -> None:
     """Overrides tags.data.
 
     Gets one String in the correct format for tags.data and writes it to tags.data.
@@ -208,3 +208,17 @@ def write_keys(timewsync_data_dir: str, priv_pem: bytes, pub_pem: bytes) -> None
 
     with open(os.path.join(timewsync_data_dir, "public_key.pem"), "wb") as file:
         file.write(pub_pem)
+
+
+def delete_snapshot(timewsync_data_dir: str) -> None:
+    """Deletes the current snapshot in the timewsync data directory. Use
+    in case of emergency (when writing new interval data to disk fails)
+
+    Args:
+        timewsync_data_dir: The timewsync data directory.
+    """
+    snapshot_path = os.path.join(timewsync_data_dir, "snapshot.tgz")
+
+    # Delete snapshot
+    if os.path.isfile(snapshot_path):
+        os.remove(snapshot_path)
