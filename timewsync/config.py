@@ -130,6 +130,7 @@ class Configuration:
 
         return cls(data_dir, server_base_url, user_id)
 
+
 def create_example_configuration(data_dir: str) -> str:
     """Writes an example configuration to the data directory
 

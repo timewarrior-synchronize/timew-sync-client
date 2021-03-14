@@ -126,9 +126,9 @@ def main():
     except NoConfigurationFileError:
         config_file_path = config.create_example_configuration(data_dir)
         log.error(
-            "No configuration file could not be found. An example configuration file was written to \"%s\". "
+            'No configuration file could not be found. An example configuration file was written to "%s". '
             "This file is still incomplete. An edit to match the server setup is necessary.",
-            config_file_path
+            config_file_path,
         )
         return
     except MissingSectionError as e:
