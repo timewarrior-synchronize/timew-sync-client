@@ -272,7 +272,7 @@ class TestAsInterval:
             Interval.from_interval_str("inc 1")
 
 
-class TestNormalizeTag:
+class TestStripDoubleQuotes:
     def test_empty_string(self):
         assert _strip_double_quotes("") == ""
         assert _strip_double_quotes('""') == ""
@@ -309,17 +309,14 @@ class TestNormalizeTag:
 class TestQuoteTagIfNeeded:
     def test_no_escaping_needed(self):
         data = "Bananas"
-
         assert _quote_tag_if_needed(data) == data
 
     def test_spaces(self):
         data = "Tag with spaces"
         expected = '"Tag with spaces"'
-
         assert _quote_tag_if_needed(data) == expected
 
     def test_special_chars(self):
         data = "tag_with_special_chars"
         expected = '"tag_with_special_chars"'
-
         assert _quote_tag_if_needed(data) == expected
