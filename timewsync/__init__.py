@@ -186,7 +186,7 @@ def sync(configuration: Configuration) -> None:
     try:
         response_intervals, conflict_flag = dispatch(configuration, timew_intervals, snapshot_intervals, token)
     except requests.ConnectionError as e:
-        log.debug("Connction error: %s", e)
+        log.debug("Connection error: %s", e)
         log.error("Error connecting to server. No changes were made.")
         return
     except ServerError as e:
