@@ -29,6 +29,22 @@ import configparser
 import os
 
 CONFIGURATION_FILE_NAME = "timewsync.conf"
+EXAMPLE_CONFIGURATION = """
+# This is an example of the configuration file format for the
+# timewarrior synchronization client
+
+# Copy this file to $TIMEWSYNC/timewsync.conf where $TIMEWSYNC is your
+# timewarrior synchronization data directory. This defaults to
+# ~/.timewsync
+
+[Server]
+# The base URL of the server. Required
+# BaseURL = http://timew.sync.domain:8080
+
+[Client]
+# User id. Required
+# UserID = 1234
+"""
 
 
 class NoConfigurationFileError(Exception):
@@ -113,3 +129,19 @@ class Configuration:
             raise MissingSectionError("Client")
 
         return cls(data_dir, server_base_url, user_id)
+
+def create_example_configuration(data_dir: str) -> str:
+    """Writes an example configuration to the data directory
+
+    Args:
+        data_dir: The path to the timewsync data directory
+
+    Returns:
+        The path to the configuration file
+    """
+    path = os.path.join(data_dir, CONFIGURATION_FILE_NAME)
+
+    with open(path, "w") as file:
+        file.write(EXAMPLE_CONFIGURATION)
+
+    return path

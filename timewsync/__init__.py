@@ -124,7 +124,12 @@ def main():
     try:
         configuration = Configuration.read(data_dir)
     except NoConfigurationFileError:
-        log.error("The configuration file could not be found")
+        config_file_path = config.create_example_configuration(data_dir)
+        log.error(
+            "No configuration file could not be found. An example configuration file was written to \"%s\". "
+            "This file is still incomplete. An edit to match the server setup is necessary.",
+            config_file_path
+        )
         return
     except MissingSectionError as e:
         log.error('The configuration file needs to define the section "%s"', e.section)
