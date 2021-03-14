@@ -121,9 +121,7 @@ def sync(configuration: Configuration) -> None:
     private_key, _ = io_handler.read_keys(configuration.data_dir)
     token = auth.generate_jwt(private_key, configuration.user_id)
 
-    response_intervals, conflict_flag = dispatch(
-        configuration, timew_intervals, snapshot_intervals, token
-    )
+    response_intervals, conflict_flag = dispatch(configuration, timew_intervals, snapshot_intervals, token)
 
     if conflict_flag:
         run_conflict_hook(configuration.data_dir)

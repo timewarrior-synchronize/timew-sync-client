@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Copyright 2020 - Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
+# Copyright 2020 - 2021, Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -92,7 +92,8 @@ class Interval:
             tags = []
             cursor += 1
             while cursor < len(tokens) and tokens[cursor] != "#":
-                tags.append(tokens[cursor])
+                tag = _strip_double_quotes(tokens[cursor])
+                tags.append(tag)
                 cursor += 1
 
             # Optional '#' <annotation>
@@ -156,7 +157,7 @@ class Interval:
         if self.tags:
             out += " #"
             for tag in self.tags:
-                out += " " + tag
+                out += " " + _quote_tag_if_needed(tag)
         if self.annotation:
             if not self.tags:
                 out += " #"
@@ -171,3 +172,38 @@ class Interval:
             "tags": self.tags,
             "annotation": self.annotation if self.annotation else "",
         }
+
+
+def _strip_double_quotes(string: str) -> str:
+    """Removes encapsulating double quotes, if there are some.
+
+    Ignores non-encapsulating double quotes (one side only or inside).
+
+    Args:
+        string: The string to be pruned.
+
+    Returns:
+        The pruned string without encapsulating double quotes.
+    """
+    if not string or string == '""':
+        return ""
+    if len(string) >= 2 and string[0] == '"' and string[-1] == '"':
+        return string[1:-1]
+    return string
+
+
+def _quote_tag_if_needed(tag: str) -> str:
+    """Quotes tags just like timewarrior would quote them.
+
+    Args:
+        tag: The tag that should be quoted.
+
+    Returns:
+        The quoted tag.
+    """
+    special_chars = [" ", '"', "+", "-", "/", "(", ")", "<", "^", "!", "=", "~", "_", "%"]
+
+    if any(char in tag for char in special_chars):
+        return f'"{tag}"'
+
+    return tag

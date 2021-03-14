@@ -154,24 +154,5 @@ def extract_tags(intervals: List[Interval]) -> str:
     tags = defaultdict(int)
     for i in intervals:
         for tag in i.tags:
-            tags[normalize_tag(tag)] += 1
+            tags[tag] += 1
     return json_converter.to_json_tags(tags)
-
-
-def normalize_tag(tag: str) -> str:
-    """Removes encapsulating double quotes, which are otherwise redundant in tags.data.
-
-    Ignores non-encapsulating double quotes (one side only or inside).
-    Empty tags and '""' raise an error because timewarrior cannot work with empty tags.
-
-    Args:
-        tag: The tag to be pruned.
-
-    Returns:
-        The pruned tag without encapsulating double quotes.
-    """
-    if not tag or tag == '""':
-        raise RuntimeError("empty tag '%s'" % tag)
-    if len(tag) >= 2 and tag[0] == '"' and tag[-1] == '"':
-        return tag[1:-1]
-    return tag
