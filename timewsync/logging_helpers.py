@@ -42,7 +42,7 @@ class MinMaxLevelFilter(logging.Filter):
         self.max_level: int = max_level
 
     def filter(self, record: logging.LogRecord) -> bool:
-        """Returns whether this record matches this filter
+        """Returns whether the record specified matches this filter.
 
         Args:
             record: The record to be considered

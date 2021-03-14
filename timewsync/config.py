@@ -39,11 +39,11 @@ EXAMPLE_CONFIGURATION = """
 
 [Server]
 # The base URL of the server. Required
-# BaseURL = http://timew.sync.domain:8080
+#BaseURL = http://timew.sync.domain:8080
 
 [Client]
 # User id. Required
-# UserID = 1234
+#UserID = 1234
 """
 
 

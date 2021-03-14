@@ -154,7 +154,7 @@ def _write_intervals(monthly_data: Dict[str, str]):
             file.write(data)
 
 
-def _write_snapshot(timewsync_data_dir: str, monthly_data: Dict[str, str]):
+def _write_snapshot(timewsync_data_dir: str, monthly_data: Dict[str, str]) -> None:
     """Creates a backup of the written files as a tar archive in gz compression.
 
     Takes the file name specified in the timewsync config, defaults to 'snapshot.tgz'.
@@ -216,7 +216,6 @@ def delete_snapshot(timewsync_data_dir: str) -> None:
 
     Args:
         timewsync_data_dir: The timewsync data directory.
-
     """
     snapshot_path = os.path.join(timewsync_data_dir, "snapshot.tgz")
 

@@ -132,10 +132,10 @@ def main():
         )
         return
     except MissingSectionError as e:
-        log.error('The configuration file needs to define the section "%s"', e.section)
+        log.error('The configuration file needs to define the section "%s".', e.section)
         return
     except MissingConfigurationError as e:
-        log.error('The section "%s" in the configuration needs to define "%s"', e.section, e.name)
+        log.error('The section "%s" in the configuration needs to define "%s".', e.section, e.name)
         return
 
     if args.subcommand == "generate-key":
@@ -160,7 +160,7 @@ def sync(configuration: Configuration) -> None:
         snapshot_intervals, _ = as_interval_list(snapshot_data)
     except OSError as e:
         log.debug("OSError: %s", e)
-        log.error("Error reading intervals from disk: No changes were made")
+        log.error("Error reading intervals from disk: No changes were made.")
         return
 
     # Read key
@@ -171,7 +171,7 @@ def sync(configuration: Configuration) -> None:
             return
     except OSError as e:
         log.debug("OSError: %s", e)
-        log.error("Error reading private key from disk: No changes were made")
+        log.error("Error reading private key from disk: No changes were made.")
         return
 
     # Generate token
@@ -195,7 +195,7 @@ def sync(configuration: Configuration) -> None:
         return
     except Exception as e:
         log.debug("Unexpected Exception: %s", e)
-        log.error("Unexpected error occured during communication with server. No changes were made.")
+        log.error("Unexpected error occurred during communication with server. No changes were made.")
         return
 
     # Write data
@@ -212,7 +212,7 @@ def sync(configuration: Configuration) -> None:
         delete_snapshot(configuration.data_dir)
         log.debug("Unexpected Exception: %s", e)
         log.error(
-            "Unexpected error occured during writing of data. "
+            "Unexpected error occurred during writing of data. "
             "To ensure consistency, the newly created snapshot was deleted."
         )
         return
@@ -222,10 +222,10 @@ def sync(configuration: Configuration) -> None:
         try:
             run_conflict_hook(configuration.data_dir)
         except subprocess.CalledProcessError:
-            log.warn("Hook exited with a non-zero exit code. Continuing")
+            log.warn("Hook exited with a non-zero exit code. Continuing...")
         except OSError as e:
             log.debug("OSError: %s", e)
-            log.error("Error occurred while executing the conflict-occured hook. Continuing")
+            log.error("Error occurred while executing the conflict-occurred hook. Continuing...")
 
     # Output
     if active_interval:
@@ -239,7 +239,7 @@ def sync(configuration: Configuration) -> None:
         else:
             log.warning(
                 "Warning: Cannot restart time tracking! This error occured because there exists "
-                "an interval in the future which would overlap with the open interval"
+                "an interval in the future which would overlap with the open interval."
             )
 
 
@@ -271,7 +271,7 @@ def generate_key(configuration: Configuration) -> None:
     try:
         write_keys(configuration.data_dir, priv_pem, pub_pem)
     except OSError as e:
-        log.error("Error occured while writing new keys: %s", e)
+        log.error("Error occurred while writing new keys: %s", e)
         return
 
     print(
