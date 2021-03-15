@@ -307,7 +307,7 @@ class TestStripDoubleQuotes:
 
 
 class TestQuoteTagIfNeeded:
-    def test_no_escaping_needed(self):
+    def test_single_word(self):
         data = "Bananas"
         assert _quote_tag_if_needed(data) == data
 
@@ -320,3 +320,7 @@ class TestQuoteTagIfNeeded:
         data = "tag_with_special_chars"
         expected = '"tag_with_special_chars"'
         assert _quote_tag_if_needed(data) == expected
+
+    def test_already_quoted(self):
+        data = '"Bananas"'
+        assert _quote_tag_if_needed(data) == data
