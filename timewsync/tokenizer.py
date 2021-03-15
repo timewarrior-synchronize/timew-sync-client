@@ -45,7 +45,6 @@ def tokenize(line: str) -> List[str]:
     is regarded as the beginning of a quoted substring.
     Quoted substrings are parsed as single tokens,
     which must end in another double quote character and separated to other tokens using whitespaces.
-    A violation against this quotation syntax raises an error.
 
     Internally the input is read using a state machine.
 
@@ -54,6 +53,9 @@ def tokenize(line: str) -> List[str]:
 
     Returns:
         A list of tokens.
+
+    Raises:
+        ValueError: The syntax described above has been violated
     """
     tokens = []
     state = State.whitespace
@@ -113,4 +115,4 @@ def tokenize(line: str) -> List[str]:
         return tokens
 
     # Non-accepting states
-    raise RuntimeError("tokenization failed: '%s'" % line)
+    raise ValueError("tokenization failed: '%s'" % line)

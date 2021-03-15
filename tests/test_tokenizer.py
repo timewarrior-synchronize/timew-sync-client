@@ -105,9 +105,9 @@ class TestTokenize:
         assert tokenize('"foo') == ['"foo']  # no closing quotation mark at eos allowed
         assert tokenize('"\\"') == ['"\\"']  # no closing quotation mark at eos allowed
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             tokenize('"\\\\""')  # whitespace separator missing
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             tokenize('"foo"bar')  # whitespace separator missing
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             tokenize('"foo""bar"')  # whitespace separator missing

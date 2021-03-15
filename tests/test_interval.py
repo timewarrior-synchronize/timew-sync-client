@@ -253,22 +253,22 @@ class TestAsInterval:
 
     def test_invalid_strings(self):
         """Test invalid interval strings."""
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             Interval.from_interval_str("")
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             Interval.from_interval_str("20210123T134659Z - 20210124T020043Z")
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             Interval.from_interval_str("dec # thisIsNoValidInterval")
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             Interval.from_interval_str("inc#thisIsNoValidInterval")
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             Interval.from_interval_str("inc\\n#\\nthisIsNoValidInterval")
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             Interval.from_interval_str("inc 1")
 
 

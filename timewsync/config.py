@@ -28,34 +28,121 @@
 import configparser
 import os
 
+CONFIGURATION_FILE_NAME = "timewsync.conf"
+EXAMPLE_CONFIGURATION = """
+# This is an example of the configuration file format for the
+# timewarrior synchronization client
+
+# Copy this file to $TIMEWSYNC/timewsync.conf where $TIMEWSYNC is your
+# timewarrior synchronization data directory. This defaults to
+# ~/.timewsync
+
+[Server]
+# The base URL of the server. Required
+#BaseURL = http://timew.sync.domain:8080
+
+[Client]
+# User id. Required
+#UserID = 1234
+"""
+
+
+class NoConfigurationFileError(Exception):
+    """A configuration file was not found"""
+
+    pass
+
+
+class MissingSectionError(Exception):
+    """A section is missing from the configuration file
+
+    Attributes:
+        section: The section which is missing
+    """
+
+    def __init__(self, section: str):
+        self.section: str = section
+
+
+class MissingConfigurationError(Exception):
+    """A section is missing from the configuration file
+
+    Attributes:
+        section: The section in which the missing configuration is supposed to be
+        name: The name of the configuration parameter
+    """
+
+    def __init__(self, section: str, name: str):
+        self.section: str = section
+        self.name: str = name
+
 
 class Configuration:
-    def __init__(self, data_dir: str, server_base_url: str, user_id: int, merge_conflict_hook: str):
+    """Holds all configuration options defined in the timewsync client
+    configuration file
+
+    Attributes:
+        data_dir: The path to the timewsync data directory
+        server_base_url: The base URL (API Endpoint) of the synchronization server
+        user_id: The unique ID of the timewsync user
+    """
+
+    def __init__(self, data_dir: str, server_base_url: str, user_id: int):
         self.data_dir = data_dir
         self.server_base_url: str = server_base_url
         self.user_id: int = user_id
-        self.merge_conflict_hook: str = merge_conflict_hook
 
     @classmethod
-    def read(cls, data_dir: str, filename: str):
+    def read(cls, data_dir: str):
+        """Reads the configuration from the configuration file in the
+        timewsync data directory.
+
+        Args:
+            data_dir: The path to the timewsync data directory
+
+        Raises:
+            NoConfigurationFileError: The configuration file does not exist
+            MissingSectionError: A mandatory section is missing from the configuration file
+            MissingConfigurationError: A mandatory variable is missing from the configuration file
+        """
+        path = os.path.join(data_dir, CONFIGURATION_FILE_NAME)
+        if not os.path.isfile(path):
+            raise NoConfigurationFileError()
+
         config = configparser.ConfigParser()
-        config.read(os.path.join(data_dir, filename))
+        config.read(path)
 
         if "Server" in config:
             if "BaseURL" in config["Server"]:
                 server_base_url = config.get("Server", "BaseURL")
             else:
-                raise RuntimeError("The configuration file needs to define Server.BaseURL")
+                raise MissingConfigurationError("Server", "BaseURL")
         else:
-            raise RuntimeError('The configuration file needs to have a "Server" section')
+            raise MissingSectionError("Server")
 
         if "Client" in config:
             if "UserID" in config["Client"]:
                 user_id = config.getint("Client", "UserID")
             else:
-                raise RuntimeError("The configuration file needs to define Client.UserID")
-            merge_conflict_hook = config.get("Client", "OnMergeConflictHook", fallback="")
+                raise MissingConfigurationError("Client", "UserID")
         else:
-            raise RuntimeError('The configuration file needs to have a "Client" section')
+            raise MissingSectionError("Client")
 
-        return cls(data_dir, server_base_url, user_id, merge_conflict_hook)
+        return cls(data_dir, server_base_url, user_id)
+
+
+def create_example_configuration(data_dir: str) -> str:
+    """Writes an example configuration to the data directory
+
+    Args:
+        data_dir: The path to the timewsync data directory
+
+    Returns:
+        The path to the configuration file
+    """
+    path = os.path.join(data_dir, CONFIGURATION_FILE_NAME)
+
+    with open(path, "w") as file:
+        file.write(EXAMPLE_CONFIGURATION)
+
+    return path

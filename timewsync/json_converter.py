@@ -76,3 +76,19 @@ def to_json_tags(tags: Dict[str, int]) -> str:
         tag = tag.replace('\\"', '"')
         file_str[tag] = {"count": count}
     return json.dumps(file_str, indent=2)
+
+
+def from_json_error_response(json_str: str) -> (str, str):
+    """Extract message and details from a JSON error response
+
+    Args:
+        json_str: A JSON string containing the verbatim error response from the server
+
+    Returns:
+        A tuple containing the error message and technical details
+    """
+    json_dict = json.loads(json_str)
+    message = json_dict["message"]
+    details = json_dict["details"]
+
+    return message, details

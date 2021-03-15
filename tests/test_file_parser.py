@@ -236,10 +236,10 @@ class TestAsFileStrings:
 
 class TestGetFileName:
     def test_no_start_time(self):
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             get_file_name(Interval())
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             test_date2 = datetime.fromisoformat("2021-01-24 02:00:43")
             get_file_name(Interval(end=test_date2, tags=["foo", "bar"]))
 
