@@ -204,6 +204,9 @@ def _quote_tag_if_needed(tag: str) -> str:
     Returns:
         The quoted tag.
     """
+    if tag[0] == '"' or tag[0] == "'":
+        return tag
+
     special_chars = [" ", '"', "+", "-", "/", "(", ")", "<", "^", "!", "=", "~", "_", "%"]
 
     if any(char in tag for char in special_chars):

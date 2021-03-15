@@ -73,6 +73,7 @@ def to_json_tags(tags: Dict[str, int]) -> str:
     """Converts a dictionary holding tags and occurrences into a single JSON string."""
     file_str = defaultdict(dict)
     for tag, count in tags.items():
+        tag = tag.replace('\\"', '"')
         file_str[tag] = {"count": count}
     return json.dumps(file_str, indent=2)
 
