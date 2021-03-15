@@ -40,8 +40,7 @@ class TestTokenize:
         """Test with one token."""
         assert tokenize("a") == ["a"]  # single character
         assert tokenize("foo") == ["foo"]  # single word
-        with pytest.raises(RuntimeError):
-            tokenize('"')  # invalid quotation syntax
+        assert tokenize('"') == ['"']  # valid per timewarrior implementation
 
     def test_multiple(self):
         """Test with multiple tokens."""
@@ -102,15 +101,12 @@ class TestTokenize:
             '"\\\\\\""',
         ]  # escape characters in quotes functional
 
-        with pytest.raises(RuntimeError):
-            tokenize('" " "')  # quotation mark missing
-        with pytest.raises(RuntimeError):
-            tokenize('"foo')  # quotation mark missing
-        with pytest.raises(RuntimeError):
-            tokenize('"\\"')  # quotation mark missing
-        with pytest.raises(RuntimeError):
-            tokenize('"\\\\""')  # quotation mark missing
+        assert tokenize('" " "') == ['" "', '"']  # earliest pair is taken
+        assert tokenize('"foo') == ['"foo']  # no closing quotation mark at eos allowed
+        assert tokenize('"\\"') == ['"\\"']  # no closing quotation mark at eos allowed
 
+        with pytest.raises(RuntimeError):
+            tokenize('"\\\\""')  # whitespace separator missing
         with pytest.raises(RuntimeError):
             tokenize('"foo"bar')  # whitespace separator missing
         with pytest.raises(RuntimeError):

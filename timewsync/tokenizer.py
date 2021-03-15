@@ -105,11 +105,11 @@ def tokenize(line: str) -> List[str]:
             break
 
     # Potential last token
-    if state in [State.simple_token, State.quote_end]:
+    if state in [State.simple_token, State.quoted_token, State.quote_end]:
         tokens.append(line[current_token:])
 
     # Accepting states
-    if state in [State.whitespace, State.simple_token, State.quote_end]:
+    if state in [State.whitespace, State.simple_token, State.quoted_token, State.quote_end]:
         return tokens
 
     # Non-accepting states
