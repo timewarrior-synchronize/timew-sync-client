@@ -224,3 +224,10 @@ class TestToJSONTags:
         test_dict = json.loads(test_json)
         expt_dict = {'"': {"count": 0}, '""': {"count": 10}}
         assert test_dict == expt_dict
+
+    def test_escaped_tags(self):
+        test_tags = {'\\"foo\\"': 1}
+        test_json = to_json_tags(test_tags)
+        test_dict = json.loads(test_json)
+        expt_dict = {'"foo"': {"count": 1}}
+        assert test_dict == expt_dict
