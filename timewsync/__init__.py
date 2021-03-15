@@ -52,30 +52,29 @@ def make_parser():
     Returns:
         The complete ArgumentParser object
     """
-
     parser = argparse.ArgumentParser(prog="timewsync", description="timewarrior synchronization client")
 
     parser.add_argument(
         "--version",
         action="version",
         version="%(prog)s unreleased",
-        help="Print version information",
+        help="print version information",
     )
     parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
-        help="Enable debug output",
+        help="enable debug output",
     )
     parser.add_argument(
         "--data-dir",
         dest="data_dir",
         default=DEFAULT_DATA_DIR,
-        help="The path to the data directory",
+        help="the path to the data directory",
     )
 
     subparsers = parser.add_subparsers(dest="subcommand")
-    subparsers.add_parser("generate-key", help="Generates a new key pair.")
+    subparsers.add_parser("generate-key", help="generates a new key pair.")
 
     return parser
 

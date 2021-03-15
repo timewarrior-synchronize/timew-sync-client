@@ -23,18 +23,19 @@ nix-env -f default.nix -i
 ## Usage
 
 ```
-usage: timewsync [-h] [--version] [--data-dir DATA_DIR] {generate-key} ...
+usage: timewsync [-h] [--version] [-v] [--data-dir DATA_DIR] {generate-key} ...
 
 timewarrior synchronization client
 
 positional arguments:
   {generate-key}
-    generate-key       Generates a new key pair.
+    generate-key       generates a new key pair.
 
 optional arguments:
   -h, --help           show this help message and exit
-  --version            Print version information
-  --data-dir DATA_DIR  The path to the data directory
+  --version            print version information
+  -v, --verbose        enable debug output
+  --data-dir DATA_DIR  the path to the data directory
 ```
 
 ### Data directory
