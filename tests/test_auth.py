@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Copyright 2020 - 2021, Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
+# Copyright 2021 - Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,32 @@
 ###############################################################################
 
 
-import timewsync
+from jwcrypto import jwk
+import python_jwt as jwt
+
+from timewsync import auth
 
 
-if __name__ == "__main__":
-    timewsync.main()
+def test_generate_keys():
+    private_key_pem, public_key_pem = auth.generate_keys()
+
+    assert str(private_key_pem).find("-----BEGIN PRIVATE KEY-----") != -1
+    assert str(private_key_pem).find("-----END PRIVATE KEY-----") != -1
+
+    assert str(public_key_pem).find("-----BEGIN PUBLIC KEY-----") != -1
+    assert str(public_key_pem).find("-----END PUBLIC KEY-----") != -1
+
+
+def test_generate_jwt():
+    key = jwk.JWK.generate(kty="RSA", size=2048)
+
+    token = auth.generate_jwt(key, 42)
+
+    header, claims = jwt.verify_jwt(token, key, ["RS256"])
+
+    assert claims is not None
+    assert header is not None
+
+    assert claims["userID"] == 42
+    assert header["alg"] == "RS256"
+    assert header["typ"] == "JWT"

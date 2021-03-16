@@ -24,9 +24,25 @@
 #
 ###############################################################################
 
+import os
 
 import timewsync
 
 
-if __name__ == "__main__":
-    timewsync.main()
+def test_no_args():
+    parser = timewsync.make_parser()
+    args = parser.parse_args([])
+    assert args.data_dir == os.path.join("~", ".timewsync")
+    assert args.subcommand is None
+
+
+def test_generate_key_arg():
+    parser = timewsync.make_parser()
+    args = parser.parse_args(["generate-key"])
+    assert args.subcommand == "generate-key"
+
+
+def test_config_file():
+    parser = timewsync.make_parser()
+    args = parser.parse_args(["--data-dir", "~/.customdir"])
+    assert args.data_dir == "~/.customdir"

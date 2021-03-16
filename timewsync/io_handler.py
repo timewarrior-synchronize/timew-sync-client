@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Copyright 2020 - Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
+# Copyright 2020 - 2021, Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,69 +27,198 @@
 
 import os
 import re
+import tarfile
 from pathlib import Path
-from typing import List
+from typing import Dict, Tuple, Optional
+
+from jwcrypto.jwk import JWK
+
+TIMEW_FOLDER = os.path.expanduser(os.environ.get("TIMEWARRIORDB", os.path.join("~", ".timewarrior")))
+DATA_FOLDER = os.path.join(TIMEW_FOLDER, "data")
 
 
-def read_data() -> List[str]:
-    """Reads the monthly separated time intervals from .timewarrior/data into one string list.
+def read_data(timewsync_data_dir: str) -> Tuple[Dict[str, str], Dict[str, str]]:
+    """Reads the monthly separated interval data from timewarrior and the snapshot.
+
+    Args:
+        timewsync_data_dir: The timewsync data directory.
+
+    Returns:
+        A Tuple containing two lists of strings, holding the data for current and snapshot time intervals
+        respectively, with each string containing the data for one month.
+    """
+    return _read_intervals(), _read_snapshot(timewsync_data_dir)
+
+
+def _read_intervals() -> Dict[str, str]:
+    """Reads the monthly separated interval data from timewarrior.
 
     Reads from all files matching 'YYYY-MM.data' and creates a separate list entry per month.
 
     Returns:
-        A list of strings each of which contains all entries for one specific month.
+        A list of strings, each of which containing the data for one month.
     """
-    # Filter and list all data sources
-    data_folder = os.path.expanduser('~') + '/.timewarrior/data/'
-    file_list = [f for f in os.listdir(Path(data_folder)) if (re.search(r'^\d\d\d\d-\d\d\.data$', f))]
+    monthly_data = {}
 
-    # Read file contents into interval list
-    interval_list = []
-    for file_name in file_list:
-        with open(data_folder + file_name, 'r') as file:
-            interval_list.append(file.read())
+    if os.path.exists(DATA_FOLDER):
 
-    return interval_list
+        # Identify all data sources
+        file_list = [f for f in os.listdir(Path(DATA_FOLDER)) if (re.search(r"^\d\d\d\d-\d\d\.data$", f))]
+
+        # Read all file contents
+        for file_name in file_list:
+            with open(os.path.join(DATA_FOLDER, file_name), "r") as file:
+                monthly_data[file_name] = file.read()
+
+    return monthly_data
 
 
-def write_data(interval_list: List[str]):
-    """Writes the given interval list to files, separated by month and named accordingly.
-
-    Writes each string to a separate file, named in accordance to its content,
-    as specified by extract_file_name.
+def _read_snapshot(timewsync_data_dir: str) -> Dict[str, str]:
+    """Reads the monthly separated interval data from the snapshot.
 
     Args:
-        interval_list: A list of strings each of which contains all entries for one specific month.
-    """
-    data_folder = os.path.expanduser('~') + '/.timewarrior/data/'
-    os.makedirs(data_folder, exist_ok=True)
-
-    for month_data in interval_list:
-
-        if len(month_data) == 0:
-            return
-
-        with open(data_folder + extract_file_name(month_data), 'w') as file:
-            file.write(month_data)
-
-
-def extract_file_name(month_data: str) -> str:
-    """Returns the appropriate file name for the input provided.
-
-    Analyses the provided input until the first line break is reached.
-    Retrieves the month and year the entry has been recorded
-    or is currently still being tracked.
-    Further time intervals are expected to be in the same month
-    and get transferred unchecked.
-
-    Args:
-        month_data: A string with time intervals in timewarrior format.
+        timewsync_data_dir: The timewsync data directory.
 
     Returns:
-        A string containing the file name for the input provided.
+        A list of strings, each of which containing the data for one specific month.
     """
-    assert len(month_data) >= 20
-    if len(month_data) < 39:
-        return month_data[4:8] + '-' + month_data[8:10] + '.data'
-    else:
-        return month_data[23:27] + '-' + month_data[27:29] + '.data'
+    snapshot_path = os.path.join(timewsync_data_dir, "snapshot.tgz")
+    snapshot_data = {}
+
+    # Open the snapshot and read all file contents
+    if os.path.exists(snapshot_path):
+        with tarfile.open(snapshot_path, mode="r:gz") as snapshot:
+            for member in snapshot.getmembers():
+                with snapshot.extractfile(member) as file:
+                    file_data = file.read().decode("utf-8")
+                    snapshot_data[member.name] = file_data
+
+    return snapshot_data
+
+
+def read_keys(timewsync_data_dir: str) -> Tuple[Optional[JWK], Optional[JWK]]:
+    """Reads the private and the public key of the user.
+
+    Args:
+        timewsync_data_dir: The timewsync data directory.
+
+    Returns:
+        Two strings containing the private and the public key of the user.
+        If the keys don't exist, return None.
+    """
+    priv_pem = None
+    pub_pem = None
+
+    priv_pem_path = os.path.join(timewsync_data_dir, "private_key.pem")
+    pub_pem_path = os.path.join(timewsync_data_dir, "public_key.pem")
+
+    if os.path.exists(priv_pem_path):
+        with open(priv_pem_path, "rb") as file:
+            priv_pem = file.read()
+
+    if os.path.exists(pub_pem_path):
+        with open(pub_pem_path, "rb") as file:
+            pub_pem = file.read()
+
+    private_key = JWK.from_pem(priv_pem) if priv_pem else None
+    public_key = JWK.from_pem(pub_pem) if pub_pem else None
+
+    return private_key, public_key
+
+
+def write_data(timewsync_data_dir: str, monthly_data: Dict[str, str], tags: str):
+    """Writes the monthly separated data to files in .timewarrior/data.
+
+    Args:
+        timewsync_data_dir: The timewsync data directory.
+        monthly_data: A dictionary containing the file names and corresponding data for every month.
+        tags: A string of tags and how often they have occurred, in the final format.
+    """
+    _write_intervals(monthly_data)
+    _write_snapshot(timewsync_data_dir, monthly_data)
+    _write_tags(tags)
+
+
+def _write_intervals(monthly_data: Dict[str, str]):
+    """Writes the monthly separated data to files, which are named accordingly.
+
+    Args:
+        monthly_data: A dictionary containing the file names and corresponding data for every month.
+    """
+    # Find data directory, create if not present
+    os.makedirs(DATA_FOLDER, exist_ok=True)
+
+    # Write data to files
+    for file_name, data in monthly_data.items():
+        with open(os.path.join(DATA_FOLDER, file_name), "w") as file:
+            file.write(data)
+
+
+def _write_snapshot(timewsync_data_dir: str, monthly_data: Dict[str, str]) -> None:
+    """Creates a backup of the written files as a tar archive in gz compression.
+
+    Takes the file name specified in the timewsync config, defaults to 'snapshot.tgz'.
+
+    Args:
+        timewsync_data_dir: The timewsync data directory.
+        monthly_data: A dictionary containing the file names and corresponding data for every month.
+    """
+    # Find timewsync data directory, create if not present
+    os.makedirs(timewsync_data_dir, exist_ok=True)
+
+    snapshot_path = os.path.join(timewsync_data_dir, "snapshot.tgz")
+
+    # Write data to files in snapshot
+    with tarfile.open(snapshot_path, mode="w:gz") as snapshot:
+        for file_name in monthly_data.keys():
+            snapshot.add(os.path.join(DATA_FOLDER, file_name), arcname=file_name)
+
+
+def _write_tags(tags: str) -> None:
+    """Overrides tags.data.
+
+    Gets one String in the correct format for tags.data and writes it to tags.data.
+    Whatever was before in tags.data will be overwritten.
+    tags.data will be created if it has not been there before.
+
+    Args:
+        tags: A string of tags and how often they have occurred, in the final format.
+
+    Returns:
+        Does not return; just writes into file.
+    """
+    os.makedirs(DATA_FOLDER, exist_ok=True)
+
+    with open(os.path.join(DATA_FOLDER, "tags.data"), "w") as file:
+        file.write(tags)
+
+
+def write_keys(timewsync_data_dir: str, priv_pem: bytes, pub_pem: bytes) -> None:
+    """Overrides the key files.
+
+    Args:
+        timewsync_data_dir: The path to the timewsync directory.
+        priv_pem: The private key in PEM format.
+        pub_pem: The public key in PEM format.
+    """
+    os.makedirs(timewsync_data_dir, exist_ok=True)
+
+    with open(os.path.join(timewsync_data_dir, "private_key.pem"), "wb") as file:
+        file.write(priv_pem)
+
+    with open(os.path.join(timewsync_data_dir, "public_key.pem"), "wb") as file:
+        file.write(pub_pem)
+
+
+def delete_snapshot(timewsync_data_dir: str) -> None:
+    """Deletes the current snapshot in the timewsync data directory. Use
+    in case of emergency (when writing new interval data to disk fails)
+
+    Args:
+        timewsync_data_dir: The timewsync data directory.
+    """
+    snapshot_path = os.path.join(timewsync_data_dir, "snapshot.tgz")
+
+    # Delete snapshot
+    if os.path.isfile(snapshot_path):
+        os.remove(snapshot_path)

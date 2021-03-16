@@ -25,8 +25,26 @@
 ###############################################################################
 
 
-import timewsync
+import logging
 
 
-if __name__ == "__main__":
-    timewsync.main()
+class MinMaxLevelFilter(logging.Filter):
+    """Filters all log records which have a level which fits into a
+    boundary of a minimum log level and a maximum log level.
+
+    Attributes:
+        min_level: The minimum log level a log record has to have
+        max_level: The maximum log level a log record has to have
+    """
+
+    def __init__(self, min_level: int, max_level: int):
+        self.min_level: int = min_level
+        self.max_level: int = max_level
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        """Returns whether the record specified matches this filter.
+
+        Args:
+            record: The record to be considered
+        """
+        return self.min_level <= record.levelno <= self.max_level

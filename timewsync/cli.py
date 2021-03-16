@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Copyright 2020 - Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
+# Copyright 2021 - Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,24 +25,21 @@
 ###############################################################################
 
 
-import unittest
-from timewsync import io_handler
+def confirmation_reader(msg: str) -> bool:
+    """Prints a message and asks for user confirmation.
 
+    Asks the user with a [Y/n] option for confirmation.
 
-class TestExtractFileName(unittest.TestCase):
-    def test_1_no_entry(self):
-        self.assertRaises(AssertionError, io_handler.extract_file_name, '')
+    Args:
+        msg: The message to be printed before the confirmation choice.
 
-    def test_2_short_entry(self):
-        self.assertEqual(io_handler.extract_file_name('inc 20200931T235500Z'), '2020-09.data')
+    Returns:
+        The users answer in form of a boolean value.
+    """
+    answer = input(f"{msg} [Y/n]: ")
+    answer = answer.strip().lower()
 
-    def test_3_long_entry(self):
-        self.assertEqual(io_handler.extract_file_name('inc 20200931T235500Z - 20201001T000500Z'), '2020-10.data')
+    if not answer or answer == "y":
+        return True
 
-    def test_4_multiple_entries(self):
-        self.assertEqual(io_handler.extract_file_name(
-            """inc 20201208T133105Z - 20201208T133134Z # 10
-            inc 20201208T134704Z - 20201208T134712Z
-            inc 20201208T135322Z # 10
-            different dates are not expected here"""
-        ), '2020-12.data')
+    return False
