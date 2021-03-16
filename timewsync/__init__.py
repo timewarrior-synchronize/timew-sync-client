@@ -39,7 +39,8 @@ from timewsync import auth, cli
 from timewsync.dispatch import ServerError, dispatch
 from timewsync.file_parser import as_interval_list, as_file_strings, extract_tags
 from timewsync.io_handler import read_data, read_keys, write_data, write_keys, delete_snapshot
-from timewsync.config import NoConfigurationFileError, MissingSectionError, MissingConfigurationError, Configuration
+from timewsync.config import NoConfigurationFileError, MissingSectionError, MissingConfigurationError, Configuration, \
+    create_example_configuration
 from timewsync.logging_helpers import MinMaxLevelFilter
 
 DEFAULT_DATA_DIR = os.path.join("~", ".timewsync")
@@ -123,7 +124,7 @@ def main():
     try:
         configuration = Configuration.read(data_dir)
     except NoConfigurationFileError:
-        config_file_path = config.create_example_configuration(data_dir)
+        config_file_path = create_example_configuration(data_dir)
         log.error(
             'No configuration file could not be found. An example configuration file was written to "%s". '
             "This file is still incomplete. An edit to match the server setup is necessary.",
