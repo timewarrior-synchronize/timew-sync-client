@@ -9,7 +9,7 @@ This repository contains the client of the Timewarrior Sync project.
 To install `timewsync` in your current Python environment:
 
 ```
-pip install .
+pip install timewsync
 ```
 
 ### Using Nix
