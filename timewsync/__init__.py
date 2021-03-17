@@ -40,7 +40,7 @@ from timewsync.dispatch import ServerError, dispatch
 from timewsync.file_parser import as_interval_list, as_file_strings, extract_tags
 from timewsync.io_handler import read_data, read_keys, write_data, write_keys, delete_snapshot
 from timewsync.config import NoConfigurationFileError, MissingSectionError, MissingConfigurationError, Configuration, \
-    create_example_configuration
+    create_example_configuration, ensure_data_dir_exists
 from timewsync.logging_helpers import MinMaxLevelFilter
 
 DEFAULT_DATA_DIR = os.path.join("~", ".timewsync")
@@ -120,6 +120,8 @@ def main():
         debug_handler.addFilter(MinMaxLevelFilter(logging.DEBUG, logging.INFO))
         debug_handler.setFormatter(debug_formatter)
         log.addHandler(debug_handler)
+
+    ensure_data_dir_exists(data_dir)
 
     try:
         configuration = Configuration.read(data_dir)
