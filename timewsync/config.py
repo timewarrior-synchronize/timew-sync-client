@@ -133,20 +133,27 @@ class Configuration:
 
 
 def create_example_configuration(data_dir: str) -> str:
-    """Writes an example configuration to the data directory
+    """Writes an example configuration to the data directory.
 
     Args:
-        data_dir: The path to the timewsync data directory
+        data_dir: The path to the timewsync data directory.
 
     Returns:
-        The path to the configuration file
+        The path to the configuration file.
     """
-    data_folder = Path(data_dir)
-    data_folder.mkdir(parents=True, exist_ok=True)
-
     path = os.path.join(data_dir, CONFIGURATION_FILE_NAME)
 
     with open(path, "w") as file:
         file.write(EXAMPLE_CONFIGURATION)
 
     return path
+
+
+def ensure_data_dir_exists(data_dir: str) -> None:
+    """Creates a folder at data_dir location, if it doesn't exist already.
+
+    Args:
+        data_dir: The path to the timewsync data directory.
+    """
+    data_folder = Path(data_dir)
+    data_folder.mkdir(parents=True, exist_ok=True)
