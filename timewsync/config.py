@@ -27,6 +27,7 @@
 
 import configparser
 import os
+from pathlib import Path
 
 CONFIGURATION_FILE_NAME = "timewsync.conf"
 EXAMPLE_CONFIGURATION = """
@@ -140,6 +141,9 @@ def create_example_configuration(data_dir: str) -> str:
     Returns:
         The path to the configuration file
     """
+    data_folder = Path(data_dir)
+    data_folder.mkdir(parents=True, exist_ok=True)
+
     path = os.path.join(data_dir, CONFIGURATION_FILE_NAME)
 
     with open(path, "w") as file:
