@@ -58,7 +58,7 @@ def make_parser():
     parser.add_argument(
         "--version",
         action="version",
-        version="%(prog)s unreleased",
+        version="%(prog)s 1.0.1",
         help="print version information",
     )
     parser.add_argument(
@@ -123,6 +123,10 @@ def main():
 
     ensure_data_dir_exists(data_dir)
 
+    if args.subcommand == "generate-key":
+        _generate_key(data_dir)
+        return
+
     try:
         configuration = Configuration.read(data_dir)
     except NoConfigurationFileError:
@@ -138,10 +142,6 @@ def main():
         return
     except MissingConfigurationError as e:
         log.error('The section "%s" in the configuration needs to define "%s".', e.section, e.name)
-        return
-
-    if args.subcommand == "generate-key":
-        generate_key(configuration)
         return
 
     sync(configuration)
@@ -245,17 +245,17 @@ def sync(configuration: Configuration) -> None:
             )
 
 
-def generate_key(configuration: Configuration) -> None:
+def _generate_key(data_dir: str) -> None:
     """Generates a new RSA key pair.
 
     Prompts the user for confirmation if keys already exist.
 
     Args:
-        configuration: The user's configuration.
+        data_dir: The user's timewsync data dir.
     """
     log = logging.getLogger(__name__)
 
-    priv_pem, pub_pem = read_keys(configuration.data_dir)
+    priv_pem, pub_pem = read_keys(data_dir)
 
     if priv_pem or pub_pem:
         confirm = cli.confirmation_reader(
@@ -271,12 +271,12 @@ def generate_key(configuration: Configuration) -> None:
         return
 
     try:
-        write_keys(configuration.data_dir, priv_pem, pub_pem)
+        write_keys(data_dir, priv_pem, pub_pem)
     except OSError as e:
         log.error("Error occurred while writing new keys: %s", e)
         return
 
     print(
-        f"A new key pair was generated. You can find it in your timewsync folder ({configuration.data_dir}).",
+        f"A new key pair was generated. You can find it in your timewsync folder ({data_dir}).",
         file=sys.stderr,
     )
