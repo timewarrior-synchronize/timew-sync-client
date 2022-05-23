@@ -1,6 +1,6 @@
 pytest~=6.2.5
 py~=1.11.0
-attrs~=20.3.0
+attrs~=21.4.0
 pluggy~=0.13.1
 iniconfig~=1.1.1
 requests~=2.25.0
