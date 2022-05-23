@@ -3,7 +3,7 @@ py~=1.11.0
 attrs~=21.4.0
 pluggy~=0.13.1
 iniconfig~=1.1.1
-requests~=2.25.0
+requests~=2.27.1
 black~=21.10b0
 colorama~=0.4.4
 
