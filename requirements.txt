@@ -1,7 +1,7 @@
 pytest~=6.2.5
 py~=1.11.0
 attrs~=21.4.0
-pluggy~=0.13.1
+pluggy~=1.0.0
 iniconfig~=1.1.1
 requests~=2.27.1
 black~=22.3
