@@ -8,5 +8,5 @@ black~=22.8
 colorama~=0.4.5
 
 jwcrypto~=1.4
-python_jwt~=3.3
+python_jwt~=4.0
 six~=1.16
