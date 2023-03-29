@@ -4,7 +4,7 @@ attrs~=22.2.0
 pluggy~=1.0.0
 iniconfig~=2.0.0
 requests~=2.28.2
-black~=23.1
+black~=23.3
 colorama~=0.4.6
 
 jwcrypto~=1.4
