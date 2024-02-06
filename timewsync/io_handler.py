@@ -35,6 +35,7 @@ from jwcrypto.jwk import JWK
 
 TIMEW_FOLDER = os.path.expanduser(os.environ.get("TIMEWARRIORDB", os.path.join("~", ".timewarrior")))
 DATA_FOLDER = os.path.join(TIMEW_FOLDER, "data")
+DATAFILE_REGEX = r"^\d\d\d\d-\d\d\.data$"
 
 
 def read_data(timewsync_data_dir: str) -> Tuple[Dict[str, str], Dict[str, str]]:
@@ -63,7 +64,7 @@ def _read_intervals() -> Dict[str, str]:
     if os.path.exists(DATA_FOLDER):
 
         # Identify all data sources
-        file_list = [f for f in os.listdir(Path(DATA_FOLDER)) if (re.search(r"^\d\d\d\d-\d\d\.data$", f))]
+        file_list = [f for f in os.listdir(Path(DATA_FOLDER)) if (re.fullmatch(DATAFILE_REGEX, f))]
 
         # Read all file contents
         for file_name in file_list:
@@ -145,7 +146,7 @@ def _write_intervals(monthly_data: Dict[str, str]):
     Args:
         monthly_data: A dictionary containing the file names and corresponding data for every month.
     """
-    # Find data directory, create if not present
+    # Create data directory if not present
     os.makedirs(DATA_FOLDER, exist_ok=True)
 
     # Write data to files
