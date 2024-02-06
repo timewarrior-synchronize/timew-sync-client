@@ -149,6 +149,11 @@ def _write_intervals(monthly_data: Dict[str, str]):
     # Create data directory if not present
     os.makedirs(DATA_FOLDER, exist_ok=True)
 
+    # Remove previous data
+    for file_name in os.listdir(Path(DATA_FOLDER)):
+        if re.fullmatch(DATAFILE_REGEX, file_name):
+            os.remove(os.path.join(DATA_FOLDER, file_name))
+
     # Write data to files
     for file_name, data in monthly_data.items():
         with open(os.path.join(DATA_FOLDER, file_name), "w") as file:
