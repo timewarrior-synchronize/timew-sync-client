@@ -237,7 +237,10 @@ def sync(configuration: Configuration) -> None:
     print("Synchronization successful!", file=sys.stderr)
 
     if active_interval and not started_tracking:
-        log.warning("Warning: Cannot restart time tracking because there exists a time interval in the future!")
+        log.warning(
+            "Warning: Cannot restart time tracking because there exists a time interval in the future "
+            "which would overlap with the open interval!"
+        )
 
 
 def _generate_key(data_dir: str) -> None:
