@@ -184,6 +184,10 @@ def sync(configuration: Configuration) -> None:
         log.error("Unexpected error occurred during JWT generation. No changes were made.")
         return
 
+    # Active time tracking
+    if active_interval:
+        print("Time tracking is active. Stopped and restarted time tracking to prevent conflicts.", file=sys.stderr)
+
     # Communicate with server
     try:
         response_intervals, conflict_flag = dispatch(configuration, timew_intervals, snapshot_intervals, token)
@@ -230,19 +234,13 @@ def sync(configuration: Configuration) -> None:
             log.error("Error occurred while executing the conflict-occurred hook. Continuing...")
 
     # Output
-    if active_interval:
-        print("Time tracking is active. Stopped time tracking.", file=sys.stderr)
-
     print("Synchronization successful!", file=sys.stderr)
 
-    if active_interval:
-        if started_tracking:
-            print("Restarted time tracking.", file=sys.stderr)
-        else:
-            log.warning(
-                "Warning: Cannot restart time tracking! This error occured because there exists "
-                "an interval in the future which would overlap with the open interval."
-            )
+    if active_interval and not started_tracking:
+        log.warning(
+            "Cannot restart time tracking because there exists a time interval in the future "
+            "which would overlap with the open interval!"
+        )
 
 
 def _generate_key(data_dir: str) -> None:
