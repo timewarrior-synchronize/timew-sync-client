@@ -186,7 +186,7 @@ def sync(configuration: Configuration) -> None:
 
     # Active time tracking
     if active_interval:
-        print("Time tracking is active. Stopped time tracking to prevent conflicts.", file=sys.stderr)
+        print("Time tracking is active. Stopped time tracking to prevent conflicts.")
 
     # Communicate with server
     try:
@@ -237,7 +237,7 @@ def sync(configuration: Configuration) -> None:
     if active_interval and started_tracking:
         print("Restarted time tracking from the point it was stopped.")
 
-    print("Synchronization successful!", file=sys.stderr)
+    print("Synchronization successful!")
 
     if active_interval and not started_tracking:
         log.warning(
