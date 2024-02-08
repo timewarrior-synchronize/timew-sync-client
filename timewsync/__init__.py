@@ -234,16 +234,16 @@ def sync(configuration: Configuration) -> None:
             log.error("Error occurred while executing the conflict-occurred hook. Continuing...")
 
     # Output
+    if active_interval and started_tracking:
+        print("Restarted time tracking from the point it was stopped.")
+
     print("Synchronization successful!", file=sys.stderr)
 
-    if active_interval:
-        if started_tracking:
-            print("Restarted time tracking from the point it was stopped.")
-        else:
-            log.warning(
-                "Cannot restart time tracking because there exists a time interval in the future "
-                "which would overlap with the open interval!"
-            )
+    if active_interval and not started_tracking:
+        log.warning(
+            "Cannot restart time tracking because there exists a time interval in the future "
+            "which would overlap with the open interval!"
+        )
 
 
 def _generate_key(data_dir: str) -> None:
