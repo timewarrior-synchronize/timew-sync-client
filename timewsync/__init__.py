@@ -186,7 +186,7 @@ def sync(configuration: Configuration) -> None:
 
     # Active time tracking
     if active_interval:
-        print("Time tracking is active. Stopped and restarted time tracking to prevent conflicts.", file=sys.stderr)
+        print("Time tracking is active. Stopped time tracking to prevent conflicts.", file=sys.stderr)
 
     # Communicate with server
     try:
@@ -234,6 +234,9 @@ def sync(configuration: Configuration) -> None:
             log.error("Error occurred while executing the conflict-occurred hook. Continuing...")
 
     # Output
+    if active_interval and started_tracking:
+        print("Restarted time tracking from the point it was stopped.", file=sys.stderr)
+
     print("Synchronization successful!", file=sys.stderr)
 
     if active_interval and not started_tracking:
