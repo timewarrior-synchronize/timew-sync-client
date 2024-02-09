@@ -235,9 +235,9 @@ def sync(configuration: Configuration) -> None:
 
     # Output
     if active_interval and started_tracking:
-        print("Restarted time tracking from the point it was stopped.")
+        print("Restarted time tracking from the point it was stopped.", file=sys.stderr)
 
-    print("Synchronization successful!")
+    print("Synchronization successful!", file=sys.stderr)
 
     if active_interval and not started_tracking:
         log.warning(
