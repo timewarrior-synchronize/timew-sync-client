@@ -186,7 +186,7 @@ def sync(configuration: Configuration) -> None:
 
     # Active time tracking
     if active_interval:
-        print("Time tracking is active. Stopped time tracking to prevent conflicts.")
+        print("Time tracking is active. Stopped time tracking to prevent conflicts.", file=sys.stderr)
 
     # Communicate with server
     try:
