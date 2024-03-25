@@ -41,7 +41,7 @@ from timewsync.file_parser import as_interval_list, as_file_strings, extract_tag
 from timewsync.io_handler import read_data, read_keys, write_data, write_keys, delete_snapshot
 from timewsync.config import NoConfigurationFileError, MissingSectionError, MissingConfigurationError, Configuration, \
     create_example_configuration, ensure_data_dir_exists
-from timewsync.logging_helpers import MinMaxLevelFilter
+from timewsync.logging_helpers import SingleLevelFilter, MinMaxLevelFilter
 
 DEFAULT_DATA_DIR = os.path.join("~", ".timewsync")
 
@@ -105,15 +105,10 @@ def main():
     args = make_parser().parse_args()
     data_dir = os.path.expanduser(args.data_dir)
 
-    log = logging.getLogger()
+    log = logging.getLogger("timewsync")
     log.setLevel(logging.DEBUG)
 
-    red_formatter = logging.Formatter(Fore.RED + "%(levelname)s: %(message)s" + Fore.RESET)
-    red_handler = logging.StreamHandler(sys.stderr)
-    red_handler.addFilter(MinMaxLevelFilter(logging.WARNING, logging.CRITICAL))
-    red_handler.setFormatter(red_formatter)
-    log.addHandler(red_handler)
-
+    # Debug logging
     if args.verbose:
         debug_formatter = logging.Formatter("%(levelname)s: %(message)s")
         debug_handler = logging.StreamHandler(sys.stderr)
@@ -121,13 +116,28 @@ def main():
         debug_handler.setFormatter(debug_formatter)
         log.addHandler(debug_handler)
 
+    # Default logging
+    else:
+        info_handler = logging.StreamHandler(sys.stderr)
+        info_handler.addFilter(SingleLevelFilter(logging.INFO))
+        log.addHandler(info_handler)
+
+    # Error logging
+    red_formatter = logging.Formatter(Fore.RED + "%(levelname)s: %(message)s" + Fore.RESET)
+    red_handler = logging.StreamHandler(sys.stderr)
+    red_handler.addFilter(MinMaxLevelFilter(logging.WARNING, logging.CRITICAL))
+    red_handler.setFormatter(red_formatter)
+    log.addHandler(red_handler)
+
     ensure_data_dir_exists(data_dir)
 
     if args.subcommand == "generate-key":
+        log.debug("Executing generate-key subcommand")
         _generate_key(data_dir)
         return
 
     try:
+        log.debug("Reading config data")
         configuration = Configuration.read(data_dir)
     except NoConfigurationFileError:
         config_file_path = create_example_configuration(data_dir)
@@ -144,6 +154,7 @@ def main():
         log.error('The section "%s" in the configuration needs to define "%s".', e.section, e.name)
         return
 
+    log.debug("Executing sync command")
     sync(configuration)
 
 
@@ -153,10 +164,11 @@ def sync(configuration: Configuration) -> None:
     Args:
         configuration: The user's configuration.
     """
-    log = logging.getLogger(__name__)
+    log = logging.getLogger("timewsync")
 
     # Read data
     try:
+        log.debug("Reading timew data and snapshot")
         timew_data, snapshot_data = read_data(configuration.data_dir)
         timew_intervals, active_interval = as_interval_list(timew_data)
         snapshot_intervals, _ = as_interval_list(snapshot_data)
@@ -167,6 +179,7 @@ def sync(configuration: Configuration) -> None:
 
     # Read key
     try:
+        log.debug("Reading private key")
         private_key, _ = read_keys(configuration.data_dir)
         if private_key is None:
             log.error("No private key was found. Generate a key pair using `timewsync generate-key`.")
@@ -178,6 +191,7 @@ def sync(configuration: Configuration) -> None:
 
     # Generate token
     try:
+        log.debug("Generating Json Web Token")
         token = auth.generate_jwt(private_key, configuration.user_id)
     except Exception as e:
         log.debug("Unexpected Exception: %s", e)
@@ -186,10 +200,11 @@ def sync(configuration: Configuration) -> None:
 
     # Active time tracking
     if active_interval:
-        print("Time tracking is active. Stopped time tracking to prevent conflicts.", file=sys.stderr)
+        log.info("Time tracking is active. Stopped time tracking to prevent conflicts.")
 
     # Communicate with server
     try:
+        log.debug("Sending request to server")
         response_intervals, conflict_flag = dispatch(configuration, timew_intervals, snapshot_intervals, token)
     except requests.ConnectionError as e:
         log.debug("Connection error: %s", e)
@@ -206,6 +221,7 @@ def sync(configuration: Configuration) -> None:
 
     # Write data
     try:
+        log.debug("Writing timew data and snapshot")
         server_data, started_tracking = as_file_strings(response_intervals, active_interval)
         new_tags = extract_tags(response_intervals)
         write_data(configuration.data_dir, server_data, new_tags)
@@ -226,6 +242,7 @@ def sync(configuration: Configuration) -> None:
     # Run hook if necessary
     if conflict_flag:
         try:
+            log.debug("Executing conflict hook")
             run_conflict_hook(configuration.data_dir)
         except subprocess.CalledProcessError:
             log.warning("Hook exited with a non-zero exit code. Continuing...")
@@ -235,9 +252,9 @@ def sync(configuration: Configuration) -> None:
 
     # Output
     if active_interval and started_tracking:
-        print("Restarted time tracking from the point it was stopped.", file=sys.stderr)
+        log.info("Restarted time tracking from the point it was stopped.")
 
-    print("Synchronization successful!", file=sys.stderr)
+    log.info("Synchronization successful!")
 
     if active_interval and not started_tracking:
         log.warning(
@@ -254,8 +271,9 @@ def _generate_key(data_dir: str) -> None:
     Args:
         data_dir: The user's timewsync data dir.
     """
-    log = logging.getLogger(__name__)
+    log = logging.getLogger("timewsync")
 
+    log.debug("Checking if previous keys exist")
     priv_pem, pub_pem = read_keys(data_dir)
 
     if priv_pem or pub_pem:
@@ -266,18 +284,17 @@ def _generate_key(data_dir: str) -> None:
             return
 
     try:
+        log.debug("Generating new key pair")
         priv_pem, pub_pem = auth.generate_keys()
     except Exception as e:
         log.error("Unexpected error occurred while generating keys: %s", e)
         return
 
     try:
+        log.debug("Writing new key pair to data directory")
         write_keys(data_dir, priv_pem, pub_pem)
     except OSError as e:
         log.error("Error occurred while writing new keys: %s", e)
         return
 
-    print(
-        f"A new key pair was generated. You can find it in your timewsync folder ({data_dir}).",
-        file=sys.stderr,
-    )
+    log.info(f"A new key pair was generated. You can find it in your timewsync folder ({data_dir}).")
