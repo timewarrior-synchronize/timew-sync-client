@@ -105,7 +105,7 @@ def main():
     args = make_parser().parse_args()
     data_dir = os.path.expanduser(args.data_dir)
 
-    log = logging.getLogger("timewsync")
+    log = logging.getLogger(__name__)
     log.setLevel(logging.DEBUG)
 
     # Debug logging
@@ -164,7 +164,7 @@ def sync(configuration: Configuration) -> None:
     Args:
         configuration: The user's configuration.
     """
-    log = logging.getLogger("timewsync")
+    log = logging.getLogger(__name__)
 
     # Read data
     try:
@@ -271,7 +271,7 @@ def _generate_key(data_dir: str) -> None:
     Args:
         data_dir: The user's timewsync data dir.
     """
-    log = logging.getLogger("timewsync")
+    log = logging.getLogger(__name__)
 
     log.debug("Checking if previous keys exist")
     priv_pem, pub_pem = read_keys(data_dir)
