@@ -191,7 +191,7 @@ def sync(configuration: Configuration) -> None:
 
     # Generate token
     try:
-        log.debug("Generating Json Web Token")
+        log.debug("Generating JSON Web Token")
         token = auth.generate_jwt(private_key, configuration.user_id)
     except Exception as e:
         log.debug("Unexpected Exception: %s", e)
