@@ -28,6 +28,25 @@
 import logging
 
 
+class SingleLevelFilter(logging.Filter):
+    """Filters all log records which have the specified level.
+
+    Attributes:
+        level: The log level a log record has to have
+    """
+
+    def __init__(self, level: int):
+        self.level = level
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        """Returns whether the record specified matches this filter.
+
+        Args:
+            record: The record to be considered
+        """
+        return record.levelno == self.level
+
+
 class MinMaxLevelFilter(logging.Filter):
     """Filters all log records which have a level which fits into a
     boundary of a minimum log level and a maximum log level.
