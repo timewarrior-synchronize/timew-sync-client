@@ -185,8 +185,8 @@ def sync(configuration: Configuration) -> None:
     # Read key
     try:
         log.debug("Reading private key")
-        private_key, _ = read_keys(configuration.data_dir)
-        if private_key is None:
+        private_key_pem, _ = read_keys(configuration.data_dir)
+        if private_key_pem is None:
             log.error("No private key was found. Generate a key pair using `timewsync generate-key`.")
             return
     except OSError as e:
@@ -197,7 +197,7 @@ def sync(configuration: Configuration) -> None:
     # Generate token
     try:
         log.debug("Generating JSON Web Token")
-        token = auth.generate_jwt(private_key, configuration.user_id)
+        token = auth.generate_jwt(private_key_pem, configuration.user_id)
     except Exception as e:
         log.debug("Unexpected Exception: %s", e)
         log.error("Unexpected error occurred during JWT generation. No changes were made.")

@@ -97,15 +97,15 @@ def _read_snapshot(timewsync_data_dir: str) -> Dict[str, str]:
     return snapshot_data
 
 
-def read_keys(timewsync_data_dir: str) -> Tuple[Optional[JWK], Optional[JWK]]:
+def read_keys(timewsync_data_dir: str) -> Tuple[Optional[bytes], Optional[bytes]]:
     """Reads the private and the public key of the user.
 
     Args:
         timewsync_data_dir: The timewsync data directory.
 
     Returns:
-        Two strings containing the private and the public key of the user.
-        If the keys don't exist, return None.
+        A tuple containing the private key and the public key in PEM format.
+        If a key doesn't exist, return None as its value.
     """
     priv_pem = None
     pub_pem = None
@@ -121,10 +121,7 @@ def read_keys(timewsync_data_dir: str) -> Tuple[Optional[JWK], Optional[JWK]]:
         with open(pub_pem_path, "rb") as file:
             pub_pem = file.read()
 
-    private_key = JWK.from_pem(priv_pem) if priv_pem else None
-    public_key = JWK.from_pem(pub_pem) if pub_pem else None
-
-    return private_key, public_key
+    return priv_pem, pub_pem
 
 
 def write_data(timewsync_data_dir: str, monthly_data: Dict[str, str], tags: str):
