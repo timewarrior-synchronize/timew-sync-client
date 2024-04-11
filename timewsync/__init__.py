@@ -31,16 +31,21 @@ import os
 import subprocess
 import sys
 
-import colorama
-from colorama import Fore
+from colorama import just_fix_windows_console, Fore
 import requests
 
 from timewsync import auth, cli
 from timewsync.dispatch import ServerError, dispatch
 from timewsync.file_parser import as_interval_list, as_file_strings, extract_tags
 from timewsync.io_handler import read_data, read_keys, write_data, write_keys, delete_snapshot
-from timewsync.config import NoConfigurationFileError, MissingSectionError, MissingConfigurationError, Configuration, \
-    create_example_configuration, ensure_data_dir_exists
+from timewsync.config import (
+    NoConfigurationFileError,
+    MissingSectionError,
+    MissingConfigurationError,
+    Configuration,
+    create_example_configuration,
+    ensure_data_dir_exists,
+)
 from timewsync.logging_helpers import SingleLevelFilter, MinMaxLevelFilter
 
 DEFAULT_DATA_DIR = os.path.join("~", ".timewsync")
@@ -100,7 +105,7 @@ def run_conflict_hook(data_dir: str) -> None:
 def main():
     """This function is the main entry point to the timewarrior
     synchronization client."""
-    colorama.init()
+    just_fix_windows_console()  # ANSI escape fix for Windows terminals
 
     args = make_parser().parse_args()
     data_dir = os.path.expanduser(args.data_dir)

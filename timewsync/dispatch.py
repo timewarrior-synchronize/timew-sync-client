@@ -25,7 +25,6 @@
 ###############################################################################
 
 
-import os
 from typing import List, Tuple
 from urllib.parse import urljoin
 
