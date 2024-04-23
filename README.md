@@ -111,7 +111,7 @@ nix-shell
 To install the project dependencies:
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 ```
 
 Now you should be good to go :)

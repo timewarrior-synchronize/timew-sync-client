@@ -26,7 +26,7 @@
 
 
 from jwcrypto import jwk
-import python_jwt as jwt
+import jwt
 
 from timewsync import auth
 
@@ -42,11 +42,15 @@ def test_generate_keys():
 
 
 def test_generate_jwt():
-    key = jwk.JWK.generate(kty="RSA", size=2048)
+    keys = jwk.JWK.generate(kty="RSA", size=2048)
+    priv_pem = keys.export_to_pem(private_key=True, password=None)
+    pub_pem = keys.export_to_pem()
 
-    token = auth.generate_jwt(key, 42)
+    token = auth.generate_jwt(priv_pem, 42)
 
-    header, claims = jwt.verify_jwt(token, key, ["RS256"])
+    decoded = jwt.api_jwt.decode_complete(token, pub_pem, ["RS256"])
+    claims = decoded["payload"]
+    header = decoded["header"]
 
     assert claims is not None
     assert header is not None
