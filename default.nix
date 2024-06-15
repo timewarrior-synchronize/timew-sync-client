@@ -16,17 +16,11 @@ let
 in
 mach-nix.buildPythonApplication {
   pname = "timewsync";
-  version = "1.0.0";
+  version = "1.1";
 
   src = ./.;
 
   format = "pyproject";
 
-  requirements = ''
-    requests~=2.25.0
-    colorama~=0.4.4
-    jwcrypto~=0.8
-    python_jwt~=3.3
-    six~=1.9
-  '';
+  requirements = builtins.readFile ./requirements.txt;
 }
