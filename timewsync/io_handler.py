@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Copyright 2020 - 2021, Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
+# Copyright 2020 - 2024, Jan Bormet, Anna-Felicitas Hausmann, Joachim Schmidt, Vincent Stollenwerk, Arne Turuc
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,15 +31,13 @@ import tarfile
 from pathlib import Path
 from typing import Dict, Tuple, Optional
 
-from jwcrypto.jwk import JWK
+from timewsync import paths
 
-TIMEW_FOLDER = os.path.expanduser(os.environ.get("TIMEWARRIORDB", os.path.join("~", ".timewarrior")))
-DATA_FOLDER = os.path.join(TIMEW_FOLDER, "data")
 DATAFILE_REGEX = r"^\d\d\d\d-\d\d\.data$"
 
 
 def read_data(timewsync_data_dir: str) -> Tuple[Dict[str, str], Dict[str, str]]:
-    """Reads the monthly separated interval data from timewarrior and the snapshot.
+    """Reads the monthly separated interval data from the timewarrior database and the snapshot.
 
     Args:
         timewsync_data_dir: The timewsync data directory.
@@ -52,7 +50,7 @@ def read_data(timewsync_data_dir: str) -> Tuple[Dict[str, str], Dict[str, str]]:
 
 
 def _read_intervals() -> Dict[str, str]:
-    """Reads the monthly separated interval data from timewarrior.
+    """Reads the monthly separated interval data from the timewarrior database.
 
     Reads from all files matching 'YYYY-MM.data' and creates a separate list entry per month.
 
@@ -61,14 +59,14 @@ def _read_intervals() -> Dict[str, str]:
     """
     monthly_data = {}
 
-    if os.path.exists(DATA_FOLDER):
+    if os.path.exists(paths.DB_DATA_DIR):
 
         # Identify all data sources
-        file_list = [f for f in os.listdir(Path(DATA_FOLDER)) if (re.fullmatch(DATAFILE_REGEX, f))]
+        file_list = [f for f in os.listdir(Path(paths.DB_DATA_DIR)) if (re.fullmatch(DATAFILE_REGEX, f))]
 
         # Read all file contents
         for file_name in file_list:
-            with open(os.path.join(DATA_FOLDER, file_name), "r") as file:
+            with open(os.path.join(paths.DB_DATA_DIR, file_name), "r") as file:
                 monthly_data[file_name] = file.read()
 
     return monthly_data
@@ -125,7 +123,7 @@ def read_keys(timewsync_data_dir: str) -> Tuple[Optional[bytes], Optional[bytes]
 
 
 def write_data(timewsync_data_dir: str, monthly_data: Dict[str, str], tags: str):
-    """Writes the monthly separated data to files in .timewarrior/data.
+    """Writes the monthly separated data to files in the timewarrior database.
 
     Args:
         timewsync_data_dir: The timewsync data directory.
@@ -144,16 +142,16 @@ def _write_intervals(monthly_data: Dict[str, str]):
         monthly_data: A dictionary containing the file names and corresponding data for every month.
     """
     # Create data directory if not present
-    os.makedirs(DATA_FOLDER, exist_ok=True)
+    os.makedirs(paths.DB_DATA_DIR, exist_ok=True)
 
     # Remove previous data
-    for file_name in os.listdir(Path(DATA_FOLDER)):
+    for file_name in os.listdir(Path(paths.DB_DATA_DIR)):
         if re.fullmatch(DATAFILE_REGEX, file_name):
-            os.remove(os.path.join(DATA_FOLDER, file_name))
+            os.remove(os.path.join(paths.DB_DATA_DIR, file_name))
 
     # Write data to files
     for file_name, data in monthly_data.items():
-        with open(os.path.join(DATA_FOLDER, file_name), "w") as file:
+        with open(os.path.join(paths.DB_DATA_DIR, file_name), "w") as file:
             file.write(data)
 
 
@@ -174,7 +172,7 @@ def _write_snapshot(timewsync_data_dir: str, monthly_data: Dict[str, str]) -> No
     # Write data to files in snapshot
     with tarfile.open(snapshot_path, mode="w:gz") as snapshot:
         for file_name in monthly_data.keys():
-            snapshot.add(os.path.join(DATA_FOLDER, file_name), arcname=file_name)
+            snapshot.add(os.path.join(paths.DB_DATA_DIR, file_name), arcname=file_name)
 
 
 def _write_tags(tags: str) -> None:
@@ -190,9 +188,9 @@ def _write_tags(tags: str) -> None:
     Returns:
         Does not return; just writes into file.
     """
-    os.makedirs(DATA_FOLDER, exist_ok=True)
+    os.makedirs(paths.DB_DATA_DIR, exist_ok=True)
 
-    with open(os.path.join(DATA_FOLDER, "tags.data"), "w") as file:
+    with open(os.path.join(paths.DB_DATA_DIR, "tags.data"), "w") as file:
         file.write(tags)
 
 
