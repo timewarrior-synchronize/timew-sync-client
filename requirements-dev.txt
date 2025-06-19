@@ -5,5 +5,5 @@ requests~=2.32.4
 
 iniconfig~=2.1.0
 pluggy~=1.6.0
-pytest~=8.4.0
+pytest~=8.4.1
 black~=25.1
