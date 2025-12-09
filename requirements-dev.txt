@@ -6,4 +6,4 @@ requests~=2.32.5
 iniconfig~=2.3.0
 pluggy~=1.6.0
 pytest~=9.0.2
-black~=25.11
+black~=25.12
