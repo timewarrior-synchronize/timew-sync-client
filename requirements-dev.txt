@@ -1,7 +1,7 @@
 colorama~=0.4.6
 jwcrypto~=1.5.7
 pyjwt~=2.12.1
-requests~=2.32.5
+requests~=2.34.0
 
 iniconfig~=2.3.0
 pluggy~=1.6.0
