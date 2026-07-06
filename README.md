@@ -64,6 +64,13 @@ in the data directory under `$TIMEWSYNC/private_key.pem` and
 `$TIMEWSYNC/public_key.pem`. The key pair can be generated using the
 `generate-keys` subcommand.
 
+#### Synchronization
+
+After setting up [timew-sync-server](https://github.com/timewarrior-synchronize/timew-sync-server), and adding two or more clients to an id
+corresponding to a single user, you can track your time normally using 
+`timew` commands and when you want to synchronize, run `timewsync`.
+
+
 #### Hooks
 
 Hooks are special files located in the data directory which will be
